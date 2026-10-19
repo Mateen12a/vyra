@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>VYRA AI Virtual Camera</title>
+  <style>
+    body { margin: 0; width: 300px; padding: 16px; background: #09090b; color: #f4f4f5; font: 14px/1.45 system-ui, -apple-system, sans-serif; }
+    .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #ff6b2b; box-shadow: 0 0 0 3px rgba(255,107,43,0.18); }
+    .badge { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #18181c; color: #b4b4bc; }
+    .badge.live { background: rgba(74, 222, 128, 0.14); color: #4ade80; }
+    .card { padding: 12px; border-radius: 10px; background: #111114; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px; }
+    label { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; font-weight: 500; }
+    input[type="checkbox"] { accent-color: #ff6b2b; width: 16px; height: 16px; }
+    .muted { color: #b4b4bc; font-size: 12px; margin: 6px 0 0; }
+  </style>
+</head>
+<body>
+  <div class="head">
+    <span class="brand"><span class="dot"></span>VYRA Cam</span>
+    <span id="statusBadge" class="badge">Standby</span>
+  </div>
+  <div class="card">
+    <div id="statusText">Select <strong>VYRA AI Virtual Camera</strong> in Google Meet, WhatsApp Web, Zoom Web, or Discord.</div>
+    <p id="lookText" class="muted"></p>
+  </div>
+  <div class="card">
+    <label>
+      <span>Make VYRA the default camera on all websites</span>
+      <input id="forceCheck" type="checkbox">
+    </label>
+    <p class="muted">When enabled, websites automatically use VYRA AI even if they don't show a camera picker.</p>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- CMIO camera system extension declaration.
+         Core Media I/O's registration service requires CMIOExtensionMachServiceName
+         to know how to launch the extension (WWDC22 'Create camera extensions'). -->
+    <key>CMIOExtension</key>
+    <dict>
+        <key>CMIOExtensionMachServiceName</key>
+        <string>ai.vyra.camera.extension</string>
+    </dict>
+    <key>NSHumanReadableDescription</key>
+    <string>VYRA AI Camera — gives video apps (FaceTime, Zoom, WhatsApp, Teams, browsers)
+access to the VYRA AI virtual camera output.</string>
+</dict>
+</plist>

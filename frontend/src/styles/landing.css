@@ -1,0 +1,103 @@
+/* Landing page. Big type, one product frame, sections that each change composition. */
+.landing { overflow-x: clip; }
+.nav { position: fixed; z-index: 40; top: 0; left: 0; right: 0; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 24px;
+  height: 68px; padding: 0 clamp(16px, 4vw, 48px); transition: background-color 200ms, border-color 200ms; border-bottom: 1px solid transparent; }
+.nav-solid { background: rgba(9, 9, 11, 0.92); border-bottom-color: var(--line); }
+.nav-links { display: flex; justify-content: center; gap: 28px; }
+.nav-links a, .nav-signin { color: var(--text-2); text-decoration: none; font-weight: 500; transition: color 150ms; }
+.nav-links a:hover, .nav-signin:hover { color: var(--text); }
+.nav-actions { display: flex; align-items: center; gap: 18px; }
+
+.hero { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: center; gap: clamp(28px, 4vw, 64px);
+  min-height: 100svh; padding: 110px clamp(16px, 4vw, 48px) 64px; max-width: 1440px; margin: 0 auto;
+  background: radial-gradient(60% 50% at 75% 45%, rgba(255, 107, 43, 0.14), transparent 70%); }
+.hero-title { font-size: var(--step-display); font-weight: 600; letter-spacing: -0.045em; line-height: 0.92; }
+.hero-sub { margin-top: 24px; max-width: 30ch; font-size: var(--step-lead); color: var(--text-2); line-height: 1.45; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+
+/* The product frame */
+.frame { border-radius: 20px; overflow: hidden; background: var(--surface); border: 1px solid var(--line-strong); box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6); }
+.frame-bar { display: flex; align-items: center; gap: 7px; height: 40px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+.frame-bar span { width: 10px; height: 10px; border-radius: 50%; background: var(--raised-2); }
+.frame-bar p { margin-left: 10px; font-size: 0.8125rem; color: var(--text-3); }
+.frame-stage { position: relative; aspect-ratio: 16 / 10; background: radial-gradient(60% 60% at 50% 40%, #1d1d22, #070708); }
+.frame-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.frame-video.mirrored { transform: scaleX(-1); }
+.frame-video.is-hidden { visibility: hidden; }
+.frame-empty { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px; text-align: center; }
+.frame-empty-title { font-size: 1.375rem; font-weight: 600; letter-spacing: -0.02em; }
+.frame-empty .muted { max-width: 34ch; font-size: 0.875rem; }
+.frame-empty .btn { margin-top: 6px; }
+.frame-live { position: absolute; top: 14px; left: 14px; display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6); font-size: 0.8125rem; font-weight: 600; }
+.frame-cta { position: absolute; right: 14px; bottom: 14px; }
+.frame-composer { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.frame-photo { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--raised-2); color: var(--accent); flex: none; }
+.frame-photo svg { width: 20px; height: 20px; }
+.frame-input { flex: 1; min-width: 0; display: flex; gap: 8px; height: 40px; align-items: center; padding: 0 14px; border-radius: 10px; background: var(--bg);
+  border: 1px solid var(--line); font-size: 0.875rem; white-space: nowrap; overflow: hidden; }
+.frame-go { display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 999px; background: var(--accent); color: var(--accent-ink);
+  font-weight: 600; font-size: 0.875rem; flex: none; }
+
+/* Before/after */
+.band { padding: 120px clamp(16px, 4vw, 48px); max-width: 1440px; margin: 0 auto; display: grid; gap: 32px; }
+.ba { position: relative; aspect-ratio: 16 / 9; border-radius: 20px; overflow: hidden; background: #000; }
+.ba-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ba-after { position: absolute; inset: 0; }
+.ba-handle { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: #fff; pointer-events: none; }
+.ba-tag { position: absolute; top: 14px; padding: 5px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.6); font-size: 0.8125rem; font-weight: 600; }
+.ba-tag-l { left: 14px; } .ba-tag-r { right: 14px; }
+.ba-range { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; }
+
+/* Sections */
+.section-title { font-size: var(--step-head); font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; max-width: 16ch; }
+.how, .uses, .faq { max-width: 1240px; margin: 0 auto; padding: clamp(80px, 10vw, 160px) clamp(16px, 4vw, 48px) 0; }
+.how-rows { display: grid; margin-top: 48px; }
+.how-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 40px; padding: 40px 0; border-top: 1px solid var(--line); }
+.how-text h3 { font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.25rem); font-weight: 600; letter-spacing: -0.03em; }
+.how-text p { margin-top: 12px; max-width: 40ch; font-size: var(--step-lead); }
+.ui-chip { justify-self: start; display: flex; align-items: center; gap: 14px; padding: 14px 20px 14px 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line-strong); }
+.ui-chip div { display: grid; }
+.ui-chip .muted { font-size: 0.8125rem; }
+.ui-chip-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 12px; background: var(--raised-2); color: var(--accent); }
+.ui-chip-icon svg { width: 24px; height: 24px; }
+.ui-golive { justify-self: start; }
+.ui-golive .golive { display: inline-flex; align-items: center; gap: 10px; height: 60px; padding: 0 34px; border-radius: 999px; background: var(--accent); color: var(--accent-ink);
+  font-size: 1.125rem; font-weight: 600; }
+.ui-golive .golive-dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+
+.uses-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; margin-top: 48px; }
+.uses-list h3 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
+
+.faq { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 48px; align-items: start; }
+.faq-list { display: grid; gap: 8px; }
+.faq-list details { border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); transition: border-color 150ms; }
+.faq-list details[open] { border-color: var(--line-strong); }
+.faq-list summary { position: relative; padding: 20px 56px 20px 22px; font-size: 1.0625rem; font-weight: 500; cursor: pointer; list-style: none; }
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list summary::after { content: "+"; position: absolute; right: 22px; top: 50%; transform: translateY(-50%); font-size: 1.375rem; color: var(--text-3); transition: transform 200ms; }
+.faq-list details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+.faq-list details p { padding: 0 22px 20px; max-width: 60ch; }
+
+.final { display: grid; justify-items: center; gap: 32px; text-align: center; padding: clamp(100px, 14vw, 200px) 16px;
+  background: radial-gradient(50% 60% at 50% 60%, rgba(255, 107, 43, 0.18), transparent 70%); }
+.final-title { font-size: var(--step-display); font-weight: 600; letter-spacing: -0.045em; line-height: 0.95; }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 28px clamp(16px, 4vw, 48px); border-top: 1px solid var(--line); font-size: 0.875rem; }
+
+@media (max-width: 980px) {
+  .nav-links { display: none; }
+  .nav { grid-template-columns: auto 1fr; }
+  .nav-actions { justify-self: end; }
+  .hero { grid-template-columns: 1fr; min-height: auto; padding-top: 104px; }
+  .hero-sub { max-width: 40ch; }
+  .how-row { grid-template-columns: 1fr; gap: 20px; padding: 32px 0; }
+  .uses-list { grid-template-columns: 1fr 1fr; }
+  .faq { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (max-width: 560px) {
+  .nav-signin { display: none; }
+  .frame-stage { aspect-ratio: 4 / 5; }
+  .frame-input .dim { display: none; }
+  .uses-list { grid-template-columns: 1fr; gap: 24px; }
+  .foot { flex-direction: column; align-items: flex-start; }
+}

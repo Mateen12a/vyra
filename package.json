@@ -1,0 +1,17 @@
+{
+  "name": "vyra-web",
+  "private": true,
+  "scripts": {
+    "test:browser": "playwright test",
+    "build:live-sdk": "esbuild scripts/live-sdk-entry.js --bundle --minify --format=iife --global-name=DecartSDK --platform=browser --target=es2020 --legal-comments=eof --outfile=person_studio/web/vendor/decart-sdk.js",
+    "build:media": "esbuild scripts/media-entry.js --bundle --minify --format=iife --global-name=Mediabunny --platform=browser --target=es2020 --legal-comments=eof --outfile=person_studio/web/vendor/mediabunny.js",
+    "build:vision": "esbuild scripts/vision-entry.js --bundle --minify --format=iife --global-name=MPVision --platform=browser --target=es2020 --legal-comments=eof --outfile=person_studio/web/vendor/mediapipe/vision.js"
+  },
+  "devDependencies": {
+    "@decartai/sdk": "0.2.8",
+    "@mediapipe/tasks-vision": "1.0.1",
+    "@playwright/test": "1.64.0",
+    "esbuild": "0.25.10",
+    "mediabunny": "1.60.0"
+  }
+}

@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "person-studio"
+version = "0.1.0"
+description = "VYRA AI: real-time and studio character transformation"
+requires-python = ">=3.9"
+dependencies = [
+  "fastapi==0.115.12",
+  "uvicorn==0.34.3",
+  "websockets==13.1",  # uvicorn needs it for the livestream relay WebSocket
+  "python-multipart==0.0.20",
+  "Pillow>=11.3,<12",
+  "pymongo==4.10.1",
+  "argon2-cffi==23.1.0",
+  "stripe==11.4.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest==8.3.5", "httpx==0.28.1"]
+
+[tool.setuptools]
+packages = ["person_studio"]
+
+[tool.setuptools.package-data]
+person_studio = ["web/*", "web/vendor/*", "web/fonts/*", "web/dist/*", "web/dist/ui/*", "web/site/samples/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

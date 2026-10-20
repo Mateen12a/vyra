@@ -69,6 +69,7 @@ class Settings:
     smtp_port: int = field(default_factory=lambda: int(os.getenv("SMTP_PORT", "587")))
     smtp_user: str = field(default_factory=lambda: os.getenv("SMTP_USER", "").strip())
     smtp_password: str = field(default_factory=lambda: os.getenv("SMTP_PASSWORD", "").strip())
+    resend_api_key: str = field(default_factory=lambda: os.getenv("RESEND_API_KEY", "").strip())
     smtp_from: str = field(default_factory=lambda: os.getenv("SMTP_FROM", "VYRANI AI <noreply@vyrani.blackhevents.com>").strip())
     max_duration: float = 10.0
     max_video_bytes: int = 32 * 1024 * 1024

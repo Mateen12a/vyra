@@ -107,9 +107,34 @@ def test_login_logout_and_protected_routes(client, mailer):
     client.post("/api/auth/logout")
     assert client.get("/api/auth/me").status_code == 401
     assert client.get("/api/credits").status_code == 401
+    assert client.get("/api/pricing").status_code == 401  # prices are for signed-in users only
     assert client.post("/api/auth/login", json={"email": email, "password": "wrong password!"}).status_code == 401
     assert client.post("/api/auth/login", json={"email": email.upper(), "password": "correct horse battery"}).status_code == 200
     assert client.get("/api/credits").json()["balance"] == pricing.FREE_CREDITS_ON_VERIFY
+    assert client.get("/api/pricing").status_code == 200
+
+
+def test_resend_mailer_posts_to_resend(monkeypatch):
+    from types import SimpleNamespace
+    from person_studio import accounts
+    sent = {}
+
+    class Reply:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def read(self): return b"{}"
+
+    def fake_urlopen(request, timeout):
+        sent["url"], sent["auth"], sent["body"] = request.full_url, request.headers["Authorization"], request.data
+        return Reply()
+
+    monkeypatch.setattr(accounts.urllib.request, "urlopen", fake_urlopen)
+    settings = SimpleNamespace(resend_api_key="re_test", smtp_host="", smtp_from="VYRANI <a@b.c>", public_url="https://x.test")
+    mailer = accounts.pick_mailer(settings)
+    assert isinstance(mailer, accounts.ResendMailer)
+    mailer.send("u@example.com", "verify", "tok123")
+    assert sent["url"] == "https://api.resend.com/emails" and sent["auth"] == "Bearer re_test"
+    assert b"https://x.test/verify?token=tok123" in sent["body"]
 
 
 def test_session_cookie_is_httponly(client, mailer):

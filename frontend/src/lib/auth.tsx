@@ -32,8 +32,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refresh();
-    api<Catalogue>("/api/pricing").then(setCatalogue).catch(() => {});
   }, [refresh]);
+
+  // Prices are only served to signed-in users.
+  const signedIn = Boolean(me);
+  useEffect(() => {
+    if (signedIn) api<Catalogue>("/api/pricing").then(setCatalogue).catch(() => {});
+    else setCatalogue(null);
+  }, [signedIn]);
 
   const setBalance = useCallback((balance: number) => {
     setMe(current => current && current.balance !== balance ? { ...current, balance } : current);

@@ -7,6 +7,9 @@ import hashlib
 import re
 import secrets
 import smtplib
+import urllib.error
+import urllib.request
+import json
 from datetime import timedelta
 from email.message import EmailMessage
 
@@ -232,6 +235,45 @@ class SmtpMailer(LogMailer):
             print(f"[mail] SMTP delivery warning for {email}: {exc}", flush=True)
 
 
+class ResendMailer(LogMailer):
+    """Transactional email through Resend's HTTPS API. The sender's domain must be verified in Resend."""
+
+    def __init__(self, settings):
+        super().__init__(settings.public_url)
+        self.key = settings.resend_api_key
+        self.sender = settings.smtp_from
+
+    def send(self, email, kind, token):
+        super().send(email, kind, token)
+        link = f"{self.base_url}/{kind}?token={token}"
+        verify = kind == "verify"
+        action = "Verify my email" if verify else "Choose a new password"
+        intro = "Confirm your email to unlock your free live minute." if verify else "Someone asked to reset your VYRANI password. If it wasn't you, ignore this email."
+        html = (
+            '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:32px;color:#111">'
+            '<p style="font-size:22px;font-weight:600;margin:0 0 16px">VYRANI</p>'
+            f'<p style="font-size:16px;line-height:1.5">{intro}</p>'
+            f'<p style="margin:28px 0"><a href="{link}" style="background:#ff6b2b;color:#120700;padding:14px 22px;'
+            f'border-radius:999px;text-decoration:none;font-weight:600">{action}</a></p>'
+            f'<p style="font-size:13px;color:#666">Or paste this link: {link}</p></div>'
+        )
+        payload = json.dumps({
+            "from": self.sender, "to": [email],
+            "subject": "Verify your VYRANI email" if verify else "Reset your VYRANI password",
+            "html": html, "text": f"{intro}\n\n{link}\n",
+        }).encode()
+        request = urllib.request.Request("https://api.resend.com/emails", data=payload, method="POST",
+                                         headers={"Authorization": f"Bearer {self.key}", "Content-Type": "application/json",
+                                                  "User-Agent": "vyrani/1.0"})
+        try:
+            with urllib.request.urlopen(request, timeout=10) as response:
+                response.read()
+        except (OSError, urllib.error.HTTPError) as exc:
+            print(f"[mail] Resend delivery warning for {email}: {exc}", flush=True)
+
+
 def pick_mailer(settings):
+    if getattr(settings, "resend_api_key", ""):
+        return ResendMailer(settings)
     return SmtpMailer(settings) if getattr(settings, "smtp_host", "") else LogMailer(settings.public_url)
 

@@ -153,8 +153,8 @@ def build_router(settings, store, accounts, ledger, billing, current_user, requi
         return {"balance": ledger.balance(user["_id"]), "history": ledger.history(user["_id"]),
                 **pricing.public_catalogue(), "payments": billing.available()}
 
-    @router.get("/pricing")
-    def catalogue():
+    @router.get("/pricing")  # prices are shown to signed-in users only
+    def catalogue(user=Depends(current_user)):
         return pricing.public_catalogue()
 
     @router.post("/billing/checkout")

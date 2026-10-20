@@ -32,7 +32,7 @@ class PageErrorBoundary extends Component<{ children: ReactNode }, { failed: boo
       return (
         <main className="page-loading" role="alert">
           <div>
-            <h1>VYRA couldn't load this page</h1>
+            <h1>VYRANI couldn't load this page</h1>
             <p>Reload to try again. If this keeps happening, share the error from your browser console.</p>
             <button className="btn btn-primary" onClick={() => window.location.reload()}>Reload page</button>
           </div>

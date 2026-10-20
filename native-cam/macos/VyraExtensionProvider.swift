@@ -1,4 +1,4 @@
-// VYRA AI — CoreMediaIO Camera Extension: provider + device scaffolding.
+// VYRANI AI — CoreMediaIO Camera Extension: provider + device scaffolding.
 //
 // This file mirrors the structure of Apple's published walkthrough
 // ("Creating a camera extension with Core Media I/O", WWDC22 session 10022 and the
@@ -9,15 +9,15 @@
 // the complete Xcode project, entitlements, Info.plist keys, and signing steps.
 //
 // Frame feed: VyraStreamSource (VyraCameraExtensionProvider.swift) reads frames from the
-// VYRA bridge. A sandboxed system extension cannot read /tmp; production builds must
+// VYRANI bridge. A sandboxed system extension cannot read /tmp; production builds must
 // publish frames into the shared App Group container (group.ai.vyra.camera) from a
-// VYRA helper running in the user session, and read them here. /tmp is kept only as a
+// VYRANI helper running in the user session, and read them here. /tmp is kept only as a
 // documented dev-mode fallback for unsandboxed drafts (`systemextensionsctl developer on`).
 
 import Foundation
 import CoreMediaIO
 
-let kVyraCameraName = "VYRA AI Camera"
+let kVyraCameraName = "VYRANI AI Camera"
 let kVyraDeviceUUID = UUID(uuidString: "9D71A6E6-6D26-4B2A-829A-B0F2A15B1A31")!
 let kVyraStreamUUID = UUID(uuidString: "7F36E283-C186-4229-9F5F-81740F86C62B")!
 let kVyraAppGroupID = "group.ai.vyra.camera"

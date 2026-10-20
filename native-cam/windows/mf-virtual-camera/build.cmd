@@ -2,7 +2,7 @@
 REM Reproducible build wrapper for a real Windows 11 Media Foundation virtual camera.
 REM Requires: Visual Studio 2022 (C++ workload) + Windows SDK 10.0.22000+ + Windows 11 22000+.
 REM This script CLONES Microsoft's official sample and builds it, then prints the manual
-REM integration steps needed to stream VYRA Studio frames into it. It deliberately does NOT
+REM integration steps needed to stream VYRANI Studio frames into it. It deliberately does NOT
 REM contain a hand-typed MF source, because no machine that prepared this repo had MSVC or
 REM the Windows 11 SDK headers to compile-verify such a source.
 
@@ -36,5 +36,5 @@ echo      regsvr32 /s "<path-to-built-src-dll>"
 echo      mfvcam-host.exe Start     (see BUILD-VYRA-MF-VIRTUAL-CAMERA.md)
 echo.
 echo [NEXT]: Replace SimpleFrameGenerator with a reader of \\.\pipe\vyra_cam_frames produced
-echo by vyra_cam_bridge.py so VYRA Studio video (not a test pattern) streams through the camera.
+echo by vyra_cam_bridge.py so VYRANI Studio video (not a test pattern) streams through the camera.
 exit /b 0

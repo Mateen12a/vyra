@@ -1,6 +1,6 @@
 "use strict";
 // ISOLATED world content bridge.
-// Only opens a producer port if the current document is on an allowed VYRA Studio route (/app/studio or /studio),
+// Only opens a producer port if the current document is on an allowed VYRANI Studio route (/app/studio or /studio),
 // and the background service worker independently verifies `port.sender.url` against the allowed origin list.
 (() => {
   let consumerPort = null;

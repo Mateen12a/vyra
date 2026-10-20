@@ -1,15 +1,15 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VYRA AI · Watermark</title><link rel="stylesheet" href="/assets/watermark.css"><script src="/assets/watermark.js" defer></script></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VYRANI AI · Watermark</title><link rel="stylesheet" href="/assets/watermark.css"><script src="/assets/watermark.js" defer></script></head>
 <body>
-<header><a href="/">VYRA AI</a><span>Watermark studio</span></header>
+<header><a href="/">VYRANI AI</a><span>Watermark studio</span></header>
 <main>
 <section><canvas id="output" width="1280" height="720" aria-label="Processed video. Drag to select the watermark region."></canvas><video id="source" playsinline muted hidden></video><p id="status" role="status">Choose a video or start your camera.</p><div class="buttons"><button id="camera">Start camera</button><label class="file">Open video<input id="upload" type="file" accept="video/*"></label><button id="play" disabled>Pause</button><button id="record" disabled>Record output</button><a id="download" hidden>Download recording</a></div></section>
 <aside>
 <h1>Watermark</h1><p>Live preview and recording, processed on this device.</p>
 <label><input id="remove" type="checkbox"> Blend selected watermark region</label><p class="hint">Drag a rectangle over a watermark you own or have permission to remove. This fast repair estimates pixels from its edges. Detailed backgrounds and moving objects may look smeared.</p><button id="clear">Clear selection</button>
 <label><input id="add" type="checkbox" checked> Add watermark</label>
-<label>Text<input id="text" type="text" value="VYRA AI" maxlength="100"></label>
+<label>Text<input id="text" type="text" value="VYRANI AI" maxlength="100"></label>
 <label>Logo image<input id="logo" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="clearLogo">Use text instead</button>
 <label>Position<select id="position"><option value="br">Bottom right</option><option value="bl">Bottom left</option><option value="tr">Top right</option><option value="tl">Top left</option><option value="center">Center</option></select></label>
 <label>Size<input id="size" type="range" min="2" max="25" value="5"></label>

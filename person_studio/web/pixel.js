@@ -1,5 +1,5 @@
 "use strict";
-// VYRA pixel art: ordered (Bayer) dithering drawn at low resolution and scaled up with crisp pixels.
+// VYRANI pixel art: ordered (Bayer) dithering drawn at low resolution and scaled up with crisp pixels.
 // Used for the idle stage and for look placeholders until a real frame from the user's session exists.
 (() => {
   const BAYER = [0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38,

@@ -1,8 +1,8 @@
 const { test, expect } = require('@playwright/test');
 
 const setup = { mode: 'hosted', steps: [
-  { id: 'engine', title: 'AI engine', status: 'done', detail: 'Handled by VYRA.' },
-  { id: 'extension', title: 'Browser virtual camera', status: 'guide', detail: 'Adds VYRA to supported websites.' },
+  { id: 'engine', title: 'AI engine', status: 'done', detail: 'Handled by VYRANI.' },
+  { id: 'extension', title: 'Browser virtual camera', status: 'guide', detail: 'Adds VYRANI to supported websites.' },
 ] };
 
 test.beforeEach(async ({ page }) => {
@@ -92,7 +92,7 @@ test('desktop path explains the OBS dependency and hosted limitation', async ({ 
   const tour = page.getByTestId('studio-tour');
   await tour.getByRole('button', { name: /04.*Calls/ }).click();
   await tour.getByRole('button', { name: 'Desktop apps', exact: true }).click();
-  await expect(tour.getByText(/A hosted VYRA website cannot launch OBS/)).toBeVisible();
+  await expect(tour.getByText(/A hosted VYRANI website cannot launch OBS/)).toBeVisible();
   await expect(tour.getByRole('link', { name: 'Download extension' })).toHaveCount(0);
 });
 

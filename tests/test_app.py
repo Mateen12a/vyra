@@ -910,7 +910,7 @@ def test_virtual_camera_bundles_and_pwa_manifest_are_served(tmp_path, monkeypatc
 
         manifest_res = client.get("/manifest.webmanifest")
         assert manifest_res.status_code == 200
-        assert manifest_res.json()["short_name"] == "VYRA"
+        assert manifest_res.json()["short_name"] == "VYRANI"
         sw_res = client.get("/sw.js")
         assert sw_res.status_code == 200
 
@@ -925,7 +925,7 @@ def test_obs_commander_collection_and_launch_flags(tmp_path, monkeypatch):
     monkeypatch.setattr(obs_commander, "scenes_dir", lambda: tmp_path / "scenes")
     path = obs_commander.write_collection("My Window Title")
     collection = json.loads(path.read_text(encoding="utf-8"))
-    assert collection["name"] == "VYRA Camera"
+    assert collection["name"] == "VYRANI Camera"
     assert collection["sources"][1]["settings"]["window"] == "My Window Title"
     assert collection["sources"][1]["settings"]["priority"] == 1
 
@@ -966,7 +966,7 @@ def test_obs_commander_routes_are_local_only(tmp_path, monkeypatch):
         launched = client.post("/api/obs/launch", headers={"Origin": "http://127.0.0.1:8765"})
 
     assert launched.status_code == 200
-    assert launched.json()["window_title"] == "VYRA AI Camera Output"
+    assert launched.json()["window_title"] == "VYRANI AI Camera Output"
     assert len(launched_calls) == 1
 
 
@@ -978,7 +978,7 @@ def test_native_cam_bridge_rejects_untrusted_origins_and_authenticates():
     bridge = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(bridge)
 
-    allowed = {"http://127.0.0.1:8765", "https://vyra.ai"}
+    allowed = {"http://127.0.0.1:8765", "https://vyrani.blackhevents.com"}
     assert bridge.is_origin_allowed("http://127.0.0.1:8765", allowed) is True
     assert bridge.is_origin_allowed("https://evil.example.com", allowed) is False
     assert bridge.is_origin_allowed("", allowed) is False

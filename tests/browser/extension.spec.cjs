@@ -2,6 +2,10 @@ const { test, expect, chromium } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('vyra.setupDone', '1'));
+});
+
 function fakeVideoFixture() {
   const width = 320, height = 180;
   const header = Buffer.from(`YUV4MPEG2 W${width} H${height} F30:1 Ip A1:1 C420jpeg\n`);
@@ -34,7 +38,10 @@ test('studio loads with the unpacked extension and relays video to another tab',
     // This fixture supplies its own stream below; disable Studio's independent output watchdog
     // so it cannot replace the test stream while testing extension transport and restart behavior.
     await context.addInitScript(origin => {
-      if (location.origin === origin) localStorage.setItem('vyra.vcamActive', '0');
+      if (location.origin === origin) {
+        localStorage.setItem('vyra.vcamActive', '0');
+        localStorage.setItem('vyra.setupDone', '1');
+      }
     }, new URL(baseURL).origin);
     const errors = [];
     context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
@@ -145,7 +152,7 @@ test('a failed studio module shows recovery controls instead of a blank page', a
   } }));
   await page.route('**/ui/Studio-*.js', route => route.abort());
   await page.goto('/app/studio?mode=photo');
-  await expect(page.getByRole('alert')).toContainText("VYRA couldn't load this page");
+  await expect(page.getByRole('alert')).toContainText("VYRANI couldn't load this page");
   await expect(page.getByRole('button', { name: 'Reload page' })).toBeVisible();
 });
 
@@ -179,7 +186,7 @@ for (const scenario of ['missing', 'outdated', 'throws', 'delayed']) {
     }
     await page.getByRole('button', { name: 'Turn on camera', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Go live', exact: true })).toBeVisible();
-    await expect(page.getByRole('heading', { name: "VYRA couldn't load this page" })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: "VYRANI couldn't load this page" })).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 }

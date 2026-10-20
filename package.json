@@ -1,5 +1,5 @@
 {
-  "name": "vyra-web",
+  "name": "vyrani-web",
   "private": true,
   "scripts": {
     "test:browser": "playwright test",

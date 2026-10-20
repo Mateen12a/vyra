@@ -1,6 +1,6 @@
-# VYRA AI Camera — Developer Preview (free, no Apple Developer Program)
+# VYRANI AI Camera — Developer Preview (free, no Apple Developer Program)
 
-This DMG installs a **working developer preview** of the VYRA AI virtual camera using
+This DMG installs a **working developer preview** of the VYRANI AI virtual camera using
 macOS's system-extension developer mode, so you can test the CMIO camera extension on your
 own Macs without paying the $99/year Apple Developer Program. Be honest with yourself
 about what you accept:
@@ -32,7 +32,7 @@ about what you accept:
 sudo ./install-dev-preview.sh        # from the DMG mount root
 ```
 Then approve the system-extension prompt in System Settings → General → Login Items &
-Extensions (macOS 15: "Camera Extensions") and select "VYRA AI Camera" in your calling app.
+Extensions (macOS 15: "Camera Extensions") and select "VYRANI AI Camera" in your calling app.
 
 ## When you ship to real users
 Distribute via **Developer ID signing + notarization** ($99/year Apple Developer Program)

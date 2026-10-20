@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from .config import Settings
 
 FAL_TOKEN_URL = "https://rest.fal.ai/tokens/"
-USER_AGENT = "vyra-ai/0.3"
+USER_AGENT = "vyrani-ai/0.3"
 # fal is the only live engine. Standard (not fast) realtime rate per second of open session.
 PROVIDERS = {
     "fal": {"name": "fal", "price_per_second": 0.02},

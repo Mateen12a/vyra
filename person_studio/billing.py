@@ -32,7 +32,7 @@ class Billing:
             "client_reference_id": str(user["_id"]),
             "line_items": [{"quantity": 1, "price_data": {
                 "currency": "usd", "unit_amount": pack["amount_cents"],
-                "product_data": {"name": f"VYRA {pack['name']}: {pack['credits']:,} credits"}}}],
+                "product_data": {"name": f"VYRANI {pack['name']}: {pack['credits']:,} credits"}}}],
             "metadata": {"user_id": str(user["_id"]), "pack": pack_id, "credits": str(pack["credits"])},
             "success_url": f"{base_url}/app/credits?checkout=success",
             "cancel_url": f"{base_url}/app/credits?checkout=cancelled",

@@ -69,7 +69,7 @@
     $("authGoogleBlock").hidden = !state.google || mode === "forgot" || mode === "reset";
     $("authSwitch").hidden = mode === "reset";
     $("authTerms").hidden = mode !== "signup";
-    $("authSwitchText").textContent = mode === "signup" ? "Have an account?" : "New to VYRA?";
+    $("authSwitchText").textContent = mode === "signup" ? "Have an account?" : "New to VYRANI?";
     $("authSwitchButton").textContent = mode === "signup" || mode === "forgot" ? "Sign in" : "Create account";
     $("authForgot").hidden = mode !== "signin";
     $("authError").hidden = true;

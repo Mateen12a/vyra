@@ -130,7 +130,7 @@ test('clip job review, download, and deletion UI', async ({ page }) => {
   await expect(page.locator('#compareButton')).toBeEnabled();
   const downloadEvent = page.waitForEvent('download');
   await page.locator('#downloadButton').click();
-  expect((await downloadEvent).suggestedFilename()).toBe('vyra-clip.mp4');
+  expect((await downloadEvent).suggestedFilename()).toBe('vyrani-clip.mp4');
   await page.locator('#deleteButton').click();
   await expect(page.locator('#jobTitle')).toHaveText('Test files deleted');
   await expect(page.locator('#resultVideo')).toBeHidden();
@@ -295,10 +295,10 @@ test('a full fal session: looks, character, prompt enhancement, recording and st
   const download = page.waitForEvent('download');
   await page.locator('#liveRecordButton').click();
   const recording = await download;
-  expect(recording.suggestedFilename()).toMatch(/^vyra-\d{8}-\d{6}\.(mp4|webm)$/);
+  expect(recording.suggestedFilename()).toMatch(/^vyrani-\d{8}-\d{6}\.(mp4|webm)$/);
   await recording.saveAs('test-results/live-recording-sample.' + recording.suggestedFilename().split('.').pop());
   if (recording.suggestedFilename().endsWith('.mp4'))
-    expect(require('fs').readFileSync('test-results/live-recording-sample.mp4').toString('latin1')).toContain('Made with VYRA AI');
+    expect(require('fs').readFileSync('test-results/live-recording-sample.mp4').toString('latin1')).toContain('Made with VYRANI AI');
 
   // Character swap sends the framed photo; going back to a look removes it explicitly.
   await page.locator('#tabCharacter').click();
@@ -392,7 +392,7 @@ test('a few words become a saved look, and a photo describes itself', async ({ p
   expect(errors).toEqual([]);
 });
 
-test('development mode removes only VYRA output labels and metadata', async ({ page }) => {
+test('development mode removes only VYRANI output labels and metadata', async ({ page }) => {
   await mockFal(page);
   await page.route('**/api/live/status', (route) => route.fulfill({ json: { ...withVoices, vyra_dev_mode: true, streaming_available: true, ai_label: true } }));
   await page.addInitScript(() => { window.__falEchoMs = 300; });
@@ -402,7 +402,7 @@ test('development mode removes only VYRA output labels and metadata', async ({ p
   await page.locator('.look[data-name="Anime"]').click();
   await page.locator('#goLiveButton').click();
   await expect(page.locator('#stage')).toHaveAttribute('data-state', 'live', { timeout: 20000 });
-  await expect(page.locator('#aiLabel')).toBeHidden(); // server asks for a mark, explicit development mode removes VYRA's mark
+  await expect(page.locator('#aiLabel')).toBeHidden(); // server asks for a mark, explicit development mode removes VYRANI's mark
   await expect(page.locator('#streamButton')).toBeVisible();
   const downloadEvent = page.waitForEvent('download');
   await page.locator('#liveRecordButton').click();
@@ -412,8 +412,8 @@ test('development mode removes only VYRA output labels and metadata', async ({ p
   const file = 'test-results/dev-output-' + download.suggestedFilename().split('.').pop();
   await download.saveAs(file);
   const bytes = require('fs').readFileSync(file).toString('latin1');
-  expect(bytes).not.toContain('Made with VYRA AI');
-  expect(bytes).not.toContain('VYRA AI recording');
+  expect(bytes).not.toContain('Made with VYRANI AI');
+  expect(bytes).not.toContain('VYRANI AI recording');
   await page.locator('#goLiveButton').click();
 });
 
@@ -730,7 +730,7 @@ test('an accent voice replaces the recorded voice in the saved MP4', async ({ pa
     route.fulfill({ status: 200, contentType: 'audio/mpeg', body: voice });
   });
   const recording = await download;
-  expect(recording.suggestedFilename()).toMatch(/^vyra-\d{8}-\d{6}-british-male\.mp4$/);
+  expect(recording.suggestedFilename()).toMatch(/^vyrani-\d{8}-\d{6}-british-male\.mp4$/);
   const file = 'test-results/accent-recording-sample.mp4';
   await recording.saveAs(file);
   // The server got a WAV of the recorded voice and the chosen preset, nothing else.
@@ -741,7 +741,7 @@ test('an accent voice replaces the recorded voice in the saved MP4', async ({ pa
   const bytes = require('fs').readFileSync(file).toString('latin1');
   expect(bytes).toContain('avc1'); // the video, copied
   expect(/mp4a|Opus/.test(bytes)).toBe(true); // the new voice
-  expect(bytes).toContain('Made with VYRA AI'); // the hidden provenance tag
+  expect(bytes).toContain('Made with VYRANI AI'); // the hidden provenance tag
   await expect(page.locator('#notice')).toContainText('-british-male.mp4');
   expect(errors).toEqual([]);
 });
@@ -750,7 +750,7 @@ test('if the accent voice fails, the recording is still saved with the own voice
   const download = await recordWithAccent(page, (route) =>
     route.fulfill({ status: 503, json: { detail: 'Your fal balance is too low. Top up at fal.ai.' } }));
   const recording = await download;
-  expect(recording.suggestedFilename()).toMatch(/^vyra-\d{8}-\d{6}\.mp4$/);
+  expect(recording.suggestedFilename()).toMatch(/^vyrani-\d{8}-\d{6}\.mp4$/);
   await expect(page.locator('#notice')).toContainText('Your fal balance is too low');
   await expect(page.locator('#notice')).toContainText('Saved with your own voice instead');
 });
@@ -804,7 +804,7 @@ test('the colour theme can be switched and is remembered', async ({ page }) => {
   await expect(page.locator('.swatch[data-palette="ice"]')).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('the VYRA · AI label follows the server setting', async ({ page }) => {
+test('the VYRANI · AI label follows the server setting', async ({ page }) => {
   await mockLive(page, { ...liveReady, ai_label: false });
   await page.goto('/studio');
   await expect(page.locator('#aiLabel')).toBeHidden();
@@ -948,7 +948,7 @@ test('voice commands: hold to talk switches looks and voices, and edits the scen
   expect(await page.evaluate(() => window.__speech.started)).toBe(false);
 });
 
-test('voice commands: hands-free only acts on "Vyra, ..."', async ({ page }) => {
+test('voice commands: hands-free only acts on "Vyrani, ..."', async ({ page }) => {
   await mockLive(page);
   await page.addInitScript(fakeSpeech);
   await page.goto('/studio');
@@ -959,9 +959,9 @@ test('voice commands: hands-free only acts on "Vyra, ..."', async ({ page }) => 
   await expect(page.locator('#commandState')).toHaveText('Listening');
   await page.evaluate(() => window.__say('show the banner'));
   await expect(page.locator('#overlay')).toBeHidden(); // no wake word
-  await page.evaluate(() => window.__say('Vyra, show the banner'));
+  await page.evaluate(() => window.__say('Vyrani, show the banner'));
   await expect(page.locator('#overlay')).toBeVisible();
-  await page.evaluate(() => window.__say('Vyra hide the banner'));
+  await page.evaluate(() => window.__say('Vyrani hide the banner'));
   await expect(page.locator('#overlay')).toBeHidden();
   await page.reload(); // the mode is remembered
   await page.locator('#tabScenes').click();

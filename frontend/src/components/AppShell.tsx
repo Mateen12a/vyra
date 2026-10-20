@@ -51,7 +51,7 @@ export function AppShell() {
               setInstallPrompt(null);
             }}
           >
-            Install VYRA App
+            Install VYRANI App
           </button>
         )}
         <button type="button" className="balance" onClick={() => navigate("/app/credits")} aria-label="Credits and purchases">

@@ -1,6 +1,6 @@
-# VYRA AI — Media Foundation Virtual Camera (Windows 11, real path)
+# VYRANI AI — Media Foundation Virtual Camera (Windows 11, real path)
 
-This folder documents the **only** correct way to make "VYRA AI Camera" appear in apps that
+This folder documents the **only** correct way to make "VYRANI AI Camera" appear in apps that
 enumerate cameras through Media Foundation + the Windows Frame Server — Microsoft Store apps
 (including WhatsApp Desktop from the Store), Windows Camera, Teams, and UWP hosts. The
 DirectShow filter sitting next to this folder (`../VyraDirectShowCam.cpp`) does **not** reach
@@ -20,7 +20,7 @@ MFCreateVirtualCamera(
     MFVirtualCameraType   type,          // ONLY value that exists: MFVirtualCameraType_SoftwareCameraSource
     MFVirtualCameraLifetime lifetime,    // Session | System
     MFVirtualCameraAccess    access,     // CurrentUser | AllUsers (AllUsers needs admin)
-    LPCWSTR friendlyName,                // shown as "VYRA AI Camera Windows Virtual Camera"
+    LPCWSTR friendlyName,                // shown as "VYRANI AI Camera Windows Virtual Camera"
     LPCWSTR sourceId,                    // MUST be "{<CLSID>}" of a registered COM **IMFMediaSource**
     const GUID* categories,              // nullptr/0 → defaults KSCATEGORY_VIDEO_CAMERA, KSCATEGORY_VIDEO, KSCATEGORY_CAPTURE
     ULONG categoryCount,
@@ -50,7 +50,7 @@ Key facts that shaped the plan:
 
 ## 2. Reference source to build on (do not reinvent)
 
-VYRA does not contain a hand-written from-scratch MF media source. Instead, adapt one of two
+VYRANI does not contain a hand-written from-scratch MF media source. Instead, adapt one of two
 public, Apache-2.0 licensed reference implementations that already implement the whole COM
 surface and call `MFCreateVirtualCamera`:
 
@@ -64,7 +64,7 @@ surface and call `MFCreateVirtualCamera`:
 Windows SDK 22000+ components are on the machine. Integration step:
 
 1. Replace the reference's `SimpleFrameGenerator` NV12 test-pattern generator with
-   **reading frames written by VYRA's local bridge** (`../bridge/vyra_cam_bridge.py`), exposed at
+   **reading frames written by VYRANI's local bridge** (`../bridge/vyra_cam_bridge.py`), exposed at
    1280×720/30 fps from `Local\VyraCamSharedMem` (DShow path) **or** a named pipe
    `\\.\pipe\vyra_cam_frames` (which the bridge will add once the MF source is ready to consume
    it — see `bridge/` notes). Do **not** try to read the user-session mapping from inside
@@ -73,7 +73,7 @@ Windows SDK 22000+ components are on the machine. Integration step:
    mtunnel.
 2. Register the resulting CLSID machine-wide (`regsvr32 /s` in an elevated shell or an MSI).
 3. `MFStartup()`, `MFCreateVirtualCamera(SoftwareCameraSource, <lifetime>, <access>,
-   L"VYRA AI Camera", L"{<your-source-CLSID>}", nullptr, 0, &vc)`, then `vc->Start(nullptr)`.
+   L"VYRANI AI Camera", L"{<your-source-CLSID>}", nullptr, 0, &vc)`, then `vc->Start(nullptr)`.
 4. Keep the returned much pointer alive for the Session lifetime, or use
    `MFVirtualCameraLifetime_System` for persistence (the scene survives reboot; `Remove()`
    unregisters).
@@ -96,7 +96,7 @@ appears in every app and then shows a black/failing preview.
 ## 4. After building — checklist on a real Windows 11 machine
 
 1. `regsvr32 /s <built DLL>` (admin, machine-wide CLSID).
-2. Start the host → camera appears as "VYRA AI Camera Windows Virtual Camera" **without** app restart? (Store apps cache the camera list — restart them.)
+2. Start the host → camera appears as "VYRANI AI Camera Windows Virtual Camera" **without** app restart? (Store apps cache the camera list — restart them.)
 3. Windows Settings → Bluetooth & devices → Cameras page lists it.
 4. Windows Camera app: preview renders the test/NV12 frames.
 5. WhatsApp Desktop (Store build), Zoom desktop, Teams desktop, Discord desktop, OBS:
@@ -104,7 +104,7 @@ appears in every app and then shows a black/failing preview.
    skip cameras that are not registered with the Frame Server — record the result per app.
 6. Chrome: `navigator.mediaDevices.getUserMedia({video:{deviceId:…}})` streams it; Playwright
    harness across Chromium versions, then scrub to record.
-7. Frame injection from VYRA Studio: confirm frames produced by `vyra_cam_bridge.py` appear
+7. Frame injection from VYRANI Studio: confirm frames produced by `vyra_cam_bridge.py` appear
    inside a YouTube/WhatsApp preview end-to-end.
 
 ## 5. References

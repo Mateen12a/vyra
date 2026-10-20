@@ -1,5 +1,5 @@
 "use strict";
-// VYRA scene rules and voice commands.
+// VYRANI scene rules and voice commands.
 // Scene rules watch the camera on this device (MediaPipe hand gestures and object detection, free and
 // private) and fire actions: "when I raise my hand, switch the look". Voice commands turn speech into
 // text with the browser's speech service and hand it to the page to act on.
@@ -113,7 +113,7 @@
   }
 
   // Speech to text through the browser (Chrome and Edge use Google's speech service; Safari uses Apple's).
-  // "hold" listens only while a key or button is held; "handsfree" listens continuously for "Vyra, ...".
+  // "hold" listens only while a key or button is held; "handsfree" listens continuously for "Vyrani, ...".
   class Commands {
     constructor(onCommand, onState) {
       this.onCommand = onCommand; this.onState = onState; this.mode = "off"; this.listening = false; this.holding = false;
@@ -129,7 +129,7 @@
           if (!event.results[i].isFinal) continue;
           const text = event.results[i][0].transcript.trim();
           if (this.mode === "handsfree") {
-            const match = /^(?:hey |ok |okay )?(?:vyra|vera|veera|vira|viera)\b[,.!]?\s*(.*)$/i.exec(text);
+            const match = /^(?:hey |ok |okay )?(?:vyrani|virani|vyra|vera|veera|vira|viera)\b[,.!]?\s*(.*)$/i.exec(text);
             if (match && match[1]) this.onCommand(match[1]);
           } else if (text) this.onCommand(text);
         }

@@ -1,4 +1,4 @@
-/* VYRA AI – camera tool. Near-black, light type, one accent colour; pixel steps instead of rounded corners.
+/* VYRANI AI – camera tool. Near-black, light type, one accent colour; pixel steps instead of rounded corners.
    Red is reserved for recording. No gradients-as-decoration, no glows. */
 /* Palettes: one set of base colours each; everything else is derived from them. Signal is the default. */
 :root, [data-palette="signal"] {

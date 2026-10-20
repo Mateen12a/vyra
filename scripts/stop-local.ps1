@@ -19,4 +19,4 @@ if ($process) {
     Stop-Process -Id $serverProcessId -ErrorAction SilentlyContinue
 }
 Remove-Item -LiteralPath $pidFile
-Write-Output 'VYRA AI stopped.'
+Write-Output 'VYRANI AI stopped.'

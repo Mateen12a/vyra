@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0D0A07">
-  <title>VYRA AI</title>
+  <title>VYRANI AI</title>
   <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/assets/style.css">
@@ -22,7 +22,7 @@
 </head>
 <body data-view="live">
   <header class="bar">
-    <a class="wordmark" href="/" aria-label="VYRA AI home"><span class="wordmark-text">VYRA</span></a>
+    <a class="wordmark" href="/" aria-label="VYRANI AI home"><span class="wordmark-text">VYRANI</span></a>
     <nav class="tabs" aria-label="Mode">
       <a href="#live" data-nav="live" aria-current="page">Live</a>
       <a href="#clips" data-nav="clips">Clips</a>
@@ -47,7 +47,7 @@
 
   <section id="authGate" class="auth-gate" hidden aria-labelledby="authTitle">
     <form id="authForm" class="auth-card" novalidate>
-      <p class="label tick">VYRA AI</p>
+      <p class="label tick">VYRANI AI</p>
       <h1 id="authTitle">Sign in</h1>
       <p id="authLead" class="hint">Welcome back.</p>
       <div id="authGoogleBlock" class="auth-google" hidden>
@@ -74,8 +74,8 @@
       <div id="authError" class="dialog-error" role="alert" hidden></div>
       <button id="authSubmit" class="btn block primary" type="submit">Sign in</button>
       <button id="authForgot" class="link-btn" type="button">Forgot password?</button>
-      <p id="authSwitch" class="auth-switch hint"><span id="authSwitchText">New to VYRA?</span> <button id="authSwitchButton" class="link-btn" type="button">Create account</button></p>
-      <p id="authTerms" class="hint dim auth-terms" hidden>By creating an account you agree to use VYRA only with the consent of anyone shown.</p>
+      <p id="authSwitch" class="auth-switch hint"><span id="authSwitchText">New to VYRANI?</span> <button id="authSwitchButton" class="link-btn" type="button">Create account</button></p>
+      <p id="authTerms" class="hint dim auth-terms" hidden>By creating an account you agree to use VYRANI only with the consent of anyone shown.</p>
     </form>
   </section>
 
@@ -109,7 +109,7 @@
           <span id="liveRecordBadge" class="rec" hidden><i></i>REC <span id="liveRecordTime">00:00</span></span>
         </div>
         <div class="hud hud-tr mono"><span id="telemetry" aria-live="off"></span><span id="hudSignal" class="signal" data-level="0" hidden aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
-        <span id="aiLabel" class="hud hud-br disclosure mono" hidden>VYRA · AI</span>
+        <span id="aiLabel" class="hud hud-br disclosure mono" hidden>VYRANI · AI</span>
         <div id="overlay" class="overlay" hidden><span class="overlay-bar" aria-hidden="true"></span><img id="overlayLogoImage" alt="" hidden><div><strong id="overlayTitleText"></strong><small id="overlaySubText"></small></div></div>
         <div id="commandToast" class="command-toast mono" role="status" hidden></div>
         <button id="exitCleanButton" class="clean-exit" hidden>Exit clean view · Esc</button>
@@ -155,7 +155,7 @@
             <input id="createInput" type="text" maxlength="300" autocomplete="off" placeholder="Pirate captain, ice queen, cyber samurai…">
             <button id="createButton" class="btn primary" disabled>Create</button>
           </div>
-          <p id="createHint" class="hint">Type a few words. VYRA writes the prompt and applies it.</p>
+          <p id="createHint" class="hint">Type a few words. VYRANI writes the prompt and applies it.</p>
         </form>
         <p class="label tick">Looks</p>
         <ul id="presetGrid" class="looks"></ul>
@@ -190,7 +190,7 @@
           <span id="describeStatus" class="hint describe-status" hidden><span class="pixel-loader small" aria-hidden="true"><i></i><i></i><i></i></span>Describing your photo</span>
         </div>
         <textarea id="characterDescription" rows="3" maxlength="300" placeholder="Skin tone, hair, clothing, distinctive features. e.g. Dark brown skin, short black curls, thin gold glasses, navy turtleneck."></textarea>
-        <p id="describeHint" class="hint" hidden>Written by VYRA from your photo. Edit anything that is off.</p>
+        <p id="describeHint" class="hint" hidden>Written by VYRANI from your photo. Edit anything that is off.</p>
         <label class="check"><input id="consentCheck" type="checkbox"><span>This is a fictional character, me, or someone who has given consent to use their likeness.</span></label>
         <button id="applyCharacterButton" class="btn block primary" disabled>Use character</button>
         <img id="liveRefPreview" alt="" hidden>
@@ -212,7 +212,7 @@
             <span id="accentPrice" class="tag"></span>
           </div>
           <div id="accentGrid" class="accent-grid" role="table" aria-label="Accent voices"></div>
-          <p id="accentHint" class="hint note" hidden>Applied to recordings: when you stop, VYRA swaps your voice for this one. It takes a few seconds.</p>
+          <p id="accentHint" class="hint note" hidden>Applied to recordings: when you stop, VYRANI swaps your voice for this one. It takes a few seconds.</p>
           <p class="hint">Preset voices by ElevenLabs, through fal. Billed per started minute: even a short clip costs $0.30. No voice cloning.</p>
         </div>
 
@@ -223,7 +223,7 @@
             <input id="syncRange" type="range" min="-300" max="300" step="20" value="0" aria-label="Lip sync adjustment">
             <span id="syncValue" class="mono hint">Auto</span>
           </div>
-          <p class="hint">VYRA delays your voice to match the AI video automatically. Nudge it only if lips and voice still drift.</p>
+          <p class="hint">VYRANI delays your voice to match the AI video automatically. Nudge it only if lips and voice still drift.</p>
         </details>
         <p class="hint">Your voice stays on this device during live and is never sent to the video engine. Voice commands are the one exception (see Scenes).</p>
       </section>
@@ -238,7 +238,7 @@
           <button type="button" class="seg-item" data-command-mode="hold" aria-pressed="false">Hold to talk</button>
           <button type="button" class="seg-item" data-command-mode="handsfree" aria-pressed="false">Hands-free</button>
         </div>
-        <p id="commandHelp" class="hint">Hold <kbd>V</kbd> or the mic button and say: “switch to anime”, “make it snow”, “female voice”, “start recording”, “show the banner”. Hands-free: start with “Vyra, …”.</p>
+        <p id="commandHelp" class="hint">Hold <kbd>V</kbd> or the mic button and say: “switch to anime”, “make it snow”, “female voice”, “start recording”, “show the banner”. Hands-free: start with “Vyrani, …”.</p>
         <p id="commandLast" class="hint note" hidden></p>
         <p class="hint">Speech becomes text through your browser’s speech service (Google in Chrome and Edge). Hold-to-talk only listens while held, and keeps the command out of your recording.</p>
 
@@ -296,7 +296,7 @@
         </dl>
         <p id="sessionHint" class="hint">Stops at the session limit, or 60 s after this tab is hidden. Output is labelled as AI. Use only with consent.</p>
         <p id="streamHint" class="hint" role="status" aria-live="polite" hidden></p>
-        <p id="streamSetupHint" class="hint">For external broadcasts, configure a private RTMP/RTMPS ingest URL on the VYRA server. For a camera device, use OBS Virtual Camera; VYRA does not register an OS virtual camera.</p>
+        <p id="streamSetupHint" class="hint">For external broadcasts, configure a private RTMP/RTMPS ingest URL on the VYRANI server. For a camera device, use OBS Virtual Camera; VYRANI does not register an OS virtual camera.</p>
       </details>
     </aside>
   </main>
@@ -325,7 +325,7 @@
     <section class="clips-main">
       <div class="panes">
         <article class="pane"><header><span class="label">Original</span><span id="sourceBadge" class="label dim">SOURCE</span></header><div class="pane-video"><video id="sourceVideo" playsinline controls muted hidden></video><div id="sourceEmpty" class="pane-empty label">No source</div><div id="recordingOverlay" class="rec rec-overlay" hidden><i></i><span id="recordingTime">0:00</span></div></div><footer><span id="sourceInfo" class="hint">Camera or uploaded video</span><button id="recordButton" class="link" hidden>● Record 6s</button><button id="stopCameraButton" class="link" hidden>Stop camera</button></footer></article>
-        <article class="pane"><header><span class="label">Result</span><span class="label dim">AI</span></header><div class="pane-video"><video id="resultVideo" playsinline controls hidden></video><div id="resultEmpty" class="pane-empty"><span id="resultOrb" class="spinner idle" aria-hidden="true"></span><strong id="outputTitle" class="label">No result yet</strong><p id="outputDescription" class="hint">Add a reference and a source clip.</p></div></div><footer><span id="resultInfo" class="hint">Reference-guided replacement</span><a id="downloadButton" class="link" download="vyra-clip.mp4" hidden>Download</a></footer></article>
+        <article class="pane"><header><span class="label">Result</span><span class="label dim">AI</span></header><div class="pane-video"><video id="resultVideo" playsinline controls hidden></video><div id="resultEmpty" class="pane-empty"><span id="resultOrb" class="spinner idle" aria-hidden="true"></span><strong id="outputTitle" class="label">No result yet</strong><p id="outputDescription" class="hint">Add a reference and a source clip.</p></div></div><footer><span id="resultInfo" class="hint">Reference-guided replacement</span><a id="downloadButton" class="link" download="vyrani-clip.mp4" hidden>Download</a></footer></article>
       </div>
       <div class="job">
         <div class="job-head"><span id="jobIndicator" class="dot"></span><strong id="jobTitle">Ready when you are</strong><button id="cancelButton" class="link" hidden>Cancel</button><button id="deleteButton" class="link" hidden>Delete files</button></div>
@@ -338,7 +338,7 @@
 
   <dialog id="creditsDialog" class="credits-dialog" aria-labelledby="creditsTitle">
     <div class="dialog-head"><h2 id="creditsTitle">Add credits</h2><button id="closeCredits" type="button" class="icon" aria-label="Close">✕</button></div>
-    <p class="hint">1 credit = 1 second of live. Credits never expire and work across every VYRA tool.</p>
+    <p class="hint">1 credit = 1 second of live. Credits never expire and work across every VYRANI tool.</p>
     <p id="creditsVerify" class="hint note" hidden>Verify your email before buying credits.</p>
     <p id="creditsPayments" class="hint note" hidden>Payments are not switched on yet.</p>
     <div id="packList" class="pack-list"></div>

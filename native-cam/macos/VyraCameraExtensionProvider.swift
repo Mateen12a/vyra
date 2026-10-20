@@ -1,5 +1,5 @@
-// VYRA AI Native Virtual Camera for macOS (CoreMediaIO Camera System Extension).
-// Exposes "VYRA AI Camera" (1280x720 @ 30fps) to FaceTime, Zoom, WhatsApp Desktop, Discord, and Browsers
+// VYRANI AI Native Virtual Camera for macOS (CoreMediaIO Camera System Extension).
+// Exposes "VYRANI AI Camera" (1280x720 @ 30fps) to FaceTime, Zoom, WhatsApp Desktop, Discord, and Browsers
 // without OBS by reading frames from /tmp/vyra_cam.shm populated by vyra_cam_bridge.py.
 
 import Foundation

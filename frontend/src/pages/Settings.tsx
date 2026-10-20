@@ -41,7 +41,7 @@ export function Settings() {
           <button className="btn btn-sm btn-ghost" onClick={async () => { await signOut(); navigate("/", { replace: true }); }}>Sign out</button>
         </div>
       </section>
-      <p className="dim small-line">Use VYRA only with the consent of anyone shown. Recordings carry a hidden tag that marks them as made with AI.</p>
+      <p className="dim small-line">Use VYRANI only with the consent of anyone shown. Recordings carry a hidden tag that marks them as made with AI.</p>
     </div>
   );
 }

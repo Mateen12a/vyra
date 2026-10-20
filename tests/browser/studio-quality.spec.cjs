@@ -6,6 +6,7 @@ const fs = require('fs');
 const slowUpload = { receiveFps: 8, sendFps: 10, rttMs: 250, sendKbps: 900 };
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('vyra.setupDone', '1'));
   await page.addInitScript(() => {
     localStorage.setItem('vyra.voice', 'off');
     localStorage.setItem('vyra.vcamActive', '0');
@@ -66,7 +67,7 @@ async function emit(page, metrics, count = 1) {
 test('Auto shows telemetry and switches once after three consecutive upload-limited reports', async ({ page }) => {
   await start(page);
   const telemetry = page.getByTestId('live-telemetry');
-  await expect(telemetry).toContainText('Sending — fps');
+  await expect(telemetry).toContainText(/Sending [\u2013\u2014] fps/);
   await emit(page, slowUpload, 2);
   expect(await page.evaluate(() => window.__qualityInput.getSettings().width)).toBe(1280);
   await emit(page, slowUpload);
@@ -130,13 +131,13 @@ test('service and delay hints distinguish a healthy sender, and missing metrics 
   await expect(page.getByTestId('active-quality')).toHaveText('Using Sharp');
   await emit(page, { rttMs: 451 });
   await expect(page.getByTestId('quality-hint')).toHaveText('High network delay to the AI service.');
-  await expect(page.getByTestId('live-telemetry')).toContainText('Sending — fps');
-  await expect(page.getByTestId('live-telemetry')).toContainText('Upload — Mbps');
+  await expect(page.getByTestId('live-telemetry')).toContainText(/Sending [\u2013\u2014] fps/);
+  await expect(page.getByTestId('live-telemetry')).toContainText(/Upload [\u2013\u2014] Mbps/);
 });
 
 test('quality logs every ten seconds while live and stops when the session ends', async ({ page }) => {
   const logs = [];
-  page.on('console', message => { if (message.text().startsWith('[VYRA] quality')) logs.push(message.text()); });
+  page.on('console', message => { if (message.text().startsWith('[VYRANI] quality')) logs.push(message.text()); });
   await page.clock.install();
   await start(page);
   await page.clock.fastForward(10000);

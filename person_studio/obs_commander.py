@@ -1,14 +1,14 @@
-"""VYRA Camera Commander – launches the user's own OBS Studio install as a system camera.
+"""VYRANI Camera Commander – launches the user's own OBS Studio install as a system camera.
 
-VYRA never bundles, embeds, or links OBS. The Commander only:
+VYRANI never bundles, embeds, or links OBS. The Commander only:
   1. writes a small scene-collection JSON into the user's OBS config directory, and
   2. launches the user's installed OBS executable with OBS's documented flags
-     (--collection "VYRA Camera" --startvirtualcam --minimize-to-tray --multi,
+     (--collection "VYRANI Camera" --startvirtualcam --minimize-to-tray --multi,
      https://obsproject.com/kb/launch-parameters).
 
 OBS Studio is GPLv2; interacting with the user's installed OBS through files and process
 boundaries is the same "separate program" pattern as the OBS remote-control ecosystem, and
-is what allows a closed, VYRA-branded launcher. Do not copy OBS code into this module.
+is what allows a closed, VYRANI-branded launcher. Do not copy OBS code into this module.
 
 Only enabled when the server runs in pure-local mode (no accounts/hosted deployment), so it
 can never launch a native process on a hosted server."""
@@ -19,8 +19,8 @@ import sys
 from pathlib import Path
 from typing import Optional, Union
 
-VIRTUAL_CAM_WINDOW_TITLE = "VYRA AI Camera Output"  # matches Studio.tsx clean pop-out title
-COLLECTION_NAME = "VYRA Camera"
+VIRTUAL_CAM_WINDOW_TITLE = "VYRANI AI Camera Output"  # matches Studio.tsx clean pop-out title
+COLLECTION_NAME = "VYRANI Camera"
 
 # OBS scene collection JSON: minimal, per OBS's basic/scenes layout. The window_capture
 # settings use title matching; if OBS cannot auto-match, the user picks the window once
@@ -59,7 +59,7 @@ def scenes_dir() -> Path:
 
 
 def write_collection(window_title: str = VIRTUAL_CAM_WINDOW_TITLE) -> Path:
-    """Create the 'VYRA Camera' scene collection with one window-capture source."""
+    """Create the 'VYRANI Camera' scene collection with one window-capture source."""
     directory = scenes_dir()
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / f"{COLLECTION_NAME}.json"
@@ -83,14 +83,14 @@ def _collection_json(window_title: str) -> str:
                 "settings": {},
                 "items": [
                     {
-                        "name": "VYRA Output Window",
+                        "name": "VYRANI Output Window",
                         "visible": True,
                         "locked": False,
                     }
                 ],
             },
             {
-                "name": "VYRA Output Window",
+                "name": "VYRANI Output Window",
                 "id": "window_capture",
                 "settings": {
                     "window": window_title,

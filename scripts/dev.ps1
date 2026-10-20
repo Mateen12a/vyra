@@ -1,4 +1,4 @@
-# Local development: starts the Stripe webhook forwarder (test mode) and the VYRA server on port 8765.
+# Local development: starts the Stripe webhook forwarder (test mode) and the VYRANI server on port 8765.
 # Usage: powershell -ExecutionPolicy Bypass -File scripts\dev.ps1
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
@@ -14,6 +14,6 @@ if ((Test-Path $stripe) -and $key) {
 } else {
     Write-Host "Stripe CLI or STRIPE_SECRET_TEST_KEY missing; purchases won't add credits locally."
 }
-Write-Host "VYRA: http://127.0.0.1:8765   admin panel: http://127.0.0.1:8765/admin"
+Write-Host "VYRANI: http://127.0.0.1:8765   admin panel: http://127.0.0.1:8765/admin"
 try { & .venv\Scripts\python.exe -m person_studio }
 finally { if ($forwarder) { Stop-Process -Id $forwarder.Id -Force -ErrorAction SilentlyContinue } }

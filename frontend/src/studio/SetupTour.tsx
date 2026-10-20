@@ -9,7 +9,7 @@ const CHAPTERS = [
   { label: "Camera", title: "Start with you.", text: "Turn on your camera and allow access when your browser asks. Choose your physical webcam as the input.", action: "Next: choose a look" },
   { label: "Your look", title: "Make it your own.", text: "Describe a look, or upload a character photo you have permission to use. Choose Use this look to apply it.", action: "Next: go live" },
   { label: "Go live", title: "Now bring it to life.", text: "Press Go live and wait for the transformed preview. You can change looks while you move, speak or record.", action: "Next: use it in a call" },
-  { label: "Calls", title: "Choose where to show up.", text: "For supported calling websites, install the extension and select VYRA AI Virtual Camera. Keep Studio live in another tab.", action: "Open studio" },
+  { label: "Calls", title: "Choose where to show up.", text: "For supported calling websites, install the extension and select VYRANI AI Virtual Camera. Keep Studio live in another tab.", action: "Open studio" },
 ];
 
 // These illustrations never open a camera, connect to an AI service, or spend credits.
@@ -24,7 +24,7 @@ function MotionScene({ chapter, paused }: { chapter: number; paused: boolean }) 
         {chapter === 0 && <div className="tour-permission"><CameraIcon /><span>Allow camera</span><span className="tour-permission-yes">Allow</span></div>}
         {chapter === 1 && <div className="tour-prompt"><ImageIcon /><span>A tailored black tuxedo</span></div>}
         {chapter === 2 && <div className="tour-live"><span />LIVE PREVIEW</div>}
-        {chapter === 3 && <div className="tour-device"><CameraIcon /><span>VYRA AI Virtual Camera</span><span className="tour-device-check">✓</span></div>}
+        {chapter === 3 && <div className="tour-device"><CameraIcon /><span>VYRANI AI Virtual Camera</span><span className="tour-device-check">✓</span></div>}
       </div>
       <div className="tour-scene-bottom"><span>{["Camera permission", "A new look. Same movement.", "Preview → record or call", "Studio → extension → calling tab"][chapter]}</span><BroadcastIcon /></div>
     </div>
@@ -109,22 +109,22 @@ export function SetupTour({ extensionReady, onClose }: { extensionReady: boolean
           <h3 ref={headingRef} tabIndex={-1}>{page.title}</h3>
           <p className="muted">{page.text}</p>
           {chapter === 0 && <p className="tour-note">This tour is an illustration. Your camera stays off until you turn it on in Studio.</p>}
-          {chapter === 1 && <p className="tour-note">Using a real likeness? Confirm consent. VYRA adds an AI disclosure.</p>}
+          {chapter === 1 && <p className="tour-note">Using a real likeness? Confirm consent. VYRANI adds an AI disclosure.</p>}
           {chapter === 2 && <p className="tour-note">Live transformations use credits. Watching this tour uses none.</p>}
         </div>
         {chapter === 3 && <section className="tour-readiness" aria-label="Your setup">
-          <div className="tour-destinations" role="group" aria-label="Where you will use VYRA">
+          <div className="tour-destinations" role="group" aria-label="Where you will use VYRANI">
             <button type="button" aria-pressed={destination === "browser"} onClick={() => setDestination("browser")}>Browser calls</button>
             <button type="button" aria-pressed={destination === "desktop"} onClick={() => setDestination("desktop")}>Desktop apps</button>
           </div>
-          {destination === "desktop" && <p className="tour-note">Desktop apps need OBS Studio and its Virtual Camera. Capture VYRA's clean output window in OBS, then select OBS Virtual Camera in your calling app. Compatibility needs testing in that app. A hosted VYRA website cannot launch OBS on your computer.</p>}
+          {destination === "desktop" && <p className="tour-note">Desktop apps need OBS Studio and its Virtual Camera. Capture VYRANI's clean output window in OBS, then select OBS Virtual Camera in your calling app. Compatibility needs testing in that app. A hosted VYRANI website cannot launch OBS on your computer.</p>}
           {loading && <p className="setup-loading" role="status"><Spinner /> Checking your setup…</p>}
           {error && <div className="tour-error" role="alert"><p>{error}</p><button type="button" className="btn btn-ghost" disabled={loading || busy} onClick={() => void refresh()}>Try again</button></div>}
           {!loading && setup && displaySteps.map(step => {
             const detected = step.id === "extension" ? extensionReady : step.status === "done";
             return <div className="tour-check" key={step.id}>
               <div><strong>{step.title}</strong><span className={detected ? "tour-ready" : "muted"}>{detected ? (step.id === "extension" ? "Detected in this browser" : "Configured") : step.detail}</span></div>
-              {step.id === "extension" && !extensionReady && <a className="btn btn-ghost" href="/api/virtual-cam/extension.zip" download="vyra-virtual-camera-extension.zip">Download extension</a>}
+              {step.id === "extension" && !extensionReady && <a className="btn btn-ghost" href="/api/virtual-cam/extension.zip" download="vyrani-virtual-camera-extension.zip">Download extension</a>}
               {step.id === "camera_apps" && !detected && <a className="btn btn-ghost" href="https://obsproject.com/download" target="_blank" rel="noreferrer">Get OBS</a>}
               {step.fix === "download-ffmpeg" && !detected && <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => void installFFmpeg()}>{busy ? "Installing…" : "Install FFmpeg"}</button>}
             </div>;

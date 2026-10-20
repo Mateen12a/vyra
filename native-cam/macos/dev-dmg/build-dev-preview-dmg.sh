@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# build-dev-preview-dmg.sh — builds the VYRA AI Camera "Developer Preview" DMG on a Mac,
+# build-dev-preview-dmg.sh — builds the VYRANI AI Camera "Developer Preview" DMG on a Mac,
 # WITHOUT an Apple Developer Program account / Developer ID / notarization.
 #
 # This produces a Mac-side installer that works the same way open-source camera
@@ -64,7 +64,7 @@ cat > "$EXT/Contents/Info.plist" <<PLIST
     <key>CFBundleExecutable</key>
     <string>VyraCameraExtension</string>
     <key>CFBundleName</key>
-    <string>VYRA Camera Extension</string>
+    <string>VYRANI Camera Extension</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0.0-dev</string>
     <key>CMIOExtension</key>
@@ -79,7 +79,7 @@ cat > "$EXT/Contents/Info.plist" <<PLIST
 PLIST
 
 # Sandboxed camera extension + shared App Group with the containing app so the
-# extension can read frames produced by the VYRA bridge in the user session.
+# extension can read frames produced by the VYRANI bridge in the user session.
 cat > "$EXT/Contents/vyra-extension-entitlements.plist" <<EENTS
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -118,7 +118,7 @@ final class VyraExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     func request(_ request: OSSystemExtensionRequest,
                  didFinishWithResult result: OSSystemExtensionRequest.Result) {
-        print("VYRA camera extension result: \(result)")
+        print("VYRANI camera extension result: \(result)")
         if result == .complete { exit(0) }
         exit(1)
     }
@@ -158,7 +158,7 @@ cat > "$APP/Contents/Info.plist" <<APPLIST
     <key>CFBundleExecutable</key>
     <string>$NAME</string>
     <key>CFBundleName</key>
-    <string>VYRA AI Camera</string>
+    <string>VYRANI AI Camera</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0.0-dev</string>
     <key>CFBundlePackageType</key>
@@ -212,11 +212,11 @@ rm -rf "$staging"
 mkdir -p "$staging"
 cp -R "$APP" "$staging/"
 cp -R "$HERE/extra-dmg-contents/." "$staging/"
-hdiutil create -volname "VYRA AI Camera (Developer Preview)" \
+hdiutil create -volname "VYRANI AI Camera (Developer Preview)" \
     -srcfolder "$staging" \
-    -format UDZO -o "$BUILD/VYRA-Camera-Developer-Preview.dmg"
+    -format UDZO -o "$BUILD/VYRANI-Camera-Developer-Preview.dmg"
 
-echo "[5/5] Done: $BUILD/VYRA-Camera-Developer-Preview.dmg"
+echo "[5/5] Done: $BUILD/VYRANI-Camera-Developer-Preview.dmg"
 echo
 echo "Install (free path) on the target Mac:"
 echo "  1. Double-click the DMG, drag VyraCameraApp.app to /Applications."

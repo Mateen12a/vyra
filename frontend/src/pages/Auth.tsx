@@ -15,7 +15,7 @@ function AuthLayout({ title, lead, children }: { title: string; lead: ReactNode;
           <p className="auth-lead">{lead}</p>
           {children}
         </div>
-        <p className="auth-foot dim">Use VYRA only with the consent of anyone shown.</p>
+        <p className="auth-foot dim">Use VYRANI only with the consent of anyone shown.</p>
       </div>
       <div className="auth-art" aria-hidden="true">
         <div className="auth-art-frame">
@@ -77,7 +77,7 @@ export function SignIn() {
   }
 
   return (
-    <AuthLayout title="Welcome back" lead={<>New to VYRA? <Link to="/signup">Create an account</Link></>}>
+    <AuthLayout title="Welcome back" lead={<>New to VYRANI? <Link to="/signup">Create an account</Link></>}>
       {google && <GoogleButton />}
       <form className="auth-form" onSubmit={submit} noValidate>
         <Field label="Email" type="email" autoComplete="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)}
@@ -223,7 +223,7 @@ export function Verify() {
   return (
     <AuthLayout title={state === "done" ? "Email verified" : state === "failed" ? "That link didn't work" : "Verifying"}
       lead={state === "done" ? "Your free minute of live is in your balance." : state === "failed" ? message : "One moment."}>
-      {state === "working" ? <Spinner /> : <Link className="btn btn-primary btn-lg btn-block" to="/app">Go to VYRA</Link>}
+      {state === "working" ? <Spinner /> : <Link className="btn btn-primary btn-lg btn-block" to="/app">Go to VYRANI</Link>}
     </AuthLayout>
   );
 }

@@ -104,7 +104,7 @@ class Assistant:
     def _post(self, url, payload):
         request = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST", headers={
             "Authorization": f"Key {self.settings.fal_key}", "Content-Type": "application/json",
-            "User-Agent": "vyra-ai/0.3"})
+            "User-Agent": "vyrani-ai/0.3"})
         try:
             with urllib.request.urlopen(request, timeout=45) as response:
                 return json.loads(response.read())

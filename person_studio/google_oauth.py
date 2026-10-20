@@ -24,7 +24,7 @@ class GoogleError(Exception):
 
 def _http(url, data=None, headers=None):
     request = urllib.request.Request(url, data=urllib.parse.urlencode(data).encode() if data else None,
-                                     headers={"User-Agent": "vyra-ai", **(headers or {})})
+                                     headers={"User-Agent": "vyrani-ai", **(headers or {})})
     try:
         with urllib.request.urlopen(request, timeout=15) as response:
             return json.loads(response.read())

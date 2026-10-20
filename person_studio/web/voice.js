@@ -1,5 +1,5 @@
 "use strict";
-// VYRA voices: free, on-device voice effects built on the Web Audio API.
+// VYRANI voices: free, on-device voice effects built on the Web Audio API.
 // The microphone never leaves the browser: it is not sent to fal or Decart, only mixed
 // into recordings, delayed so the voice lines up with the AI video.
 (() => {

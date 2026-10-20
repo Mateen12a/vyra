@@ -1,7 +1,7 @@
 "use strict";
-// VYRA AI Virtual Camera Background Service Worker.
-// Enforces strict origin verification on producer ports so only an authentic VYRA Studio tab can
-// publish video/audio, and relays WebRTC SDP/ICE signaling between the verified VYRA Studio tab
+// VYRANI AI Virtual Camera Background Service Worker.
+// Enforces strict origin verification on producer ports so only an authentic VYRANI Studio tab can
+// publish video/audio, and relays WebRTC SDP/ICE signaling between the verified VYRANI Studio tab
 // and supported calling tabs (WhatsApp Web, Google Meet, Zoom Web, Discord Web, Teams Web).
 
 const DEFAULT_STUDIO_ORIGINS = [
@@ -11,8 +11,7 @@ const DEFAULT_STUDIO_ORIGINS = [
   "http://localhost:8799",
   "http://127.0.0.1:5173",
   "http://localhost:5173",
-  "https://vyra.ai",
-  "https://app.vyra.ai",
+  "https://vyrani.blackhevents.com",
 ];
 
 let studioState = {
@@ -47,7 +46,7 @@ function isAllowedStudioSender(sender) {
     if (!studioState.allowedOrigins.includes(parsed.origin)) {
       return false;
     }
-    // Must be on a VYRA Studio route (/app/studio or /studio)
+    // Must be on a VYRANI Studio route (/app/studio or /studio)
     return parsed.pathname.startsWith("/app/studio") || parsed.pathname === "/studio";
   } catch {
     return false;
@@ -80,7 +79,7 @@ chrome.runtime.onConnect.addListener((port) => {
       try {
         port.postMessage({
           type: "vyra-cam:error",
-          message: "Rejected: only an authorized VYRA Studio origin (/app/studio) can publish to the virtual camera.",
+          message: "Rejected: only an authorized VYRANI Studio origin (/app/studio) can publish to the virtual camera.",
         });
         port.disconnect();
       } catch { /* ignore */ }

@@ -1,6 +1,6 @@
 {
-  "name": "VYRA AI Studio",
-  "short_name": "VYRA",
+  "name": "Vyrani Studio",
+  "short_name": "VYRANI",
   "description": "Be anyone, live. Real-time AI character webcam, voice changer, virtual camera, and streaming studio.",
   "start_url": "/app/studio",
   "scope": "/",

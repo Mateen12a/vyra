@@ -137,13 +137,17 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         if hasattr(engine, "close"):
             await run_in_threadpool(engine.close)
 
-    app = FastAPI(title="VYRA AI", version="0.1.0", lifespan=lifespan,
+    app = FastAPI(title="VYRANI AI", version="0.1.0", lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url=None)
     app.state.jobs = jobs
     app.add_middleware(CORSMiddleware, allow_origins=list(settings.allowed_origins),
                        allow_methods=["GET", "POST", "DELETE"], allow_headers=["Authorization", "Content-Type"])
     if not settings.api_token:
-        app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
+        allowed_hosts = ["localhost", "127.0.0.1", "[::1]", "testserver"]
+        public_address = urlsplit(settings.public_url)
+        if public_address.scheme in {"https", "http"} and public_address.hostname:
+            allowed_hosts.append(public_address.hostname)
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
     app.add_middleware(UploadLimitMiddleware, limit=settings.max_video_bytes + settings.max_image_bytes + 65536)
     bearer = HTTPBearer(auto_error=False)
 
@@ -181,7 +185,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         # Auth mutations below would 404 as before; the client treats them as no-ops.
         @app.get("/api/auth/me")
         def local_mode_me():
-            return {"user": {"id": "local", "email": "you@vyra.ai", "role": "user", "verified": True,
+            return {"user": {"id": "local", "email": "you@localhost", "role": "user", "verified": True,
                              "google": False, "has_password": False, "can_remove_watermark": True},
                     "balance": 0}
 
@@ -232,7 +236,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
     @app.get("/api/live/status")
     def live_status(user=Depends(authorize)):
         can_remove_watermark = True if store is None else accounts.can_remove_watermark(user)
-        # Free-tier accounts show the VYRA · AI watermark unless they have purchased credits or are admin.
+        # Free-tier accounts show the VYRANI · AI watermark unless they have purchased credits or are admin.
         # Whenever a real person's likeness (reference photo) is used, the visible AI disclosure is always on
         # (compact badge for paid users, standard badge for free users).
         ai_label = settings.ai_label or (store is not None and not can_remove_watermark)
@@ -258,7 +262,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         return Response(
             content=buffer.getvalue(),
             media_type="application/zip",
-            headers={"Content-Disposition": 'attachment; filename="vyra-virtual-camera-extension.zip"'},
+            headers={"Content-Disposition": 'attachment; filename="vyrani-virtual-camera-extension.zip"'},
         )
 
     @app.get("/api/virtual-cam/native.zip")
@@ -273,14 +277,14 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         return Response(
             content=buffer.getvalue(),
             media_type="application/zip",
-            headers={"Content-Disposition": 'attachment; filename="vyra-native-virtual-cam.zip"'},
+            headers={"Content-Disposition": 'attachment; filename="vyrani-native-virtual-cam.zip"'},
         )
 
-    # ---- VYRA Camera Commander (launches the user's installed OBS; pure-local mode only) ----
+    # ---- VYRANI Camera Commander (launches the user's installed OBS; pure-local mode only) ----
     @app.get("/api/obs/status")
     def obs_status(user=Depends(authorize)):
         if not obs_commander.local_mode(settings):
-            raise HTTPException(404, "The OBS launcher only works on a locally run VYRA server.")
+            raise HTTPException(404, "The OBS launcher only works on a locally run VYRANI server.")
         exe = obs_commander.find_obs()
         return {
             "enabled": True,
@@ -293,7 +297,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
     @app.post("/api/obs/launch")
     def obs_launch(request: Request, user=Depends(authorize)):
         if not obs_commander.local_mode(settings):
-            raise HTTPException(404, "The OBS launcher only works on a locally run VYRA server.")
+            raise HTTPException(404, "The OBS launcher only works on a locally run VYRANI server.")
         try:
             body = request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
         except ValueError:
@@ -328,7 +332,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
     @app.post("/api/setup/fix/ffmpeg")
     async def setup_fix_ffmpeg(user=Depends(authorize)):
         if not setup.local_mode(settings):
-            raise HTTPException(404, "Setup fixes only work on a locally run VYRA server.")
+            raise HTTPException(404, "Setup fixes only work on a locally run VYRANI server.")
         if sys.platform != "win32":
             raise HTTPException(400, "Automatic FFmpeg install is Windows-only. Install FFmpeg with your system package manager.")
         try:
@@ -470,7 +474,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
                                            stderr=subprocess.DEVNULL, bufsize=0)
                 stream_processes[stream_id] = (process, owner)
         except (OSError, ValueError):
-            await websocket.close(code=1011, reason="Could not start FFmpeg. Check the VYRA server configuration.")
+            await websocket.close(code=1011, reason="Could not start FFmpeg. Check the VYRANI server configuration.")
             return
         await websocket.accept()
         try:
@@ -643,7 +647,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         path = jobs.folder(job_id) / "result.mp4"
         if not path.is_file():
             raise HTTPException(404, "The result file is missing on the processing server.")
-        return FileResponse(path, media_type="video/mp4", filename="vyra-result.mp4")
+        return FileResponse(path, media_type="video/mp4", filename="vyrani-result.mp4")
 
 
     @app.get("/manifest.webmanifest")

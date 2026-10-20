@@ -88,7 +88,7 @@ class VoiceChanger:
     def _post(self, payload):
         request = urllib.request.Request(ENDPOINT, data=json.dumps(payload).encode(), method="POST", headers={
             "Authorization": f"Key {self.settings.fal_key}", "Content-Type": "application/json",
-            "User-Agent": "vyra-ai/0.3"})
+            "User-Agent": "vyrani-ai/0.3"})
         try:
             with urllib.request.urlopen(request, timeout=180) as response:
                 return json.loads(response.read())
@@ -145,7 +145,7 @@ def _download(url):
     if parsed.scheme != "https" or not (host.endswith(RESULT_HOSTS[0]) or host == RESULT_HOSTS[1]):
         raise VoiceError("The voice service returned an unexpected address.")
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "vyra-ai/0.3"}), timeout=60) as response:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "vyrani-ai/0.3"}), timeout=60) as response:
             data = response.read(MAX_RESULT_BYTES + 1)
     except (urllib.error.URLError, TimeoutError):
         raise VoiceError("Could not download the new voice. Try again.")

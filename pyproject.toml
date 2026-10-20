@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "person-studio"
 version = "0.1.0"
-description = "VYRA AI: real-time and studio character transformation"
+description = "VYRANI AI: real-time and studio character transformation"
 requires-python = ">=3.9"
 dependencies = [
   "fastapi==0.115.12",

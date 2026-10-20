@@ -145,7 +145,7 @@ export async function connect(opts: {
       const busy = (error as { code?: string }).code === "busy";
       // fal's own words, so a "busy" can be told apart from capacity or account problems.
       const said = (error as { falMessage?: string }).falMessage;
-      console.warn(`[VYRA] fal refused the live session (attempt ${attempt + 1}):`, said || (error as Error).message);
+      console.warn(`[VYRANI] fal refused the live session (attempt ${attempt + 1}):`, said || (error as Error).message);
       if (!busy || attempt >= RETRIES) {
         if (busy && said) throw new Error(`fal is still refusing the session: "${said}". Try again in a few minutes.`);
         throw error;
@@ -189,7 +189,7 @@ export async function fitToCamera(file: Blob, aspect: number): Promise<Blob> {
 }
 
 // ---------- recording ----------
-const PROVENANCE = "Made with VYRA AI. This video was transformed by AI and may show synthetic or altered people, voices or scenes.";
+const PROVENANCE = "Made with VYRANI AI. This video was transformed by AI and may show synthetic or altered people, voices or scenes.";
 
 export function recorderType(withAudio = true) {
   const types = withAudio
@@ -243,7 +243,7 @@ function drawBroadcastOverlay(ctx: CanvasRenderingContext2D, w: number, h: numbe
   ctx.textBaseline = "alphabetic";
 }
 
-/** Master Output Compositor: draws the AI video (or camera fallback), broadcast overlay, and VYRA · AI watermark. */
+/** Master Output Compositor: draws the AI video (or camera fallback), broadcast overlay, and VYRANI · AI watermark. */
 export function compositor(
   video: HTMLVideoElement,
   opts: boolean | { label: boolean; compactLabel?: boolean; getOverlay?: () => OverlayConfig | undefined }
@@ -268,7 +268,7 @@ export function compositor(
       const compact = Boolean(getOpts.compactLabel);
       const fontSize = Math.round((compact ? 12 : 18) * s);
       ctx.font = `600 ${fontSize}px Chillax, sans-serif`;
-      const text = "VYRA · AI";
+      const text = "VYRANI · AI";
       const pad = (compact ? 6 : 10) * s;
       const w = ctx.measureText(text).width + pad * 2;
       const h = (compact ? 22 : 30) * s;
@@ -361,20 +361,20 @@ export async function withAiVoice(blob: Blob, voiceId: string, maxSeconds = 600)
   return new Blob([output.target.buffer], { type: "video/mp4" });
 }
 
-/** Adds VYRA's provenance tag to an MP4 (skipped only in explicit dev mode). Best effort. */
+/** Adds VYRANI's provenance tag to an MP4 (skipped only in explicit dev mode). Best effort. */
 export async function withProvenance(blob: Blob): Promise<Blob> {
   await loadScript("/assets/vendor/mediabunny.js");
   const M = window.Mediabunny;
   const input = new M.Input({ source: new M.BlobSource(blob), formats: M.ALL_FORMATS });
   const output = new M.Output({ format: new M.Mp4OutputFormat({ fastStart: "in-memory" }), target: new M.BufferTarget() });
   const conversion = await M.Conversion.init({ input, output, showWarnings: false,
-    tags: { title: "VYRA AI recording", comment: PROVENANCE, description: PROVENANCE, date: new Date() } });
+    tags: { title: "VYRANI AI recording", comment: PROVENANCE, description: PROVENANCE, date: new Date() } });
   if (!conversion.isValid) throw new Error("This recording could not be tagged.");
   await conversion.execute();
   return new Blob([output.target.buffer], { type: "video/mp4" });
 }
 
-// ---------- livestream (browser → VYRA relay → the user's RTMP/RTMPS destination) ----------
+// ---------- livestream (browser → VYRANI relay → the user's RTMP/RTMPS destination) ----------
 export const PLATFORMS = [
   { id: "youtube", name: "YouTube", url: "rtmp://a.rtmp.youtube.com/live2", help: "YouTube Studio → Go live → Stream key" },
   { id: "twitch", name: "Twitch", url: "rtmp://live.twitch.tv/app", help: "Twitch → Creator dashboard → Settings → Stream → Primary stream key" },

@@ -1,12 +1,12 @@
-# VYRA AI Camera on macOS — Build, Sign, Notarize (CoreMediaIO Camera Extension)
+# VYRANI AI Camera on macOS — Build, Sign, Notarize (CoreMediaIO Camera Extension)
 
-Apple's supported way to put "VYRA AI Camera" into the camera pickers of **all** macOS apps —
+Apple's supported way to put "VYRANI AI Camera" into the camera pickers of **all** macOS apps —
 including **FaceTime**, WhatsApp Desktop, Zoom desktop, Teams desktop, Photo Booth and
 browsers — is a **Core Media I/O camera System Extension** (macOS 12.3+). Apple demonstrated
 this exact flow working in FaceTime in the WWDC22 camera session. The legacy DAL plug-in
 route is deprecated since macOS 12.3: DAL code loads into camera-client processes, fails
 with library validation, does not work in FaceTime, and Sonoma can gate it behind a legacy
-support switch. So: no DAL fallback for VYRA.
+support switch. So: no DAL fallback for VYRANI.
 
 ## Non-negotiable Apple requirements (verified against Apple's guides)
 
@@ -51,7 +51,7 @@ xcrun stapler staple build/VyraCameraApp.app
 
 Deliver the stapled `.app` (or `.dmg`) — not a zip of source files. The user drags it to
 `/Applications`, opens it once; it calls `OSSystemExtensionRequest` to install the camera
-extension; the user approves it in System Settings. After that, "VYRA AI Camera" appears in
+extension; the user approves it in System Settings. After that, "VYRANI AI Camera" appears in
 FaceTime/Zoom/WhatsApp/Chrome camera pickers.
 
 ## Free alternative — "Developer Preview" DMG (no Apple Developer Program)
@@ -69,7 +69,7 @@ of Developer ID + notarization:
   https://github.com/CarGuo/iOS-Simulator-Camera-Extend/blob/main/docs/no-developer-account.md
 
 **Alternative without building anything at all:** OBS Studio's Virtual Camera is
-Developer ID-signed and notarized by the OBS project. VYRA Studio → Virtual Cam tab →
+Developer ID-signed and notarized by the OBS project. VYRANI Studio → Virtual Cam tab →
 "Pop-out Clean Window" → OBS Window Capture → Start Virtual Camera. Works in FaceTime,
 Zoom, WhatsApp, browsers on macOS (and Windows) for free; details in ../README.md
 ("Option 3: OBS Studio bridge").
@@ -83,7 +83,7 @@ https://developer.apple.com/documentation/systemextensions.
 - The extension is sandboxed and **cannot read `/tmp`**. The documented dev fallback in
   [VyraCameraExtensionProvider.swift](VyraCameraExtensionProvider.swift) (`/tmp/vyra_cam.shm`)
   only works while the extension runs unsandboxed in developer mode.
-- Production: the desktop helper running VYRA Studio's camera bridge writes frames through the
+- Production: the desktop helper running VYRANI Studio's camera bridge writes frames through the
   shared **App Group container** (`group.ai.vyra.camera`), e.g.
   `~/Library/Group Containers/group.ai.vyra.camera/vyra_cam.shm`, and the extension reads it
   with `containerURL(forSecurityApplicationGroupIdentifier:)`. The App Group must be

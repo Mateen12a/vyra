@@ -1,4 +1,4 @@
-"""First-run setup for a locally run VYRA server.
+"""First-run setup for a locally run VYRANI server.
 
 `steps()` returns what the Setup Wizard shows in the UI: whether the AI engine
 is configured, whether the browser extension and a desktop-camera path (OBS)
@@ -111,7 +111,7 @@ def steps(settings, live_available: bool, engine_status: dict, obs_installed: bo
     if everything_hosted:
         # Bandwidth/engine/payments are the operator's job; users just sign in.
         steps_out.append({"id": "engine", "title": "AI engine", "status": "done" if engine_configured else "missing",
-                          "detail": "Handled by the VYRA server."})
+                          "detail": "Handled by the VYRANI server."})
     else:
         steps_out.append({"id": "engine", "title": "AI engine (FAL_KEY)", "status": "done" if engine_configured else "missing",
                           "detail": "FAL_KEY is configured on this server." if engine_configured

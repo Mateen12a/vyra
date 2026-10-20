@@ -49,7 +49,7 @@ export function CreditsPage() {
           <h1 className="page-title num">{data.balance.toLocaleString("en-US")} <span className="muted page-title-sub">credits · {minutes(data.balance, perMinute)} of live</span></h1>
         </div>
       </header>
-      <p className="muted lead-line">1 credit is 1 second of live video. Credits never expire and work across every VYRA tool. Bigger packs include more bonus time.</p>
+      <p className="muted lead-line">1 credit is 1 second of live video. Credits never expire and work across every VYRANI tool. Bigger packs include more bonus time.</p>
       {!me.user.verified && <div className="alert alert-info">Verify your email before buying credits. Check your inbox for the link.</div>}
       {!data.payments && <div className="alert alert-info">Payments aren't switched on for this server yet.</div>}
 

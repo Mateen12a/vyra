@@ -5,7 +5,7 @@ $ErrorActionPreference = 'Stop'
 $project = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $project
 
-Write-Host "VYRA AI — setting up in $project"
+Write-Host "VYRANI AI — setting up in $project"
 
 # 1. Python
 if (-not (Get-Command python -ErrorAction SilentlyContinue)) {

@@ -36,8 +36,8 @@ xattr -dr com.apple.quarantine "$APP_DST" 2>/dev/null || true
 echo "[2/3] Enabling system-extension developer mode (resets after reboot)..."
 systemextensionsctl developer on
 
-echo "[3/3] Launching VYRA AI Camera to submit the extension install..."
+echo "[3/3] Launching VYRANI AI Camera to submit the extension install..."
 open "$APP_DST"
 echo
-echo "Next: approve the prompt. Camera pickers will now show 'VYRA AI Camera'."
+echo "Next: approve the prompt. Camera pickers will now show 'VYRANI AI Camera'."
 echo "Reminder: after a reboot, re-run:  sudo systemextensionsctl developer on && open /Applications/VyraCameraApp.app"

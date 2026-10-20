@@ -11,7 +11,7 @@
     badge.className = `badge${msg.active ? " live" : ""}`;
     lookText.textContent = msg.active
       ? `Streaming ${msg.width || 1280}×${msg.height || 720}${msg.lookLabel ? " · " + msg.lookLabel : ""}`
-      : "Open VYRA Studio and turn on Virtual Camera.";
+      : "Open VYRANI Studio and turn on Virtual Camera.";
     forceCheck.checked = Boolean(msg.forceAllSites);
   });
 

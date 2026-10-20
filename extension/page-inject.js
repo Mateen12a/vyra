@@ -1,11 +1,11 @@
 "use strict";
-// VYRA AI Virtual Camera & Microphone — MAIN-world WebRTC Loopback MediaDevices shim.
+// VYRANI AI Virtual Camera & Microphone — MAIN-world WebRTC Loopback MediaDevices shim.
 //
 // Security & Performance Design:
 // 1. Runs ONLY on supported calling sites (WhatsApp Web, Google Meet, Zoom Web, Discord Web, Teams Web)
-//    and VYRA Studio origins as declared in manifest.json.
+//    and VYRANI Studio origins as declared in manifest.json.
 // 2. Never accepts unauthenticated cross-window frames; only accepts signaling relayed by the
-//    extension background service worker from a Chrome-verified VYRA Studio tab (`port.sender.url`).
+//    extension background service worker from a Chrome-verified VYRANI Studio tab (`port.sender.url`).
 // 3. Uses native WebRTC `RTCPeerConnection` loopback (`addTrack` -> `ontrack`) instead of JPEG polling.
 //    A stable canvas output switches from standby to received video without changing the caller's track.
 (() => {
@@ -35,7 +35,7 @@
     audioDest: null,
   };
 
-  // Studio-side producer state (used only when running inside VYRA Studio itself)
+  // Studio-side producer state (used only when running inside VYRANI Studio itself)
   const producerPeers = new Map(); // consumerId -> RTCPeerConnection
   let studioStream = null;
 
@@ -112,7 +112,7 @@
     } catch { /* ignore */ }
   }
 
-  // ---------- Producer WebRTC PeerConnection (Runs only inside VYRA Studio) ----------
+  // ---------- Producer WebRTC PeerConnection (Runs only inside VYRANI Studio) ----------
   async function handleProducerRequest(consumerId) {
     if (!consumerId) return;
     const oldPc = producerPeers.get(consumerId);
@@ -273,14 +273,14 @@
     ctx.fillStyle = "#f4f4f5";
     ctx.textAlign = "center";
     ctx.font = "600 32px system-ui, -apple-system, sans-serif";
-    ctx.fillText("VYRA AI Virtual Camera", w / 2, h * 0.54);
+    ctx.fillText("VYRANI AI Virtual Camera", w / 2, h * 0.54);
 
     ctx.fillStyle = "#b4b4bc";
     ctx.font = "400 18px system-ui, -apple-system, sans-serif";
     ctx.fillText(
       state.active
         ? `Connecting WebRTC video stream${state.lookLabel ? " · " + state.lookLabel : ""}…`
-        : "Open VYRA Studio, turn on Virtual Camera, and press Go Live",
+        : "Open VYRANI Studio, turn on Virtual Camera, and press Go Live",
       w / 2,
       h * 0.61
     );
@@ -342,7 +342,7 @@
   function decorateVideoTrack(track, width = 1280, height = 720) {
     if (!track) return null;
     try {
-      Object.defineProperty(track, "label", { value: "VYRA AI Virtual Camera", configurable: true });
+      Object.defineProperty(track, "label", { value: "VYRANI AI Virtual Camera", configurable: true });
     } catch { /* read-only in some engines */ }
     const origSettings = track.getSettings ? track.getSettings.bind(track) : () => ({});
     track.getSettings = () => ({
@@ -397,7 +397,7 @@
     const track = state.audioDest?.stream.getAudioTracks()[0];
     if (track) {
       try {
-        Object.defineProperty(track, "label", { value: "VYRA AI Virtual Microphone", configurable: true });
+        Object.defineProperty(track, "label", { value: "VYRANI AI Virtual Microphone", configurable: true });
       } catch { /* ignore */ }
     }
     return track?.clone() || null;
@@ -427,8 +427,8 @@
       return filtered;
     }
     return [
-      createVirtualDeviceInfo(VYRA_CAM_ID, "videoinput", "VYRA AI Virtual Camera"),
-      createVirtualDeviceInfo(VYRA_MIC_ID, "audioinput", "VYRA AI Virtual Microphone"),
+      createVirtualDeviceInfo(VYRA_CAM_ID, "videoinput", "VYRANI AI Virtual Camera"),
+      createVirtualDeviceInfo(VYRA_MIC_ID, "audioinput", "VYRANI AI Virtual Microphone"),
       ...filtered,
     ];
   };

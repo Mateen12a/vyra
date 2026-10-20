@@ -704,7 +704,7 @@
   function drawLabelTo(ctx, width, height) {
     const size = Math.max(12, Math.round(Math.min(width, height) * 0.028));
     ctx.font = `600 ${size}px ui-monospace, Consolas, monospace`;
-    const text = "VYRA · AI", pad = Math.round(size * 0.5), x = Math.round(size * 0.9), y = height - Math.round(size * 0.9);
+    const text = "VYRANI · AI", pad = Math.round(size * 0.5), x = Math.round(size * 0.9), y = height - Math.round(size * 0.9);
     const textWidth = ctx.measureText(text).width;
     ctx.fillStyle = "rgba(0, 0, 0, 0.55)"; ctx.fillRect(x - pad, y - size - pad / 2, textWidth + pad * 2, size + pad * 1.5);
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)"; ctx.fillText(text, x, y);
@@ -757,7 +757,7 @@
     live.recordChunks = [];
     if (!blob.size) return;
     const stamp = new Date().toISOString().replace(/[-:]/g, "").replace("T", "-").slice(0, 15);
-    let name = `vyra-${stamp}`, message = "";
+    let name = `vyrani-${stamp}`, message = "";
     if (ai) {
       live.converting++; render();
       notice(`Applying the ${aiLabel(ai)} voice…`, true);
@@ -765,7 +765,7 @@
       catch (error) { message = `${error.message || "The AI voice could not be applied."} Saved with your own voice instead.`; }
       finally { live.converting--; render(); }
     }
-    // In explicit dev mode, omit only VYRA's own provenance tag. Provider-added marks remain untouched.
+    // In explicit dev mode, omit only VYRANI's own provenance tag. Provider-added marks remain untouched.
     if (!live.status?.vyra_dev_mode && (type || "").includes("mp4") && blob.size < 500 * 1024 * 1024) {
       try { blob = await withProvenance(blob); } catch { /* best effort: the recording is kept as recorded */ }
     }
@@ -832,13 +832,13 @@
     await output.finalize();
     return new Blob([output.target.buffer], { type: "video/mp4" });
   }
-  const PROVENANCE = "Made with VYRA AI. This video was transformed by AI and may show synthetic or altered people, voices or scenes.";
+  const PROVENANCE = "Made with VYRANI AI. This video was transformed by AI and may show synthetic or altered people, voices or scenes.";
   async function withProvenance(blob) {
     const M = await loadMedia();
     const input = new M.Input({ source: new M.BlobSource(blob), formats: M.ALL_FORMATS });
     const output = new M.Output({ format: new M.Mp4OutputFormat({ fastStart: "in-memory" }), target: new M.BufferTarget() });
     const conversion = await M.Conversion.init({ input, output, showWarnings: false,
-      tags: { title: "VYRA AI recording", comment: PROVENANCE, description: PROVENANCE, date: new Date() } });
+      tags: { title: "VYRANI AI recording", comment: PROVENANCE, description: PROVENANCE, date: new Date() } });
     if (!conversion.isValid) throw new Error("This recording could not be tagged.");
     await conversion.execute();
     return new Blob([output.target.buffer], { type: "video/mp4" });
@@ -925,7 +925,7 @@
       }
       const local = ["127.0.0.1", "localhost", "[::1]"].includes(location.hostname);
       showNetwork({ rttMs: Math.min(...pings), uploadKbps: best, lossPct: null, quality: null });
-      if (local) notice("This test reached VYRA running on this computer, so it can't measure your internet. Go live to see your real connection, or test again once VYRA is online.", true);
+      if (local) notice("This test reached VYRANI running on this computer, so it can't measure your internet. Go live to see your real connection, or test again once VYRANI is online.", true);
     } catch (error) {
       notice(error.name === "TimeoutError" ? "The network test timed out. Your connection may be too slow for live video." : error.message || "The network test failed.");
     } finally {
@@ -1494,7 +1494,7 @@
       const streamer = new window.VyraStream(streamCanvas, live.rig && live.voice !== "off" ? live.rig.track() : null);
       live.streamer = streamer;
       streamer.onChange(({ state, detail }) => {
-        if (state === "live") $("streamHint").textContent = "Live stream is sending AI video to your configured RTMP destination. Keep VYRA open.";
+        if (state === "live") $("streamHint").textContent = "Live stream is sending AI video to your configured RTMP destination. Keep VYRANI open.";
         else if (state === "error") $("streamHint").textContent = detail;
         $("streamHint").hidden = state === "idle";
         if (state === "error") { streamer.dispose(); if (live.streamer === streamer) live.streamer = null; }

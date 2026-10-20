@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('vyra.setupDone', '1'));
   await page.route('**/api/auth/me', route => route.fulfill({ json: {
     user: { id: 'camera-check', email: 'check@example.test', role: 'user', verified: true }, balance: 600,
   } }));

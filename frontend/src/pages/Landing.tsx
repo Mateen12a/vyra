@@ -4,7 +4,7 @@ import { ImageIcon, StudioIcon, Wordmark } from "../components/ui";
 import { useAuth } from "../lib/auth";
 import "../styles/landing.css";
 
-// Real recordings made in VYRA go in person_studio/web/site/samples/. Each slot shows only when its file exists.
+// Real recordings made in VYRANI go in person_studio/web/site/samples/. Each slot shows only when its file exists.
 const SAMPLES = "/assets/site/samples/";
 async function exists(file: string) {
   try { return (await fetch(SAMPLES + file, { method: "HEAD" })).ok; } catch { return false; }
@@ -35,10 +35,10 @@ function PreviewFrame({ hasClip }: { hasClip: boolean }) {
   }
   return (
     <div className="frame" data-ui>
-      <div className="frame-bar"><span /><span /><span /><p>VYRA studio</p></div>
+      <div className="frame-bar"><span /><span /><span /><p>VYRANI studio</p></div>
       <div className="frame-stage">
         {hasClip ? (
-          <video className="frame-video" src={`${SAMPLES}hero.mp4`} autoPlay muted loop playsInline aria-label="VYRA transforming a person live" />
+          <video className="frame-video" src={`${SAMPLES}hero.mp4`} autoPlay muted loop playsInline aria-label="VYRANI transforming a person live" />
         ) : (
           <>
             <video ref={videoRef} className={`frame-video mirrored${cam === "on" ? "" : " is-hidden"}`} playsInline muted aria-label="Your camera preview" />
@@ -71,22 +71,22 @@ function BeforeAfter() {
     <div className="ba" data-ui>
       <video className="ba-video" src={`${SAMPLES}before.mp4`} autoPlay muted loop playsInline aria-label="Before: the camera" />
       <div className="ba-after" style={{ clipPath: `inset(0 0 0 ${split}%)` }}>
-        <video className="ba-video" src={`${SAMPLES}after.mp4`} autoPlay muted loop playsInline aria-label="After: transformed live by VYRA" />
+        <video className="ba-video" src={`${SAMPLES}after.mp4`} autoPlay muted loop playsInline aria-label="After: transformed live by VYRANI" />
       </div>
       <div className="ba-handle" style={{ left: `${split}%` }} aria-hidden="true" />
-      <span className="ba-tag ba-tag-l">Camera</span><span className="ba-tag ba-tag-r">VYRA, live</span>
+      <span className="ba-tag ba-tag-l">Camera</span><span className="ba-tag ba-tag-r">VYRANI, live</span>
       <input className="ba-range" type="range" min={0} max={100} value={split} onChange={(e) => setSplit(Number(e.target.value))} aria-label="Compare before and after" />
     </div>
   );
 }
 
 const FAQ = [
-  ["Do I need to install anything?", "No. VYRA runs in Chrome, Edge or Safari on a computer. You need a webcam and a steady upload connection; the studio tests your connection before you go live."],
-  ["How does the photo transformation work?", "Upload one clear photo of a character. VYRA reads it, writes a description to strengthen the likeness, and maps that face and look onto you while you talk and move."],
-  ["Can I become a real person?", "Only yourself, or someone who has agreed to it. Using VYRA to pass yourself off as someone else gets the account closed."],
+  ["Do I need to install anything?", "No. VYRANI runs in Chrome, Edge or Safari on a computer. You need a webcam and a steady upload connection; the studio tests your connection before you go live."],
+  ["How does the photo transformation work?", "Upload one clear photo of a character. VYRANI reads it, writes a description to strengthen the likeness, and maps that face and look onto you while you talk and move."],
+  ["Can I become a real person?", "Only yourself, or someone who has agreed to it. Using VYRANI to pass yourself off as someone else gets the account closed."],
   ["What can I do with the video?", "Record it and download the file, or stream it out while you're live. You can also change your voice to match."],
-  ["Is the video marked as AI?", "Yes. Every recording carries a hidden tag that says it was made with AI, and the studio can show a visible VYRA · AI label."],
-  ["Does it work on my phone?", "VYRA is built for a computer browser today. Live works best on a laptop or desktop with a webcam."],
+  ["Is the video marked as AI?", "Yes. Every recording carries a hidden tag that says it was made with AI, and the studio can show a visible VYRANI · AI label."],
+  ["Does it work on my phone?", "VYRANI is built for a computer browser today. Live works best on a laptop or desktop with a webcam."],
 ];
 
 export function Landing() {
@@ -116,7 +116,7 @@ export function Landing() {
       <section className="hero">
         <div className="hero-copy">
           <h1 className="hero-title">Be anyone,<br />live.</h1>
-          <p className="hero-sub">VYRA turns your webcam into any character, from one photo or a few words, while you talk, move and record.</p>
+          <p className="hero-sub">VYRANI turns your webcam into any character, from one photo or a few words, while you talk, move and record.</p>
           <div className="hero-actions">
             <Link className="btn btn-primary btn-lg" to={primary.to}>{primary.label}</Link>
             <a className="btn btn-ghost btn-lg" href="#how">See how it works</a>
@@ -138,9 +138,9 @@ export function Landing() {
           <div className="how-row">
             <div className="how-text">
               <h3>Show it who to become</h3>
-              <p className="muted">Drop in one photo of a character, or describe one in plain words. VYRA writes the detailed instructions for you.</p>
+              <p className="muted">Drop in one photo of a character, or describe one in plain words. VYRANI writes the detailed instructions for you.</p>
             </div>
-            <div className="ui-chip" data-ui><span className="ui-chip-icon"><ImageIcon /></span><div><strong>Character photo</strong><span className="muted">VYRA will map this face onto you.</span></div></div>
+            <div className="ui-chip" data-ui><span className="ui-chip-icon"><ImageIcon /></span><div><strong>Character photo</strong><span className="muted">VYRANI will map this face onto you.</span></div></div>
           </div>
           <div className="how-row">
             <div className="how-text">
@@ -185,8 +185,8 @@ export function Landing() {
 
       <footer className="foot">
         <Wordmark />
-        <p className="dim">Use VYRA only with the consent of anyone shown.</p>
-        <p className="dim">© 2026 VYRA AI</p>
+        <p className="dim">Use VYRANI only with the consent of anyone shown.</p>
+        <p className="dim">© 2026 VYRANI AI</p>
       </footer>
     </div>
   );

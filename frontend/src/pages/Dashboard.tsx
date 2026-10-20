@@ -27,7 +27,7 @@ export function Dashboard() {
     <div className="page">
       <header className="page-head">
         <div>
-          <p className="kicker">{params.get("welcome") ? "Welcome to VYRA" : "Welcome back"}</p>
+          <p className="kicker">{params.get("welcome") ? "Welcome to VYRANI" : "Welcome back"}</p>
           <h1 className="page-title">Hi, {name}</h1>
         </div>
         <Link className="btn btn-primary btn-lg" to="/app/studio"><StudioIcon /> Open studio</Link>
@@ -44,13 +44,13 @@ export function Dashboard() {
         <Link className="start-card start-card-main" to="/app/studio?mode=photo">
           <span className="start-icon"><ImageIcon /></span>
           <h2>Become someone from a photo</h2>
-          <p className="muted">Upload one clear photo of a character. VYRA maps it onto you while you talk and move.</p>
+          <p className="muted">Upload one clear photo of a character. VYRANI maps it onto you while you talk and move.</p>
           <span className="start-go">Start →</span>
         </Link>
         <Link className="start-card" to="/app/studio?mode=describe">
           <span className="start-icon"><BroadcastIcon /></span>
           <h2>Describe a look</h2>
-          <p className="muted">"A 1920s jazz singer", "ice queen", "in a tuxedo". VYRA writes the details for you.</p>
+          <p className="muted">"A 1920s jazz singer", "ice queen", "in a tuxedo". VYRANI writes the details for you.</p>
           <span className="start-go">Start →</span>
         </Link>
       </section>

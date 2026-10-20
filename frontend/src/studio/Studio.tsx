@@ -238,7 +238,7 @@ export default function Studio() {
   useEffect(() => {
     if (!live) return;
     const timer = window.setInterval(() => {
-      console.info("[VYRA] quality", qualityMetricsRef.current || {});
+      console.info("[VYRANI] quality", qualityMetricsRef.current || {});
     }, 10000);
     return () => clearInterval(timer);
   }, [live]);
@@ -330,7 +330,7 @@ export default function Studio() {
     };
   }, [live]);
 
-  // ---------- VYRA Camera Commander (OBS-powered system camera) ----------
+  // ---------- VYRANI Camera Commander (OBS-powered system camera) ----------
   useEffect(() => {
     // Only relevant while the Virtual Cam panel is open; the server answers 404 when hosted.
     if (tab !== "vcam") return;
@@ -386,13 +386,13 @@ export default function Studio() {
           ctx.fillRect(1176, 682, 88, 24);
           ctx.fillStyle = "rgba(255,255,255,0.85)";
           ctx.font = "600 12px Chillax, sans-serif";
-          ctx.fillText("VYRA · AI", 1188, 698);
+          ctx.fillText("VYRANI · AI", 1188, 698);
         } else {
           ctx.fillStyle = "rgba(0,0,0,0.55)";
           ctx.fillRect(1140, 668, 120, 34);
           ctx.fillStyle = "#fff";
           ctx.font = "600 18px Chillax, sans-serif";
-          ctx.fillText("VYRA · AI", 1154, 691);
+          ctx.fillText("VYRANI · AI", 1154, 691);
         }
       }
     };
@@ -496,13 +496,13 @@ export default function Studio() {
         // If this browser accepts the API but never produces frames, switch methods instead of sending nothing.
         watchdog = window.setTimeout(() => {
           if (stopped || sent > 0 || !sourceTrack()) return;
-          console.warn("[VYRA] frame-stream output produced no frames; switching to canvas output");
+          console.warn("[VYRANI] frame-stream output produced no frames; switching to canvas output");
           pipe.stop();
           directStream.getTracks().forEach((t) => t.stop());
           useCanvas();
         }, 2500);
       } catch (error) {
-        console.warn("[VYRA] frame-stream output unavailable:", error);
+        console.warn("[VYRANI] frame-stream output unavailable:", error);
         useCanvas();
       }
     } else {
@@ -1046,7 +1046,7 @@ export default function Studio() {
       }
       const a = Object.assign(document.createElement("a"), {
         href: URL.createObjectURL(blob),
-        download: `vyra-${new Date().toISOString().replace(/[-:]/g, "").replace("T", "-").slice(0, 15)}${chosenAccent ? "-" + chosenAccent : ""}.${mp4 ? "mp4" : "webm"}`,
+        download: `vyrani-${new Date().toISOString().replace(/[-:]/g, "").replace("T", "-").slice(0, 15)}${chosenAccent ? "-" + chosenAccent : ""}.${mp4 ? "mp4" : "webm"}`,
       });
       document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 60000);
@@ -1069,7 +1069,7 @@ export default function Studio() {
     } catch { /* fallback to chromeless window */ }
     const pop = window.open("", "vyra_clean_cam", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
     if (!pop) return toast("Allow pop-ups to open the clean camera window.", true);
-    pop.document.title = "VYRA AI Camera Output";
+    pop.document.title = "VYRANI AI Camera Output";
     pop.document.body.style.cssText = "margin:0;background:#000;display:grid;place-items:center;height:100vh;overflow:hidden";
     const v = pop.document.createElement("video");
     v.autoplay = true;
@@ -1102,11 +1102,11 @@ export default function Studio() {
           {live && <div className="stage-live"><span className="live-dot" /> Live <span className="num">{clock(seconds)}</span></div>}
           {(live || phase === "camera") && showWatermark && (
             <div className={`stage-label${compactWatermark ? " stage-label-compact" : ""}`} data-testid="stage-watermark" data-compact={compactWatermark ? "true" : "false"}>
-              VYRA · AI
+              VYRANI · AI
             </div>
           )}
           {vcamActive && extInstalled && (live || phase === "camera") && (
-            <div className="stage-vcam-pill" title="VYRA Virtual Camera output is active">
+            <div className="stage-vcam-pill" title="VYRANI Virtual Camera output is active">
               <span className="live-dot" /> Virtual Cam Ready
             </div>
           )}
@@ -1245,7 +1245,7 @@ export default function Studio() {
                   />
                   <div className="photo-chip-text">
                     <strong>Character photo</strong>
-                    <span className="muted">{describing ? "Reading the photo…" : "VYRA maps this face onto you."}</span>
+                    <span className="muted">{describing ? "Reading the photo…" : "VYRANI maps this face onto you."}</span>
                   </div>
                   <button className="icon-btn" aria-label="Remove photo" onClick={clearPhoto}><CloseIcon /></button>
                 </div>
@@ -1393,7 +1393,7 @@ export default function Studio() {
 
             <div className="card card-pad studio-subcard">
               <div className="section-head">
-                <strong>VYRA · AI Disclosure Label</strong>
+                <strong>VYRANI · AI Disclosure Label</strong>
                 {usingLikeness ? (
                   <span className="pill pill-ok">Likeness · Required</span>
                 ) : canRemoveWatermark ? (
@@ -1404,7 +1404,7 @@ export default function Studio() {
               </div>
               {usingLikeness ? (
                 <p className="muted small-line" data-testid="likeness-watermark-notice">
-                  When a person&rsquo;s likeness photo is used, a visible <strong>VYRA · AI</strong> disclosure stays on ({canRemoveWatermark ? "compact badge for paid accounts" : "standard badge on free tier"}).
+                  When a person&rsquo;s likeness photo is used, a visible <strong>VYRANI · AI</strong> disclosure stays on ({canRemoveWatermark ? "compact badge for paid accounts" : "standard badge on free tier"}).
                 </p>
               ) : canRemoveWatermark ? (
                 <label className="check">
@@ -1416,11 +1416,11 @@ export default function Studio() {
                       localStorage.setItem("vyra.hideWatermark", e.target.checked ? "1" : "0");
                     }}
                   />
-                  <span>Hide &ldquo;VYRA · AI&rdquo; label on non-likeness style prompts (compact label always stays on photo likenesses)</span>
+                  <span>Hide &ldquo;VYRANI · AI&rdquo; label on non-likeness style prompts (compact label always stays on photo likenesses)</span>
                 </label>
               ) : (
                 <p className="muted small-line">
-                  Free starter sessions display the full <strong>VYRA · AI</strong> watermark. <Link to="/app/credits">Buy any credit pack</Link> for a smaller badge on likenesses and optional removal on style looks.
+                  Free starter sessions display the full <strong>VYRANI · AI</strong> watermark. <Link to="/app/credits">Buy any credit pack</Link> for a smaller badge on likenesses and optional removal on style looks.
                 </p>
               )}
             </div>
@@ -1535,7 +1535,7 @@ export default function Studio() {
               <div className="idea-list">
                 {(["off", "hold", "handsfree"] as const).map((m) => (
                   <button key={m} type="button" className={`idea${commandMode === m ? " active" : ""}`} onClick={() => setCommandMode(m)}>
-                    {m === "off" ? "Off" : m === "hold" ? "Hold V to talk" : 'Hands-free ("Vyra, …")'}
+                    {m === "off" ? "Off" : m === "hold" ? "Hold V to talk" : 'Hands-free ("Vyrani, …")'}
                   </button>
                 ))}
               </div>
@@ -1555,12 +1555,12 @@ export default function Studio() {
               {vcamMethod && vcamActive ? <span className="dim"> · {vcamMethod === "frames" ? "frame stream" : "canvas"}</span> : null}
             </div>
             <p className="muted composer-lead">
-              Send your studio video to supported calling websites in Chrome or Edge on Mac and Windows. The browser extension is free; live AI sessions use your VYRA credits.
+              Send your studio video to supported calling websites in Chrome or Edge on Mac and Windows. The browser extension is free; live AI sessions use your VYRANI credits.
             </p>
 
             <label className="check">
               <input type="checkbox" checked={vcamActive} onChange={(e) => setVcamActive(e.target.checked)} />
-              <span><strong>Enable VYRA Virtual Camera &amp; Mic output</strong></span>
+              <span><strong>Enable VYRANI Virtual Camera &amp; Mic output</strong></span>
             </label>
 
             <div className="card card-pad studio-subcard">
@@ -1570,14 +1570,14 @@ export default function Studio() {
               </div>
               {(extensionStatus === "outdated" || extensionStatus === "error") && (
                 <p className="alert alert-info" role="status">
-                  {extensionStatus === "outdated" ? "Your VYRA extension needs an update." : "The VYRA extension couldn't start."} Your studio still works. Download the latest extension below, remove older VYRA copies at chrome://extensions, load the new folder, then reload this page.
+                  {extensionStatus === "outdated" ? "Your VYRANI extension needs an update." : "The VYRANI extension couldn't start."} Your studio still works. Download the latest extension below, remove older VYRANI copies at chrome://extensions, load the new folder, then reload this page.
                 </p>
               )}
               <p className="muted small-line">
-                Adds <strong>VYRA AI Virtual Camera</strong> and <strong>VYRA AI Virtual Microphone</strong> directly into WhatsApp Web, Google Meet, Zoom Web, Discord Web, and Teams Web.
+                Adds <strong>VYRANI AI Virtual Camera</strong> and <strong>VYRANI AI Virtual Microphone</strong> directly into WhatsApp Web, Google Meet, Zoom Web, Discord Web, and Teams Web.
               </p>
               <div className="vcam-actions">
-                <a className="btn btn-primary btn-sm" href="/api/virtual-cam/extension.zip" download="vyra-virtual-camera-extension.zip">
+                <a className="btn btn-primary btn-sm" href="/api/virtual-cam/extension.zip" download="vyrani-virtual-camera-extension.zip">
                   Download Browser Extension (.zip)
                 </a>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={openCleanPopOut}>
@@ -1586,9 +1586,9 @@ export default function Studio() {
               </div>
               <ol className="vcam-steps muted small-line">
                 <li>Unzip and open <code>chrome://extensions</code> or <code>edge://extensions</code> (enable Developer Mode → <strong>Load unpacked</strong>).</li>
-                <li>If updating, remove older VYRA copies first. Reload Studio and your calling tab after loading the extension.</li>
+                <li>If updating, remove older VYRANI copies first. Reload Studio and your calling tab after loading the extension.</li>
                 <li>Use the same browser profile for both tabs. Turn on your camera, choose a look, and press <strong>Go live</strong>.</li>
-                <li>Pick <strong>VYRA AI Virtual Camera</strong> in your calling website. Ask another participant to confirm they receive your moving video.</li>
+                <li>Pick <strong>VYRANI AI Virtual Camera</strong> in your calling website. Ask another participant to confirm they receive your moving video.</li>
               </ol>
             </div>
 
@@ -1599,11 +1599,11 @@ export default function Studio() {
               </div>
               <p className="muted small-line">
                 OBS's own Virtual Camera is properly signed/notarized by OBS and works in WhatsApp Desktop, Zoom,
-                Teams, FaceTime and browsers on both Windows and macOS, with no VYRA Apple or Windows account needed.
+                Teams, FaceTime and browsers on both Windows and macOS, with no VYRANI Apple or Windows account needed.
               </p>
               <ol className="vcam-steps muted small-line">
                 <li>Start your camera + look, and press <strong>Go live</strong>.</li><li>Click <strong>Pop-out Clean Window</strong> below and keep the small window visible.</li>
- <li>In OBS, add a <strong>Window Capture</strong> source and pick “VYRA AI Camera Output – Chrome”.</li>
+ <li>In OBS, add a <strong>Window Capture</strong> source and pick “VYRANI AI Camera Output – Chrome”.</li>
                 <li>In OBS: Start Virtual Camera. In your calling app, choose <strong>OBS Virtual Camera</strong>.</li>
               </ol>
               <div className="vcam-actions">
@@ -1615,13 +1615,13 @@ export default function Studio() {
 
             <div className="card card-pad studio-subcard">
               <div className="section-head">
-                <strong>2b. VYRA Camera Commander: one-click OBS setup</strong>
+                <strong>2b. VYRANI Camera Commander: one-click OBS setup</strong>
                 <span className={`pill${obsStatus?.installed ? " pill-ok" : obsStatus ? "" : " pill-muted"}`}>
                   {!obsStatus ? "Checking OBS…" : obsStatus.installed ? "OBS detected" : "OBS not found"}
                 </span>
               </div>
               <p className="muted small-line">
-                Creates the “VYRA Camera” scene collection and launches your installed OBS with the virtual camera
+                Creates the “VYRANI Camera” scene collection and launches your installed OBS with the virtual camera
                 already running. OBS is detected at {obsStatus?.path || "the usual install path"}.
               </p>
               <div className="vcam-actions">
@@ -1637,8 +1637,8 @@ export default function Studio() {
                     }
                     setObsBusy(true);
                     try {
-                      await api("/api/obs/launch", { window_title: obsStatus.window_title || "VYRA AI Camera Output" });
-                      toast("OBS launched with the VYRA Camera scene and virtual camera running.");
+                      await api("/api/obs/launch", { window_title: obsStatus.window_title || "VYRANI AI Camera Output" });
+                      toast("OBS launched with the VYRANI Camera scene and virtual camera running.");
                     } catch (err) {
                       toast(err instanceof Error ? err.message : "Couldn't launch OBS.", true);
                     } finally {
@@ -1646,7 +1646,7 @@ export default function Studio() {
                     }
                   }}
                 >
-                  {obsBusy ? "Launching OBS…" : "Create VYRA scene & launch OBS"}
+                  {obsBusy ? "Launching OBS…" : "Create VYRANI scene & launch OBS"}
                 </button>
               </div>
             </div>
@@ -1660,7 +1660,7 @@ export default function Studio() {
                 Native desktop support is still in development. This download contains source code, not an installable camera. For now, test browser calls using the extension above. A connected bridge alone does not mean a desktop app can receive video.
               </p>
               <div className="vcam-actions">
-                <a className="btn btn-ghost btn-sm" href="/api/virtual-cam/native.zip" download="vyra-native-virtual-cam.zip">
+                <a className="btn btn-ghost btn-sm" href="/api/virtual-cam/native.zip" download="vyrani-native-virtual-cam.zip">
                   Download Native Companion Source
                 </a>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={() => setStreamOpen(true)}>

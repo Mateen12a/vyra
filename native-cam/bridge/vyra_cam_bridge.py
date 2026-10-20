@@ -1,9 +1,9 @@
-"""VYRA Native Virtual Camera Bridge (Windows & macOS, Zero OBS).
+"""VYRANI Native Virtual Camera Bridge (Windows & macOS, Zero OBS).
 
-Listens on ws://127.0.0.1:29876/vyra-cam for live 1280x720 frames from VYRA AI Studio,
-verifies the browser Origin header against VYRA's allowed origins (plus optional shared token),
+Listens on ws://127.0.0.1:29876/vyra-cam for live 1280x720 frames from VYRANI AI Studio,
+verifies the browser Origin header against VYRANI's allowed origins (plus optional shared token),
 decodes frames into raw BGR24/RGB24 pixels, and writes them into a shared-memory buffer
-read by the VYRA Windows Virtual Camera and macOS Camera Extension at 30 fps.
+read by the VYRANI Windows Virtual Camera and macOS Camera Extension at 30 fps.
 """
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ WIDTH = 1280
 HEIGHT = 720
 CHANNELS = 3  # RGB24 / BGR24
 FRAME_BYTES = WIDTH * HEIGHT * CHANNELS
-HEADER_MAGIC = b"VYRA"
+HEADER_MAGIC = b"VYRA"  # Four-byte legacy wire marker; independent of the product name.
 HEADER_FMT = "<4sIIIIQ"  # magic(4), width(4), height(4), stride(4), seq(4), timestamp_ms(8) = 28 bytes
 HEADER_SIZE = struct.calcsize(HEADER_FMT)
 SHM_SIZE = HEADER_SIZE + FRAME_BYTES
@@ -42,8 +42,7 @@ DEFAULT_ALLOWED_ORIGINS = (
     "http://localhost:8799",
     "http://127.0.0.1:5173",
     "http://localhost:5173",
-    "https://vyra.ai",
-    "https://app.vyra.ai",
+    "https://vyrani.blackhevents.com",
 )
 
 
@@ -187,11 +186,11 @@ async def handle_client(
 
         origin = headers.get("origin", "")
         if not is_origin_allowed(origin, allowed):
-            await send_http_error(writer, "403 Forbidden", "Origin is not allowed to access the VYRA Virtual Camera bridge.")
+            await send_http_error(writer, "403 Forbidden", "Origin is not allowed to access the VYRANI Virtual Camera bridge.")
             return
 
         if not is_token_valid(request_target, headers, token):
-            await send_http_error(writer, "401 Unauthorized", "Invalid or missing VYRA Virtual Camera bridge token.")
+            await send_http_error(writer, "401 Unauthorized", "Invalid or missing VYRANI Virtual Camera bridge token.")
             return
 
         ws_key = headers.get("sec-websocket-key")
@@ -221,7 +220,7 @@ async def handle_client(
             ).encode("latin1")
         )
         await writer.drain()
-        await send_ws_text(writer, json.dumps({"type": "ready", "device": "VYRA AI Camera", "width": WIDTH, "height": HEIGHT}))
+        await send_ws_text(writer, json.dumps({"type": "ready", "device": "VYRANI AI Camera", "width": WIDTH, "height": HEIGHT}))
 
         while True:
             opcode, payload = await read_ws_frame(reader)
@@ -248,7 +247,7 @@ async def main():
     shm = SharedFrameBuffer()
     allowed = get_allowed_origins()
     server = await asyncio.start_server(lambda r, w: handle_client(r, w, shm, allowed), HOST, PORT)
-    print(f"[VYRA Cam] Native Virtual Camera bridge listening on ws://{HOST}:{PORT}/vyra-cam (allowed origins: {sorted(allowed)})", flush=True)
+    print(f"[VYRANI Cam] Native Virtual Camera bridge listening on ws://{HOST}:{PORT}/vyra-cam (allowed origins: {sorted(allowed)})", flush=True)
     async with server:
         await server.serve_forever()
 

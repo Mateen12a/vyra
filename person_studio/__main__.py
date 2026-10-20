@@ -22,7 +22,7 @@ def load_env_file(path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Start VYRA AI")
+    parser = argparse.ArgumentParser(description="Start VYRANI AI")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--env-file", default=".env", help="Local settings file (default: .env)")

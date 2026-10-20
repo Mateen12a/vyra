@@ -1,4 +1,4 @@
-// VYRA AI Native Virtual Camera for Windows — DirectShow path.
+// VYRANI AI Native Virtual Camera for Windows — DirectShow path.
 //
 // Complete DirectShow source filter for apps that enumerate video capture devices via
 // DirectShow/ICreateDevEnum (Chrome, Edge, Discord, OBS, Zoom, legacy apps):
@@ -47,7 +47,7 @@
 DEFINE_GUID(CLSID_VyraVirtualCamera,
     0x8e4a9f21, 0x7c3b, 0x4d8a, 0x9e, 0x12, 0x5f, 0x0b, 0x2c, 0x6d, 0x8a, 0x41);
 
-static const wchar_t* kCameraName = L"VYRA AI Camera";
+static const wchar_t* kCameraName = L"VYRANI AI Camera";
 static const wchar_t* kClsidString = L"{8E4A9F21-7C3B-4D8A-9E12-5F0B2C6D8A41}";
 static const wchar_t* kShmName = L"Local\\VyraCamSharedMem";
 static const int kWidth = 1280;
@@ -61,7 +61,7 @@ static volatile LONG g_cDllRef = 0;
 
 #pragma pack(push, 1)
 struct VyraShmHeader {
-    char magic[4];       // "VYRA"
+    char magic[4];       // "VYRA" (legacy wire marker)
     uint32_t width;
     uint32_t height;
     uint32_t stride;
@@ -94,7 +94,7 @@ void FillVyraFrame(uint8_t* dst, size_t dstLen, uint32_t frameNumber) {
         CloseHandle(hMap);
     }
 
-    // Animated test pattern (dark studio background + moving VYRA orange bar)
+    // Animated test pattern (dark studio background + moving VYRANI orange bar)
     for (int y = 0; y < kHeight; ++y) {
         uint8_t* row = dst + (y * kWidth * kBpp);
         for (int x = 0; x < kWidth; ++x) {
@@ -641,7 +641,7 @@ public:
         if (!pVendorInfo) return E_POINTER;
         *pVendorInfo = (LPWSTR)CoTaskMemAlloc(32 * sizeof(wchar_t));
         if (!*pVendorInfo) return E_OUTOFMEMORY;
-        StringCchCopyW(*pVendorInfo, 32, L"VYRA AI");
+        StringCchCopyW(*pVendorInfo, 32, L"VYRANI AI");
         return S_OK;
     }
 

@@ -1,16 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "VYRA AI Virtual Camera & Mic",
-  "version": "1.1.2",
-  "description": "Exposes VYRA AI Studio's live video and voice as a Virtual Camera & Microphone in WhatsApp Web, Google Meet, Zoom Web, Discord Web, and Teams Web via local WebRTC loopback.",
+  "name": "VYRANI AI Virtual Camera & Mic",
+  "version": "1.2.0",
+  "description": "Exposes VYRANI AI Studio's live video and voice as a Virtual Camera & Microphone in WhatsApp Web, Google Meet, Zoom Web, Discord Web, and Teams Web via local WebRTC loopback.",
   "permissions": [
     "storage"
   ],
   "host_permissions": [
     "http://127.0.0.1/*",
     "http://localhost/*",
-    "https://*.vyra.ai/*",
-    "https://vyra.ai/*",
+    "https://vyrani.blackhevents.com/*",
     "https://web.whatsapp.com/*",
     "https://meet.google.com/*",
     "https://*.zoom.us/*",
@@ -23,7 +22,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "VYRA AI Virtual Camera",
+    "default_title": "VYRANI AI Virtual Camera",
     "default_popup": "popup.html"
   },
   "content_scripts": [
@@ -31,8 +30,7 @@
       "matches": [
         "http://127.0.0.1/*",
         "http://localhost/*",
-        "https://*.vyra.ai/*",
-        "https://vyra.ai/*",
+        "https://vyrani.blackhevents.com/*",
         "https://web.whatsapp.com/*",
         "https://meet.google.com/*",
         "https://*.zoom.us/*",
@@ -41,7 +39,9 @@
         "https://teams.microsoft.com/*",
         "https://teams.live.com/*"
       ],
-      "js": ["page-inject.js"],
+      "js": [
+        "page-inject.js"
+      ],
       "run_at": "document_start",
       "all_frames": true,
       "world": "MAIN"
@@ -50,8 +50,7 @@
       "matches": [
         "http://127.0.0.1/*",
         "http://localhost/*",
-        "https://*.vyra.ai/*",
-        "https://vyra.ai/*",
+        "https://vyrani.blackhevents.com/*",
         "https://web.whatsapp.com/*",
         "https://meet.google.com/*",
         "https://*.zoom.us/*",
@@ -60,7 +59,9 @@
         "https://teams.microsoft.com/*",
         "https://teams.live.com/*"
       ],
-      "js": ["content-bridge.js"],
+      "js": [
+        "content-bridge.js"
+      ],
       "run_at": "document_start",
       "all_frames": true,
       "world": "ISOLATED"

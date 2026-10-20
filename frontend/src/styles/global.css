@@ -1,4 +1,4 @@
-/* VYRA design system. One typeface (Chillax), near-black surfaces separated by tone, one orange action colour.
+/* VYRANI design system. One typeface (Chillax), near-black surfaces separated by tone, one orange action colour.
    Everything references these tokens. */
 @font-face { font-family: "Chillax"; src: url("/assets/fonts/chillax-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Chillax"; src: url("/assets/fonts/chillax-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }

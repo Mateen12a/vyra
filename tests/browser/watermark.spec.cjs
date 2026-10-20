@@ -34,7 +34,7 @@ test('watermark webcam draws, repairs selected region, and exports recording', a
   const waiting = page.waitForEvent('download');
   await page.locator('#download').click();
   const download = await waiting;
-  expect(download.suggestedFilename()).toBe('vyra-watermark.webm');
+  expect(download.suggestedFilename()).toBe('vyrani-watermark.webm');
   const file = await download.path();
   expect(require('node:fs').statSync(file).size).toBeGreaterThan(1000);
   expect(errors).toEqual([]);

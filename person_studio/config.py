@@ -39,7 +39,7 @@ class Settings:
     # Prompt assistant (writes looks and character descriptions) through fal's OpenRouter endpoints.
     assist_model: str = field(default_factory=lambda: os.getenv("ASSIST_MODEL", "google/gemini-2.5-flash"))
     assist_calls_per_minute: int = field(default_factory=lambda: int(os.getenv("ASSIST_CALLS_PER_MINUTE", "12")))
-    # Development-only suppression of VYRA-added disclosure/provenance marks.
+    # Development-only suppression of VYRANI-added disclosure/provenance marks.
     vyra_dev_mode: bool = field(default_factory=lambda: os.getenv("VYRA_DEV_MODE", "false").strip().lower() in {"1", "true", "on", "yes"})
     # Optional RTMP(S) ingest URL. The endpoint is configured server-side, not by the browser.
     rtmp_url: str = field(default_factory=lambda: os.getenv("VYRA_RTMP_URL", "").strip())
@@ -48,7 +48,7 @@ class Settings:
     max_streams: int = field(default_factory=lambda: max(1, int(os.getenv("VYRA_MAX_STREAMS", "3"))))
     ffmpeg_path: str = field(default_factory=lambda: os.getenv("VYRA_FFMPEG_PATH", "ffmpeg").strip() or "ffmpeg")
     # AI accent voices for recordings (ElevenLabs voice changer through fal).
-    # The visible "VYRA · AI" label on the live view and in recordings.
+    # The visible "VYRANI · AI" label on the live view and in recordings.
     ai_label: bool = field(default_factory=lambda: os.getenv("AI_LABEL", "off").strip().lower() in {"1", "true", "on", "yes"})
     voice_max_seconds: int = field(default_factory=lambda: max(10, int(os.getenv("VOICE_MAX_SECONDS", "600"))))
     voice_calls_per_minute: int = field(default_factory=lambda: int(os.getenv("VOICE_CALLS_PER_MINUTE", "6")))
@@ -58,7 +58,7 @@ class Settings:
     # Accounts, credits and payments. With MONGO_URI set, every API route needs a signed-in user.
     mongo_uri: str = field(default_factory=lambda: os.getenv("MONGO_URI", "").strip())
     db_name: str = field(default_factory=lambda: os.getenv("DB_NAME", "vyra").strip() or "vyra")
-    public_url: str = field(default_factory=lambda: os.getenv("VYRA_PUBLIC_URL", "http://127.0.0.1:8765").strip())
+    public_url: str = field(default_factory=lambda: os.getenv("VYRANI_PUBLIC_URL", os.getenv("VYRA_PUBLIC_URL", "http://127.0.0.1:8765")).strip())
     stripe_secret_key: str = field(default_factory=lambda: (os.getenv("STRIPE_SECRET_KEY") or os.getenv("STRIPE_SECRET_TEST_KEY", "")).strip())
     stripe_webhook_secret: str = field(default_factory=lambda: os.getenv("STRIPE_WEBHOOK_SECRET", "").strip())
     # Google sign-in (OAuth web client). Redirect URI: <VYRA_PUBLIC_URL>/api/auth/google/callback
@@ -69,7 +69,7 @@ class Settings:
     smtp_port: int = field(default_factory=lambda: int(os.getenv("SMTP_PORT", "587")))
     smtp_user: str = field(default_factory=lambda: os.getenv("SMTP_USER", "").strip())
     smtp_password: str = field(default_factory=lambda: os.getenv("SMTP_PASSWORD", "").strip())
-    smtp_from: str = field(default_factory=lambda: os.getenv("SMTP_FROM", "VYRA AI <noreply@vyra.ai>").strip())
+    smtp_from: str = field(default_factory=lambda: os.getenv("SMTP_FROM", "VYRANI AI <noreply@vyrani.blackhevents.com>").strip())
     max_duration: float = 10.0
     max_video_bytes: int = 32 * 1024 * 1024
     max_image_bytes: int = 8 * 1024 * 1024

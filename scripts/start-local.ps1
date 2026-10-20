@@ -26,5 +26,5 @@ if (-not $alreadyRunning) {
     }
     if (-not $alreadyRunning) { throw 'The server did not become ready. Check .data/server.stderr.log.' }
 }
-Write-Output "VYRA AI is ready at $url"
+Write-Output "VYRANI AI is ready at $url"
 if ($OpenBrowser) { Start-Process -FilePath $url }

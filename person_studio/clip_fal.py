@@ -126,7 +126,7 @@ class FalClipEngine:
     def _request(self, method, url, payload=None):
         data = json.dumps(payload).encode() if payload is not None else None
         request = urllib.request.Request(url, data=data, method=method, headers={
-            "Authorization": f"Key {self.settings.fal_key}", "Content-Type": "application/json", "User-Agent": "vyra-ai/0.3"})
+            "Authorization": f"Key {self.settings.fal_key}", "Content-Type": "application/json", "User-Agent": "vyrani-ai/0.3"})
         try:
             with urllib.request.urlopen(request, timeout=120) as response:
                 return json.loads(response.read() or b"{}")
@@ -191,7 +191,7 @@ def _download(url):
     if parsed.scheme != "https" or not (host.endswith(RESULT_HOSTS[0]) or host == RESULT_HOSTS[1]):
         raise RuntimeError("The cloud service returned an unexpected address.")
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "vyra-ai/0.3"}), timeout=120) as response:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "vyrani-ai/0.3"}), timeout=120) as response:
             data = response.read(MAX_RESULT_BYTES + 1)
     except (urllib.error.URLError, TimeoutError):
         raise RuntimeError("Could not download the result. Try again.")

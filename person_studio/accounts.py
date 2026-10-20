@@ -213,11 +213,11 @@ class SmtpMailer(LogMailer):
             return
         link = f"{self.base_url}/{kind}?token={token}"
         msg = EmailMessage()
-        msg["Subject"] = "Verify your VYRA AI email" if kind == "verify" else "Reset your VYRA AI password"
+        msg["Subject"] = "Verify your VYRANI AI email" if kind == "verify" else "Reset your VYRANI AI password"
         msg["From"] = self.sender
         msg["To"] = email
         body = (
-            f"Welcome to VYRA AI.\n\nClick the link below to {'verify your email and unlock your free live minute' if kind == 'verify' else 'choose a new password'}:\n\n{link}\n"
+            f"Welcome to VYRANI AI.\n\nClick the link below to {'verify your email and unlock your free live minute' if kind == 'verify' else 'choose a new password'}:\n\n{link}\n"
         )
         msg.set_content(body)
         try:

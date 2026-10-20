@@ -1,4 +1,4 @@
-// Thin fetch wrapper for the VYRA API. Same-origin, so the session cookie rides along; errors carry the server's message.
+// Thin fetch wrapper for the VYRANI API. Same-origin, so the session cookie rides along; errors carry the server's message.
 
 export class ApiError extends Error {
   constructor(message: string, public status: number) {
@@ -14,7 +14,7 @@ export async function api<T = unknown>(path: string, body?: unknown, init: Reque
   try {
     response = await fetch(path, options);
   } catch {
-    throw new ApiError("Can't reach VYRA. Check your connection and try again.", 0);
+    throw new ApiError("Can't reach VYRANI. Check your connection and try again.", 0);
   }
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {

@@ -1,5 +1,5 @@
 "use strict";
-// VYRA voice shifter (PSOLA). It tracks the speaker's pitch, then re-lays one-period grains at a new
+// VYRANI voice shifter (PSOLA). It tracks the speaker's pitch, then re-lays one-period grains at a new
 // spacing (pitch) and resamples each grain (formants: the size of the "voice box"). Changing both is
 // what turns a voice male or female instead of just faster or slower. About 50 ms of delay, no network.
 //

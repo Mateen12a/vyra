@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 export function Wordmark({ to = "/" }: { to?: string }) {
   return (
-    <Link className="wordmark" to={to} aria-label="VYRA AI home">
-      <span className="wordmark-dot" aria-hidden="true" />VYRA
+    <Link className="wordmark" to={to} aria-label="VYRANI AI home">
+      <span className="wordmark-dot" aria-hidden="true" />VYRANI
     </Link>
   );
 }

@@ -1,0 +1,28 @@
+[Unit]
+Description=Vyrani Studio
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vyrani
+Group=vyrani
+WorkingDirectory=/opt/vyrani/current
+EnvironmentFile=/etc/vyrani/vyrani.env
+ExecStart=/opt/vyrani/venv/bin/python -m person_studio --host 127.0.0.1 --port 8765 --env-file /dev/null
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/vyrani
+CPUQuota=75%
+MemoryHigh=1G
+MemoryMax=1536M
+TasksMax=128
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,6 @@
 # Using Vyrani Studio
 
-Testing address, once deployment is complete: https://vyrani.blackhevents.com/app/studio. The local app remains available at http://localhost:8765/app/studio.
+Testing studio: https://vyrani.blackhevents.com/app/studio. Sign in with your existing account. Email delivery is not configured yet, so verification and password-reset emails will not arrive during this initial test. The local app remains available at http://localhost:8765/app/studio.
 
 New to Studio? Open **Setup guide** for the four-part animated tour: Camera, Your look, Go live, and Calls. Use **Next** or the numbered steps, pause the animation if you prefer, and choose **Skip for now** to enter Studio. You can reopen the tour any time. Watching it does not open your camera or use credits.
 

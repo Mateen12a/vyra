@@ -16,7 +16,7 @@ The illustrations use local CSS motion. They do not access the camera, mint live
 ## Brand and testing address (decided 20 October 2026)
 
 - Brand: **Vyrani**. Web application: **Vyrani Studio**.
-- Testing address: **https://vyrani.blackhevents.com**. The user is preparing DNS; HTTPS and deployment still need verification.
+- Testing address: **https://vyrani.blackhevents.com**. Deployed 20 October 2026; HTTPS, sign-in page rendering, database connectivity and account API authentication guard verified. Actual paid AI sessions and real calls still need user testing. See [deployment notes](../deploy/README.md).
 - Future preferred domain: `vyrani.com`, pending purchase and confirmation. It is not trusted by the extension before ownership is confirmed.
 - Existing AI video editor https://www.usevyra.com/ uses the previous name Vyra; this is the reason for choosing a distinct brand.
 - Existing database names, environment variables prefixed `VYRA_`, browser preference keys, internal media IDs and extension message names remain compatible. New public URL setting: `VYRANI_PUBLIC_URL`, with `VYRA_PUBLIC_URL` retained as a fallback. Renaming the UI does not migrate or discard account data.

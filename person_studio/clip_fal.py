@@ -6,6 +6,7 @@ Billed by fal per 16 output frames ($0.04 at 480p, $0.08 at 720p): a 30 fps clip
 """
 import base64
 import json
+import logging
 import shutil
 import subprocess
 import time
@@ -109,11 +110,39 @@ class FalClipEngine:
                       "-movflags", "+faststart", str(folder / "result.mp4")], cancel)
         if not (folder / "result.mp4").is_file() or (folder / "result.mp4").stat().st_size == 0:
             raise RuntimeError("The cloud result could not be prepared.")
+        voice = self._apply_voice(folder, options.get("voice"), progress, cancel) if options.get("voice") else None
         seconds = float(length or 0)
         frames = _frames(folder / "generated.mp4")
         cost = round(frames / 16 * PRICE_PER_SECOND[resolution], 3) if frames else None
         self._record(resolution, seconds, cost)
-        return {"generation_seconds": generation, "cloud": "fal", "estimated_cost_usd": cost}
+        return {"generation_seconds": generation, "cloud": "fal", "estimated_cost_usd": cost,
+                **({"voice": voice} if voice else {})}
+
+    def _apply_voice(self, folder: Path, voice: str, progress: Callable, cancel: Event):
+        """Replace the result's sound with the chosen voice. Returns "applied", "no_audio" or "failed"; never raises
+        for voice problems, so a finished video is never thrown away because of its sound."""
+        from .voices import VoiceChanger, VoiceError
+        progress("voice", "Changing the voice")
+        try:
+            done = subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-i", str(folder / "result.mp4"), "-vn",
+                                   "-ac", "1", "-ar", "22050", "-c:a", "pcm_s16le", "-f", "wav", "pipe:1"],
+                                  capture_output=True, timeout=60)
+            if done.returncode != 0 or len(done.stdout) < 1000:
+                return "no_audio"
+            changer = VoiceChanger(self.settings)
+            if voice == "sample":
+                mime = (folder / "voice.mime").read_text().strip()
+                audio = changer.convert_to_sample(done.stdout, (folder / "voice.sample").read_bytes(), mime)
+            else:
+                audio = changer.convert(done.stdout, voice)
+            (folder / "voice.audio").write_bytes(audio)
+            self._ffmpeg(["-i", str(folder / "result.mp4"), "-i", str(folder / "voice.audio"), "-map", "0:v:0", "-map", "1:a:0",
+                          "-c:v", "copy", "-c:a", "aac", "-shortest", "-movflags", "+faststart", str(folder / "voiced.mp4")], cancel)
+            (folder / "voiced.mp4").replace(folder / "result.mp4")
+            return "applied"
+        except (VoiceError, RuntimeError, OSError, subprocess.SubprocessError):
+            logging.exception("Voice change failed for %s", folder.name)
+            return "failed"
 
     def _ffmpeg(self, args, cancel: Event):
         if cancel.is_set():

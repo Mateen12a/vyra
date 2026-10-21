@@ -13,13 +13,12 @@ const SAMPLES = "/assets/site/samples/";
 
 type Look = { id: string; name: string; source: "Photo" | "Words"; prompt: string; detail: string };
 const LOOKS: Look[] = [
-  { id: "astronaut", name: "Astronaut", source: "Words", prompt: "Astronaut on a space station", detail: "The room behind her changes too: the bookshelf becomes a cabin window with the Earth in it." },
-  { id: "professor", name: "Seventy years on", source: "Words", prompt: "Same person, age 70", detail: "She stays herself: silver hair, glasses, tweed. Useful for film, theatre and storytelling." },
-  { id: "anchor", name: "News anchor", source: "Photo", prompt: "Reference photo: studio portrait", detail: "One clear photo sets the look. The suit and studio come from the photo; the expression comes from her." },
-  { id: "warrior", name: "Norse warrior", source: "Words", prompt: "Norse warrior by firelight", detail: "Braids, fur and firelight. Costume looks for streams and live shows, without a costume." },
-  { id: "jazz", name: "Jazz singer", source: "Words", prompt: "1920s jazz singer, pearls", detail: "Finger waves, pearls and stage light, typed in one line. Lips and eyes still follow her speech." },
-  { id: "neon", name: "Night courier", source: "Words", prompt: "Cyberpunk courier, neon rain", detail: "Neon from a rainy street lights her face from the side, the way the words asked." },
-  { id: "painting", name: "Oil portrait", source: "Words", prompt: "Renaissance oil painting", detail: "Not only people: styles too. Brush strokes and cracked varnish, still moving when she does." },
+  { id: "swap-a", name: "A different person", source: "Photo", prompt: "Reference photo: Tom", detail: "One clear photo turns Mary into Tom: a new face, hair and skin, with her smile, speech and every move." },
+  { id: "interview", name: "Interview ready", source: "Words", prompt: "Charcoal blazer, tidy office", detail: "Dressed for the meeting in one line. Still her face, still her expressions, a calmer room behind her." },
+  { id: "studio", name: "Better background", source: "Words", prompt: "Bright modern room, window light", detail: "Swap a messy room for a bright one without moving. The light on her face follows the new room." },
+  { id: "creator", name: "Creator setup", source: "Words", prompt: "Warm key light, podcast mic", detail: "A podcast-ready setup for streams and short videos, without buying the lights or the mic." },
+  { id: "glam", name: "Hair and makeup", source: "Words", prompt: "Evening makeup, gold hoops", detail: "Evening makeup and earrings for a night-out call. Subtle enough to look like you on a good day." },
+  { id: "anchor", name: "Presenter", source: "Photo", prompt: "Reference photo: studio portrait", detail: "Present like a newsroom: a sharp suit and studio set from one photo, your words and timing." },
 ];
 const src = (id: string) => `${LOOKS_DIR}${id}.jpg`;
 
@@ -88,21 +87,22 @@ const FAQ: [string, string][] = [
 ];
 
 const FEATURES = [
-  { title: "Talk and move", line: "Your mouth, eyes and turns drive the look as you speak.", size: "t-6x4", kind: "image", id: "swap-b", clip: "swap-b.mp4" },
+  { title: "Talk and move", line: "Your mouth, eyes and turns drive the new face as you speak.", size: "t-6x4", kind: "image", id: "swap-b", clip: "swap-b.mp4" },
   { title: "Go live in one press", line: "One button. The studio handles the rest.", size: "t-3x2", kind: "golive" },
   { title: "Record", line: "Download the file the moment you stop.", size: "t-3x2", kind: "rec" },
   { title: "Present as anyone", line: "Read the news, pitch, teach.", size: "t-3x4", kind: "image", id: "anchor", clip: "clip-anchor.mp4" },
-  { title: "Change looks mid-call", line: "Type a new look; no restart.", size: "t-3x2", kind: "image", id: "neon" },
-  { title: "Age, era, style", line: "Yourself at seventy, or in 1520.", size: "t-3x2", kind: "image", id: "professor" },
+  { title: "Dressed for the meeting", line: "A blazer in one line of text.", size: "t-3x2", kind: "image", id: "interview" },
+  { title: "Any background", line: "A bright room, without tidying.", size: "t-3x2", kind: "image", id: "studio" },
   { title: "Marked as AI", line: "A tag in every file, a label on screen.", size: "t-3x4", kind: "label" },
-  { title: "Match your voice", line: "Sound like who you've become.", size: "t-6x2", kind: "voice" },
-  { title: "Not only people", line: "Styles, eras, paintings.", size: "t-6x2", kind: "image", id: "painting" },
-  { title: "Costume, no costume", line: "Firelight, fur and braids, live on stream.", size: "t-6x2", kind: "image", id: "warrior" },
+  { title: "Match your voice", line: "A new voice, or one you upload.", size: "t-6x2", kind: "voice" },
+  { title: "Creator setup", line: "Studio light and a mic you don't own.", size: "t-6x2", kind: "image", id: "creator" },
+  { title: "Hair and makeup", line: "Your good-day look, any day.", size: "t-6x2", kind: "image", id: "glam" },
 ] as { title: string; line: string; size: string; kind: string; id?: string; clip?: string }[];
 
 const ALT: Record<string, string> = {
-  jazz: "the same woman as a 1920s jazz singer", "swap-b": "a man on a work call, replaced by a different woman from one photo", anchor: "the same woman as a news anchor", astronaut: "the same woman as an astronaut",
-  professor: "the same woman at seventy", neon: "the same woman as a neon-lit night courier", warrior: "the same woman as a Norse warrior", painting: "the same woman as an oil portrait",
+  "swap-b": "a man on a work call, replaced by a different woman from one photo", anchor: "the same woman as a news presenter",
+  interview: "the same woman in a blazer in a tidy office", studio: "the same woman with a bright modern room behind her",
+  creator: "the same woman with studio light and a podcast mic", glam: "the same woman with evening makeup and earrings",
 };
 
 // A muted loop with its still as the poster; the still alone if the clip can't play or motion is reduced.
@@ -275,7 +275,7 @@ export function Landing() {
 
         {/* The close: one row of the board. */}
         <section className="cta" aria-labelledby="cta-title">
-          <img className="tile cta-side" src={src("neon")} alt="" width={1376} height={768} loading="lazy" />
+          <img className="tile cta-side" src={src("swap-b")} alt="" width={1376} height={768} loading="lazy" />
           <div className="tile cta-main" data-reveal>
             <h2 id="cta-title">Who will you be today?</h2>
             <p>Make an account, confirm your email and your first 30 seconds live are on us. Use it with your own face, or with someone's consent.</p>

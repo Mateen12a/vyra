@@ -1091,3 +1091,44 @@ def test_setup_steps_hosted_gating(tmp_path, monkeypatch):
 
 
 
+
+
+def test_voice_options_are_validated(client, media):
+    http, _jobs, _engine = client
+    assert upload(http, media, data={"voice": "not-a-voice"}).status_code == 422
+    # A voice sample needs the consent box ticked.
+    image, video = media
+    files = {"reference": ("ref.png", image, "image/png"), "video": ("source.mp4", video, "video/mp4"),
+             "voice_sample": ("me.wav", b"RIFF0000WAVE", "audio/wav")}
+    assert http.post("/api/jobs", files=files, data={"voice": "sample"}).status_code == 422
+
+
+def test_failed_voice_still_delivers_the_video(client, media):
+    http, jobs, engine = client
+    original = engine.run
+    engine.run = lambda folder, options, progress, cancel: {**original(folder, options, progress, cancel), "voice": "failed"}
+    refunded = []
+    jobs.on_voice_failed = refunded.append
+    response = upload(http, media, data={"voice": "british-female"})
+    assert response.status_code == 202, response.text
+    record = await_terminal(http, response.json()["id"])
+    assert record["status"] == "completed" and "original sound" in record["message"]
+    assert record["voice"] == "british-female" and refunded and refunded[0]["id"] == record["id"]
+
+
+def test_clip_engine_swaps_in_the_new_voice(tmp_path, monkeypatch):
+    if not shutil.which("ffmpeg"):
+        pytest.skip("needs FFmpeg")
+    from person_studio import voices
+    from person_studio.clip_fal import FalClipEngine
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=red:s=128x128:r=16", "-f", "lavfi",
+                    "-i", "sine=frequency=300", "-t", "2", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac",
+                    "-shortest", str(tmp_path / "result.mp4")], check=True)
+    new_voice = subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "sine=frequency=900", "-t", "2", "-f", "wav", "pipe:1"],
+                               capture_output=True, check=True).stdout
+    monkeypatch.setattr(voices.VoiceChanger, "convert", lambda self, wav, voice: new_voice)
+    engine = FalClipEngine(Settings(data_dir=tmp_path))
+    assert engine._apply_voice(tmp_path, "british-female", lambda *a: None, threading.Event()) == "applied"
+    probe = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_type", "-of", "csv=p=0",
+                            str(tmp_path / "result.mp4")], capture_output=True, text=True).stdout.split()
+    assert probe.count("video") == 1 and probe.count("audio") == 1 and (tmp_path / "voice.audio").read_bytes() == new_voice

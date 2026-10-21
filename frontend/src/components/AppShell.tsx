@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { minutes } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { CreditIcon, HomeIcon, PlusIcon, SettingsIcon, ShieldIcon, StudioIcon, Wordmark } from "./ui";
+import { CameraIcon, CreditIcon, HomeIcon, PlusIcon, SettingsIcon, ShieldIcon, StudioIcon, Wordmark } from "./ui";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -28,7 +28,8 @@ export function AppShell() {
   const perMinute = catalogue?.live_credits_per_minute || 60;
   const links = [
     { to: "/app", label: "Home", icon: <HomeIcon />, end: true },
-    { to: "/app/studio", label: "Studio", icon: <StudioIcon /> },
+    { to: "/app/studio", label: "Live", icon: <StudioIcon /> },
+    { to: "/app/create", label: "Create", icon: <CameraIcon /> },
     { to: "/app/credits", label: "Credits", icon: <CreditIcon /> },
     { to: "/app/settings", label: "Settings", icon: <SettingsIcon /> },
     ...(me.user.role === "admin" ? [{ to: "/admin", label: "Admin", icon: <ShieldIcon /> }] : []),

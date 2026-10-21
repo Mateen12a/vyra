@@ -37,7 +37,7 @@ from .streaming import DestinationError, destination
 from .jobs import Jobs
 from .live import LiveError, LiveSessions
 from . import obs_commander, setup
-from .voices import PRICE_PER_MINUTE as VOICE_PRICE_PER_MINUTE, VoiceChanger, VoiceError
+from .voices import PRICE_PER_MINUTE as VOICE_PRICE_PER_MINUTE, SAMPLE_MAX_BYTES as VOICE_SAMPLE_MAX_BYTES, VOICES, VoiceChanger, VoiceError
 
 WEB = Path(__file__).resolve().parent / "web"
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -103,8 +103,14 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         def refund_failed_clip(record):
             # Same idempotency key as charge()'s refund, so a clip is never refunded twice.
             if record.get("owner") and record["status"] == "failed":
-                ledger.apply(ObjectId(record["owner"]), pricing.TOOLS["clip"], "clip_refund", f"clip:{record['id']}:refund")
+                ledger.apply(ObjectId(record["owner"]), record.get("credits") or pricing.TOOLS["clip"], "clip_refund",
+                             f"clip:{record['id']}:refund")
         jobs.on_failed = refund_failed_clip
+
+        def refund_failed_voice(record):
+            if record.get("owner") and record.get("voice_credits"):
+                ledger.apply(ObjectId(record["owner"]), record["voice_credits"], "voice_refund", f"clip:{record['id']}:voice_refund")
+        jobs.on_voice_failed = refund_failed_voice
 
     @asynccontextmanager
     async def lifespan(app):
@@ -458,8 +464,10 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         else:
             video = ["-vf", "scale=-2:'min(720,ih)'", "-c:v", "libx264", "-preset", "ultrafast", "-tune", "zerolatency",
                      "-g", "60", "-pix_fmt", "yuv420p", "-r", "30", "-b:v", "3000k", "-maxrate", "3500k", "-bufsize", "6000k"]
+        # Safari sends fragmented MP4; everything else sends WebM.
+        container = "mp4" if websocket.query_params.get("container") == "mp4" else "webm"
         command = [settings.ffmpeg_path, "-hide_banner", "-loglevel", "warning", "-nostdin",
-                   "-fflags", "+genpts", "-f", "webm", "-i", "pipe:0", "-map", "0:v:0", "-map", "0:a:0?",
+                   "-fflags", "+genpts", "-f", container, "-i", "pipe:0", "-map", "0:v:0", "-map", "0:a:0?",
                    "-af", "aresample=async=1:first_pts=0", *video, "-c:a", "aac", "-b:a", "128k",
                    "-f", "flv", target]
         stream_id = secrets.token_urlsafe(16)
@@ -575,6 +583,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
     @app.post("/api/jobs", status_code=202)
     async def submit(reference: UploadFile = File(...), video: UploadFile = File(...),
                      quality: str = Form("preview"), prompt: str = Form("A person moving naturally, realistic video."),
+                     voice: str = Form(""), voice_sample: Optional[UploadFile] = File(None), voice_consent: str = Form(""),
                      user=Depends(authorize)):
         folder = None
         refund = None
@@ -583,6 +592,11 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         try:
             if quality not in {"preview", "detail"}:
                 raise HTTPException(422, "Choose Preview or Detail quality.")
+            voice = voice.strip()
+            if voice and voice != "sample" and voice not in {v["id"] for v in VOICES}:
+                raise HTTPException(422, "Choose one of the listed voices.")
+            if voice == "sample" and (voice_sample is None or voice_consent != "yes"):
+                raise HTTPException(422, "Add a voice sample and confirm it's your voice or you have permission to use it.")
             prompt = prompt.strip()
             if not 1 <= len(prompt) <= 1000:
                 raise HTTPException(422, "The appearance description must contain 1–1000 characters.")
@@ -602,14 +616,28 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
             except ValueError as exc:
                 raise HTTPException(422, str(exc))
             (folder / "upload.image").unlink()
-            refund = charge(user, pricing.TOOLS["clip"], "clip", job_id)
-            record = jobs.submit(job_id, {"quality": quality, "prompt": prompt}, metadata,
+            if voice == "sample":
+                sample = await voice_sample.read(VOICE_SAMPLE_MAX_BYTES + 1)
+                if not sample or len(sample) > VOICE_SAMPLE_MAX_BYTES:
+                    raise HTTPException(422, "Upload a voice sample under 6 MB.")
+                (folder / "voice.sample").write_bytes(sample)
+                (folder / "voice.mime").write_text((voice_sample.content_type or "audio/mpeg").split(";")[0])
+                if user and store is not None:  # who confirmed the right to use this voice, and for which clip
+                    store.audit(user["_id"], "voice_sample_consent", job_id=job_id)
+            # A clip is at most a minute, so its voice is one started minute.
+            voice_credits = pricing.TOOLS["voice_minute"] if voice else 0
+            credits = pricing.TOOLS["clip"] + voice_credits
+            refund = charge(user, credits, "clip", job_id)
+            record = jobs.submit(job_id, {"quality": quality, "prompt": prompt, "voice": voice or None,
+                                          "credits": credits, "voice_credits": voice_credits}, metadata,
                                  owner=str(user["_id"]) if user else None)
             submitted = True
             return record
         finally:
             await reference.close()
             await video.close()
+            if voice_sample is not None:
+                await voice_sample.close()
             if refund and not submitted:
                 refund()
             if reserved and not submitted:

@@ -15,6 +15,7 @@ import { Settings } from "./pages/Settings";
 // The studio and admin are heavier; load them when opened.
 const Studio = lazy(() => import("./studio/Studio"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Create = lazy(() => import("./pages/Create"));
 
 function Loading() {
   return <div className="page-loading"><Spinner /></div>;
@@ -81,6 +82,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/app" element={<RequireAuth><AppShell /></RequireAuth>}>
                 <Route index element={<Dashboard />} />
                 <Route path="studio" element={<Studio />} />
+                <Route path="create" element={<Create />} />
                 <Route path="credits" element={<CreditsPage />} />
                 <Route path="settings" element={<Settings />} />
               </Route>

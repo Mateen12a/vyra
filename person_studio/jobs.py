@@ -23,6 +23,7 @@ class Jobs:
         self.records = {}
         self.cancels = {}
         self.on_failed = None  # set by the app to refund credits: on_failed(record)
+        self.on_voice_failed = None  # refunds only the voice part when the clip worked but the voice didn't
         for file in self.root.glob("*/job.json"):
             try:
                 record = json.loads(file.read_text(encoding="utf-8"))
@@ -60,7 +61,9 @@ class Jobs:
     def submit(self, job_id, options, metadata, owner=None):
         record = {"id": job_id, "owner": owner, "status": "queued", "message": "Waiting for the GPU",
                   "created_at": datetime.now(timezone.utc).isoformat(), "mode": "clip",
-                  "quality": options["quality"], "source": metadata, "metrics": {}}
+                  "quality": options["quality"], "source": metadata, "metrics": {},
+                  "credits": options.get("credits"), "voice": options.get("voice") or None,
+                  "voice_credits": options.get("voice_credits") or 0}
         with self.lock:
             self.records[job_id] = record
             self.cancels[job_id] = threading.Event()
@@ -92,7 +95,17 @@ class Jobs:
             metrics["total_processing_seconds"] = round(time.monotonic() - started, 2)
             source_duration = self.get(job_id)["source"]["duration_seconds"]
             metrics["processing_to_clip_ratio"] = round(metrics["total_processing_seconds"] / source_duration, 2)
-            self.update(job_id, status="completed", message="Your result is ready to review", metrics=metrics)
+            voice_ok = metrics.get("voice") in (None, "applied")
+            message = ("Your result is ready to review" if voice_ok else
+                       "Your video is ready. It had no sound, so there was no voice to change; those credits were returned."
+                       if metrics.get("voice") == "no_audio" else
+                       "Your video is ready. The voice couldn't be changed, so it keeps the original sound; those credits were returned.")
+            self.update(job_id, status="completed", metrics=metrics, message=message)
+            if not voice_ok and self.on_voice_failed:
+                try:
+                    self.on_voice_failed(self.get(job_id))
+                except Exception:
+                    logging.exception("Could not refund the voice for job %s", job_id)
         except Cancelled:
             self.update(job_id, status="cancelled", message="Processing cancelled")
         except Exception as exc:

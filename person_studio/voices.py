@@ -21,6 +21,9 @@ from datetime import datetime, timezone
 from .config import Settings
 
 ENDPOINT = "https://fal.run/fal-ai/elevenlabs/voice-changer"
+# Speech-to-speech into the voice of an uploaded sample (the user's own, or one they have permission to use).
+SAMPLE_ENDPOINT = "https://fal.run/resemble-ai/chatterboxhd/speech-to-speech"
+SAMPLE_MAX_BYTES = 6 * 1024 * 1024
 PRICE_PER_MINUTE = 0.30  # fal's listed price for the ElevenLabs voice changer
 # Billed per started minute: on 2026-10-11, 14 calls of 2-8 s each cost exactly 14 x $0.30 on the fal dashboard.
 MIN_BILLED_MINUTES = 1
@@ -85,8 +88,28 @@ class VoiceChanger:
         self._record(voice, seconds)
         return data
 
-    def _post(self, payload):
-        request = urllib.request.Request(ENDPOINT, data=json.dumps(payload).encode(), method="POST", headers={
+    def convert_to_sample(self, wav_bytes, sample_bytes, sample_mime):
+        """Say the same words in the voice of `sample_bytes` (a short clean recording, 5-30 s works best)."""
+        seconds = _wav_seconds(wav_bytes)
+        if not 0.5 <= seconds <= self.settings.voice_max_seconds:
+            raise VoiceError("This recording is too long for a voice change.", 422)
+        if not sample_bytes or len(sample_bytes) > SAMPLE_MAX_BYTES:
+            raise VoiceError("Upload a voice sample under 6 MB.", 422)
+        if not self.settings.fal_key:
+            raise VoiceError("AI voices need FAL_KEY on the server.")
+        audio, mime = _compact(wav_bytes)
+        result = self._post({"source_audio_url": f"data:{mime};base64," + base64.b64encode(audio).decode(),
+                             "target_voice_audio_url": f"data:{sample_mime};base64," + base64.b64encode(sample_bytes).decode()},
+                            SAMPLE_ENDPOINT)
+        url = (result.get("audio") or {}).get("url") if isinstance(result, dict) else None
+        if not isinstance(url, str):
+            raise VoiceError("The voice service returned no audio. Try a clearer voice sample.")
+        data = _download(url)
+        self._record({"voice": "sample"}, seconds)
+        return data
+
+    def _post(self, payload, endpoint=ENDPOINT):
+        request = urllib.request.Request(endpoint, data=json.dumps(payload).encode(), method="POST", headers={
             "Authorization": f"Key {self.settings.fal_key}", "Content-Type": "application/json",
             "User-Agent": "vyrani-ai/0.3"})
         try:

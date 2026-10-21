@@ -403,10 +403,13 @@ export type StreamHandle = { stop: () => Promise<void> };
 /** Sends `video` (+ optional `audio`) to the user's destination. Calls onEnd with a message if it drops. */
 export async function startStream(opts: { video: MediaStream; audio?: MediaStreamTrack | null; url: string; key: string; onEnd: (message?: string) => void }): Promise<StreamHandle> {
   // H.264 from the browser lets the server pass video straight through instead of re-encoding it (Chrome, Edge).
-  const h264 = ["video/webm;codecs=h264,opus", "video/webm;codecs=avc1,opus"].find((t) => MediaRecorder.isTypeSupported(t)) || "";
+  // Safari (iPhone, iPad, Mac) records only MP4, which is H.264 too; the server reads either container.
+  const mp4 = !["video/webm"].some((t) => MediaRecorder.isTypeSupported(t))
+    ? ["video/mp4;codecs=avc1,mp4a", "video/mp4"].find((t) => MediaRecorder.isTypeSupported(t)) || "" : "";
+  const h264 = mp4 || ["video/webm;codecs=h264,opus", "video/webm;codecs=avc1,opus"].find((t) => MediaRecorder.isTypeSupported(t)) || "";
   const mime = h264 || ["video/webm;codecs=vp8,opus", "video/webm;codecs=vp9,opus", "video/webm"].find((t) => MediaRecorder.isTypeSupported(t)) || "";
   const { ticket } = await api<{ ticket: string }>("/api/live/stream/ticket", { url: opts.url, key: opts.key });
-  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/live/stream/${encodeURIComponent(ticket)}${h264 ? "?video=h264" : ""}`);
+  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/live/stream/${encodeURIComponent(ticket)}?${new URLSearchParams({ ...(h264 ? { video: "h264" } : {}), ...(mp4 ? { container: "mp4" } : {}) })}`);
   ws.binaryType = "arraybuffer";
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("The streaming relay didn't answer. Try again.")), 15000);

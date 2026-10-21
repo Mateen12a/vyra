@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ImageIcon, StudioIcon, BroadcastIcon, useToast } from "../components/ui";
+import { CameraIcon, ImageIcon, StudioIcon, BroadcastIcon, useToast } from "../components/ui";
 import { api, LEDGER_LABELS, minutes, type Credits } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
@@ -51,14 +51,20 @@ export function Dashboard() {
       <section className="start-grid" aria-label="Start">
         <Link className="start-card start-card-main" to="/app/studio?mode=photo">
           <span className="start-icon"><ImageIcon /></span>
-          <h2>Become someone from a photo</h2>
-          <p className="muted">Upload one clear photo of a character. VYRANI maps it onto you while you talk and move.</p>
+          <h2>Go live as someone else</h2>
+          <p className="muted">Add one clear photo and VYRANI maps that person onto you live, while you talk and move.</p>
           <span className="start-go">Start →</span>
         </Link>
         <Link className="start-card" to="/app/studio?mode=describe">
           <span className="start-icon"><BroadcastIcon /></span>
           <h2>Describe a look</h2>
-          <p className="muted">"A 1920s jazz singer", "ice queen", "in a tuxedo". VYRANI writes the details for you.</p>
+          <p className="muted">"In a charcoal blazer", "a brighter room", "evening makeup". VYRANI writes the details for you.</p>
+          <span className="start-go">Start →</span>
+        </Link>
+        <Link className="start-card" to="/app/create">
+          <span className="start-icon"><CameraIcon /></span>
+          <h2>Create a short video</h2>
+          <p className="muted">Film on your phone, become anyone from one photo, add a new voice or your own. Download or share.</p>
           <span className="start-go">Start →</span>
         </Link>
       </section>

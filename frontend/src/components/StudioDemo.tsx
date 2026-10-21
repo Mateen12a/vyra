@@ -6,8 +6,8 @@ import "../styles/studio-demo.css";
 // studio does while live; "split" puts a draggable divider between the two.
 const DIR = "/assets/site/looks/";
 export const DEMO_LOOKS = [
-  { id: "swap-a", cam: "swap-a-cam", ref: "ref-man.jpg", from: "Ada", name: "Tom", prompt: "Become Tom, from one photo" },
-  { id: "swap-b", cam: "swap-b-cam", ref: "ref-woman.jpg", from: "Mark", name: "Amara", prompt: "Become Amara, from one photo" },
+  { id: "swap-a", cam: "swap-a-cam", ref: "ref-man.jpg", from: "Mary", name: "Tom", prompt: "Become Tom, from one photo" },
+  { id: "swap-b", cam: "swap-b-cam", ref: "ref-woman.jpg", from: "Mark", name: "Gwen", prompt: "Become Gwen, from one photo" },
 ];
 
 const reduce = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;

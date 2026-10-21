@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export function Wordmark({ to = "/" }: { to?: string }) {
   return (
     <Link className="wordmark" to={to} aria-label="VYRANI AI home">
-      <span className="wordmark-dot" aria-hidden="true" />VYRANI
+      <img className="wordmark-mark" src="/assets/brand/vyrani-mark.svg" alt="" width={28} height={20} />VYRANI
     </Link>
   );
 }

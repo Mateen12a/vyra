@@ -2,7 +2,7 @@
 .sdemo { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; border-radius: 10px; overflow: hidden; background: #111114; color: #f4f4f5; }
 .sdemo-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #18181c; font-size: 0.875rem; font-weight: 600; }
 .sdemo-brand { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; }
-.sdemo-mark { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.sdemo-mark { width: 20px; height: auto; }
 .sdemo-live { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 999px; background: rgba(239, 68, 68, 0.16); color: #fca5a5;
   font-variant-numeric: tabular-nums; }
 .sdemo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rec); animation: sdemo-blink 1.4s steps(2, jump-none) infinite; }

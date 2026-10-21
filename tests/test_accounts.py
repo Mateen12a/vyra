@@ -242,6 +242,7 @@ def checkout_event(uid, pack="starter", amount=None, session_id=None):
             "data": {"object": {"id": session_id or "cs_test_" + secrets.token_hex(6), "object": "checkout.session",
                                 "payment_status": "paid", "currency": "usd",
                                 "amount_total": pricing.PACKS[pack]["amount_cents"] if amount is None else amount,
+                                "payment_intent": "pi_" + (session_id or "x"),
                                 "metadata": {"user_id": str(uid), "pack": pack,
                                              "credits": str(pricing.PACKS[pack]["credits"])}}}}
 
@@ -427,3 +428,36 @@ def test_disposable_signup_gets_no_trial(client, mailer, store):
     assert client.post("/api/auth/verify", json={"token": mailer.last("verify")}).status_code == 200
     me = client.get("/api/auth/me").json()
     assert me["balance"] == 0 and me["user"]["trial"] == "disposable_email"
+
+
+def refund_event(intent, amount, refunded):
+    return {"id": "evt_" + secrets.token_hex(6), "object": "event", "type": "charge.refunded",
+            "data": {"object": {"id": "ch_" + secrets.token_hex(6), "object": "charge", "payment_intent": intent,
+                                "amount": amount, "amount_refunded": refunded}}}
+
+
+def test_refund_takes_back_credits_once_and_proportionally(client, mailer, store):
+    email = signup(client, mailer)
+    uid = user_id(store, email)
+    sid = "cs_test_" + secrets.token_hex(6)
+    assert stripe_post(client, checkout_event(uid, session_id=sid)).status_code == 200
+    start = pricing.FREE_CREDITS_ON_VERIFY + 240
+    intent, amount = "pi_" + sid, pricing.PACKS["starter"]["amount_cents"]
+    half = refund_event(intent, amount, amount // 2)
+    assert stripe_post(client, half).status_code == 200
+    assert stripe_post(client, half).status_code == 200  # resent event: no second deduction
+    assert client.get("/api/auth/me").json()["balance"] == start - 120
+    assert stripe_post(client, refund_event(intent, amount, amount)).status_code == 200  # rest refunded
+    assert client.get("/api/auth/me").json()["balance"] == start - 240
+
+
+def test_refund_after_credits_were_spent_stops_at_zero(client, mailer, store):
+    email = signup(client, mailer)
+    uid = user_id(store, email)
+    sid = "cs_test_" + secrets.token_hex(6)
+    stripe_post(client, checkout_event(uid, session_id=sid))
+    Ledger(store).apply(uid, -200, "live", f"spend:{sid}")
+    amount = pricing.PACKS["starter"]["amount_cents"]
+    assert stripe_post(client, refund_event("pi_" + sid, amount, amount)).status_code == 200
+    assert client.get("/api/auth/me").json()["balance"] == 0
+    assert store.audit_log.find_one({"action": "refund_shortfall", "payment_intent": "pi_" + sid})["missing"] == 240 - (pricing.FREE_CREDITS_ON_VERIFY + 40)

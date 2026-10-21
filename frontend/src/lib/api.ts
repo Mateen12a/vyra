@@ -63,5 +63,5 @@ export const money = (cents: number) => `$${(cents / 100).toLocaleString("en-US"
 export const LEDGER_LABELS: Record<string, string> = {
   purchase: "Credits bought", free: "Welcome credits", live: "Live time", live_refund: "Unused live time returned",
   admin: "Adjustment", clip: "Clip", clip_refund: "Clip refund", voice: "Voice", voice_refund: "Voice refund",
-  assist: "Look assistant", assist_refund: "Assistant refund",
+  assist: "Look assistant", assist_refund: "Assistant refund", refund: "Payment refunded",
 };

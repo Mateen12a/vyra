@@ -61,7 +61,7 @@ export function StudioDemo({ variant, look, onLoop, className = "" }: { variant:
   return (
     <div className={`sdemo sdemo--${variant} ${className}`} data-ui>
       <div className="sdemo-bar">
-        <span className="sdemo-brand"><span className="sdemo-mark" aria-hidden="true" />VYRANI Studio</span>
+        <span className="sdemo-brand"><img className="sdemo-mark" src="/assets/brand/vyrani-mark.svg" alt="" />VYRANI Studio</span>
         <span className="sdemo-live"><span className="sdemo-dot" aria-hidden="true" />Live {clock}</span>
         <span className="sdemo-credits">{Math.max(0, 540 - secs)} credits</span>
       </div>

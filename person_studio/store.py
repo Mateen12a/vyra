@@ -39,6 +39,7 @@ class Store:
         # The unique key makes every credit change idempotent: a replayed webhook or retry is a no-op.
         self.ledger.create_index("idem_key", unique=True)
         self.ledger.create_index([("user_id", ASCENDING), ("at", ASCENDING)])
+        self.ledger.create_index("payment_intent", sparse=True)
         self.live_sessions.create_index([("user_id", ASCENDING), ("state", ASCENDING)])
         self.audit_log.create_index("at")
         self.trial_grants.create_index("mailbox")

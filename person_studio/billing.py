@@ -2,7 +2,7 @@
 import stripe
 
 from . import pricing
-from .credits import Ledger
+from .credits import InsufficientCredits, Ledger
 from .store import Store, utcnow
 
 
@@ -48,7 +48,40 @@ class Billing:
             session = event["data"]["object"]
             if session.get("payment_status") == "paid":
                 self._grant(session)
+        elif event["type"] == "charge.refunded":
+            self._refund(event["data"]["object"])
         return {"received": True}
+
+    def _refund(self, charge):
+        """Take back the credits a refund pays for: all of them for a full refund, a share for a partial one."""
+        intent = charge.get("payment_intent")
+        purchase = self.store.ledger.find_one({"kind": "purchase", "payment_intent": intent}) if intent else None
+        if not purchase:
+            self.store.audit("stripe", "refund_unmatched", charge=charge.get("id"))
+            return
+        amount, refunded = purchase.get("amount_cents") or charge.get("amount") or 0, charge.get("amount_refunded") or 0
+        if not amount or refunded <= 0:
+            return
+        owed = min(purchase["delta"], round(purchase["delta"] * refunded / amount))
+        taken = -sum(row["delta"] for row in self.store.ledger.find({"kind": "refund", "payment_intent": intent}))
+        due = owed - taken
+        if due <= 0:
+            return  # this refund total was already handled (Stripe can resend events)
+        user_id = purchase["user_id"]
+        # Credits already spent can't be taken back; remove what's there and record the rest.
+        take = 0
+        for _ in range(3):  # a live session may spend credits between reading the balance and taking them
+            take = min(due, self.ledger.balance(user_id))
+            if take <= 0:
+                break
+            try:
+                self.ledger.apply(user_id, -take, "refund", f"refund:{intent}:{refunded}", payment_intent=intent,
+                                  amount_refunded=refunded)
+                break
+            except InsufficientCredits:
+                take = 0
+        if take < due:
+            self.store.audit("stripe", "refund_shortfall", user_id=user_id, payment_intent=intent, missing=due - take)
 
     def _grant(self, session):
         from bson import ObjectId
@@ -61,5 +94,6 @@ class Billing:
         user_id = ObjectId(metadata["user_id"])
         # Keyed on the Checkout Session, so the two "completed" events Stripe may send grant once.
         self.ledger.apply(user_id, pack["credits"], "purchase", f"stripe:{session['id']}",
-                          pack=metadata["pack"], amount_cents=pack["amount_cents"], stripe_session=session["id"])
+                          pack=metadata["pack"], amount_cents=pack["amount_cents"], stripe_session=session["id"],
+                          payment_intent=session.get("payment_intent"))
         self.store.audit("stripe", "purchase", user_id=user_id, pack=metadata["pack"], at_ms=utcnow().timestamp())

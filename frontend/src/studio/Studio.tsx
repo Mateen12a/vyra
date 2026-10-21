@@ -22,14 +22,12 @@ const SOURCE_FILE = "__file";
 const SOURCE_SCREEN = "__screen";
 
 const IDEAS = [
-  { label: "In a tuxedo", prompt: "Change only the person's clothing to a tailored black tuxedo jacket with satin lapels, a crisp white dress shirt and a black bow tie; keep the face and hair unchanged. Keep the background, lighting and room unchanged." },
-  { label: "Astronaut", prompt: "Dress the person in a bulky white NASA-style space suit with mission patches on the shoulders and chest and a metal helmet ring around the neck; keep the face visible. Keep the background, lighting and room unchanged." },
-  { label: "Anime character", prompt: "Restyle the entire scene as a hand-drawn 1990s anime frame: bold black ink outlines, flat cel shading, vivid saturated colors; the person becomes an anime character with large expressive eyes." },
-  { label: "Oil painting", prompt: "Restyle the entire frame as a classical oil painting: thick visible brush strokes, rich warm palette, canvas texture, dramatic Rembrandt lighting on the person's face." },
-  { label: "Gold statue", prompt: "Turn the person into a living statue of polished 24-karat gold: reflective metallic skin, hair and clothing with sharp specular highlights. Keep the background, lighting and room unchanged." },
-  { label: "Cyber armor", prompt: "Dress the person in sleek matte-black futuristic armor plates with thin glowing cyan light lines along the chest and shoulders; keep the face visible. Keep the background, lighting and room unchanged." },
-  { label: "Claymation", prompt: "Transform the entire scene into stop-motion claymation: the person becomes a handmade plasticine figure with visible fingerprints and soft clay texture, warm studio lighting, miniature clay set behind them." },
-  { label: "Comic book", prompt: "Restyle the entire frame as a comic book panel: heavy black ink outlines, halftone dot shading, flat primary colors; the person is drawn as a comic book hero." },
+  { label: "Interview ready", prompt: "Change only the person's clothing to a tailored charcoal blazer over a crisp white top, neat and professional; keep the face and hair unchanged. Make the room behind them a calm, tidy home office with a plain light wall and soft daylight." },
+  { label: "Brighter room", prompt: "Change only the background into a bright, modern, uncluttered room with soft window light, a light oak shelf and one green plant. Keep the person, their clothing and lighting on the face unchanged." },
+  { label: "Creator setup", prompt: "Give the scene a polished creator setup: soft warm key light on the person's face, a small podcast microphone on an arm in the lower corner, a tasteful shelf with books and a warm lamp softly blurred behind them. Keep the person's clothing unchanged." },
+  { label: "Hair and makeup", prompt: "Give the person an elegant evening look: natural makeup with defined brows and a soft lip colour, small gold hoop earrings and a black silk top; keep their own face shape and hair. Warm, softly lit room behind them." },
+  { label: "Suit and tie", prompt: "Change only the person's clothing to a navy two-piece suit, white shirt and a subtle dark tie; keep the face and hair unchanged. Keep the background and lighting unchanged." },
+  { label: "Cosy café", prompt: "Change only the background to a cosy café with warm pendant lights, a brick wall and softly blurred plants. Keep the person and their clothing unchanged." },
 ];
 
 const LOCAL_VOICES = [
@@ -860,6 +858,19 @@ export default function Studio() {
   // (fal allows one, so the second sees "busy" and the failed attempt would end the paid session).
   const startingRef = useRef(false);
   const pressedAtRef = useRef(0);
+  // Warns once about a dark room: the models need light on the face. Never blocks; a second press goes ahead.
+  const darkWarnedRef = useRef(false);
+  function roomIsDark() {
+    const video = camRef.current;
+    if (!video || !video.videoWidth) return false;
+    const c = Object.assign(document.createElement("canvas"), { width: 64, height: 36 });
+    const ctx = c.getContext("2d", { willReadFrequently: true })!;
+    ctx.drawImage(video, 0, 0, 64, 36);
+    const px = ctx.getImageData(0, 0, 64, 36).data;
+    let sum = 0;
+    for (let i = 0; i < px.length; i += 4) sum += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+    return sum / (px.length / 4) < 60;
+  }
   async function goLive() {
     if (startingRef.current) return;
     // A double-click's second press lands on "Cancel"; only treat it as cancel after a real pause.
@@ -868,6 +879,10 @@ export default function Studio() {
     if (!look) return toast("Describe a look or add a photo first.", true);
     if (!status?.available) return toast(status?.message || "Live isn't available right now.", true);
     if (me && me.balance < LIVE_BLOCK) return toast(`Going live needs at least ${LIVE_BLOCK} credits (${LIVE_BLOCK} seconds). Add credits to continue.`, true);
+    if (!darkWarnedRef.current && roomIsDark()) {
+      darkWarnedRef.current = true;
+      return toast("Your room looks dark, so the result will look soft. Face a window or a lamp, then press Go live. Press again to go live anyway.");
+    }
     startingRef.current = true;
     pressedAtRef.current = performance.now();
     desiredQualityRef.current = qualityModeRef.current === "smooth" ? "smooth" : "sharp";

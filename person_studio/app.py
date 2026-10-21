@@ -32,6 +32,7 @@ from .billing import Billing
 from .config import Settings
 from .clip_fal import pick_engine
 from .provider import BUSY_MESSAGE, ProviderGuard
+from . import quality as input_checks
 from .credits import InsufficientCredits, Ledger, LiveMeter
 from .routes_accounts import build_router
 from .streaming import DestinationError, destination
@@ -154,6 +155,8 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         public_address = urlsplit(settings.public_url)
         if public_address.scheme in {"https", "http"} and public_address.hostname:
             allowed_hosts.append(public_address.hostname)
+        # Every allowed page origin is also a valid host, so an old and a new domain both work during a move.
+        allowed_hosts += [urlsplit(origin).hostname for origin in settings.allowed_origins if urlsplit(origin).hostname]
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
     app.add_middleware(UploadLimitMiddleware, limit=settings.max_video_bytes + settings.max_image_bytes + 65536)
     bearer = HTTPBearer(auto_error=False)
@@ -632,7 +635,15 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
             await save_upload(video, folder / "upload.video", settings.max_video_bytes)
             try:
                 await run_in_threadpool(normalize_reference, folder / "upload.image", folder / "reference.png")
+                await run_in_threadpool(input_checks.check_photo, folder / "reference.png")
+                if assistant.available():  # one clear person in the photo; a service hiccup never blocks the user
+                    try:
+                        await run_in_threadpool(assistant.describe, (folder / "reference.png").read_bytes())
+                    except AssistError as exc:
+                        if exc.status == 422:
+                            raise ValueError(str(exc))
                 metadata = await run_in_threadpool(engine.validate_video, folder / "upload.video")
+                await run_in_threadpool(input_checks.check_video_light, folder / "upload.video", metadata.get("duration_seconds") or 0)
             except ValueError as exc:
                 raise HTTPException(422, str(exc))
             (folder / "upload.image").unlink()

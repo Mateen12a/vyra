@@ -50,10 +50,11 @@ def media(tmp_path_factory):
         pytest.skip("Media integration tests require FFmpeg")
     folder = tmp_path_factory.mktemp("media")
     video = folder / "source.mp4"
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=blue:s=256x256:r=16",
+    # A bright, detailed pattern and photo, so the input quality checks pass.
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "testsrc=s=256x256:r=16",
                     "-t", "1", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(video)], check=True)
     image = io.BytesIO()
-    Image.new("RGB", (256, 256), "green").save(image, format="PNG")
+    Image.effect_noise((320, 320), 64).convert("RGB").point(lambda v: min(255, v + 40)).save(image, format="PNG")
     return image.getvalue(), video.read_bytes()
 
 

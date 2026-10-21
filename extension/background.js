@@ -11,6 +11,8 @@ const DEFAULT_STUDIO_ORIGINS = [
   "http://localhost:8799",
   "http://127.0.0.1:5173",
   "http://localhost:5173",
+  "https://vyrani.com",
+  "https://www.vyrani.com",
   "https://vyrani.blackhevents.com",
 ];
 

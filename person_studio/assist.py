@@ -39,7 +39,8 @@ CHARACTER_SYSTEM = """You describe a reference photo for a real-time video chara
 reproduce the look. Describe only what is visible: skin tone, face shape, hair (length, style, colour), facial hair,
 eyewear, clothing (type, colour, material) and notable accessories. 15 to 35 words, comma-separated, plain and neutral.
 Never name, identify or guess who the person is, and never state ethnicity, nationality or religion.
-If the image shows no person, reply exactly: NO_PERSON"""
+If the image shows no person, reply exactly: NO_PERSON
+If it shows more than one person's face clearly, reply exactly: MANY_PEOPLE"""
 
 
 class AssistError(RuntimeError):
@@ -78,6 +79,8 @@ class Assistant:
                                                      "image_urls": [data_uri]}, "describe").split())
         if not text or "NO_PERSON" in text:
             raise AssistError("No person was found in that photo. Use a clear head-and-shoulders picture.", 422)
+        if "MANY_PEOPLE" in text:
+            raise AssistError("This photo shows more than one person. Use a photo of just the one person to become.", 422)
         return {"description": text.rstrip(".")[:300]}
 
     def _run(self, url, body, kind):

@@ -3,19 +3,16 @@ import { Link } from "react-router-dom";
 import { Wordmark } from "../components/ui";
 import "../styles/legal.css";
 
-// Privacy Policy and Terms of Service. DRAFT for the owner's review: every <Fill> marks a fact only the operator can
-// supply (legal name, address, governing law, support email, refund window). Replace them before launch.
+// Privacy Policy and Terms of Service for Vyrani Studios. Service providers are described by role, not by name.
 const UPDATED = "21 October 2026";
-const Fill = ({ children }: { children: ReactNode }) => <mark className="legal-fill" title="To fill in before launch">{children}</mark>;
-const COMPANY = <Fill>[Legal business name]</Fill>;
-const EMAIL = <Fill>[support@vyrani.com]</Fill>;
+const COMPANY = "Vyrani Studios";
+const EMAIL = <a href="mailto:support@vyrani.com">support@vyrani.com</a>;
 
 function LegalPage({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="legal">
       <header className="legal-top"><Wordmark /><nav><Link to="/privacy">Privacy</Link><Link to="/terms">Terms</Link></nav></header>
       <main className="legal-body">
-        <p className="legal-draft">Draft for review. Highlighted items must be completed before launch.</p>
         <h1>{title}</h1>
         <p className="legal-updated">Last updated {UPDATED}</p>
         {children}
@@ -29,7 +26,7 @@ export function Privacy() {
   return (
     <LegalPage title="Privacy Policy">
       <p>This policy explains what VYRANI ("we", "us") collects when you use vyrani.com, the VYRANI studio and the VYRANI browser
-        extension, why, who else handles it, and how long we keep it. VYRANI is operated by {COMPANY}, {<Fill>[registered address]</Fill>}.
+        extension, why, who else handles it, and how long we keep it. VYRANI is operated by {COMPANY}.
         Questions or requests: {EMAIL}.</p>
 
       <h2>The short version</h2>
@@ -45,8 +42,8 @@ export function Privacy() {
       <p>Your email address, a securely hashed password (we never store the password itself) or your Google account ID if you sign in with
         Google, whether your email is verified, and when you joined.</p>
       <h3>Credits and payments</h3>
-      <p>Your credit balance and a history of credit changes (purchases, live time, videos, refunds). Payments are handled by Stripe. We
-        receive the pack you bought, the amount and Stripe's reference numbers. We never see or store your card details.</p>
+      <p>Your credit balance and a history of credit changes (purchases, live time, videos, refunds). Payments are handled by our payment
+        processor. We receive the pack you bought, the amount and the processor's reference numbers. We never see or store your card details.</p>
       <h3>What you create</h3>
       <ul>
         <li><strong>Live sessions.</strong> Your camera video and the look you choose (text or a reference photo) are sent to our AI
@@ -79,12 +76,12 @@ export function Privacy() {
       <h2>Who else handles your data</h2>
       <p>We use these service providers. Each receives only what it needs for its job, and handles it under its own terms and privacy policy:</p>
       <ul>
-        <li><strong>fal.ai</strong> runs the AI models: real-time video (Decart Lucy), video creation (Wan), voices (ElevenLabs and Resemble AI),
-          and the assistant that writes look descriptions and checks photos (Google Gemini).</li>
-        <li><strong>Stripe</strong> processes payments.</li>
-        <li><strong>Resend</strong> sends account emails (verification and password reset).</li>
-        <li><strong>Google</strong>, if you choose to sign in with Google.</li>
-        <li><strong>MongoDB Atlas</strong> hosts our account database; <strong>Oracle Cloud</strong> hosts our servers; <strong>Cloudflare</strong> protects and delivers the website.</li>
+        <li><strong>AI processing providers</strong> run the models that change live video, make videos, change voices, write look
+          descriptions and check photos.</li>
+        <li><strong>A payment processor</strong> handles payments.</li>
+        <li><strong>An email provider</strong> sends account emails (verification and password reset).</li>
+        <li><strong>Google</strong>, only if you choose to sign in with Google.</li>
+        <li><strong>Hosting, database and security providers</strong> run our servers, store account data and protect the website.</li>
       </ul>
       <p>These providers may process data in other countries, including the United States. We may also disclose information if the law
         requires it, or to protect people from harm or fraud.</p>
@@ -99,7 +96,7 @@ export function Privacy() {
         <li>Finished videos: 7 days.</li>
         <li>IP addresses for security: up to 1 hour. Network-address hashes for the free trial: 30 days. Email hashes for the free trial: kept.</li>
         <li>Your account: until you delete it. Credit and payment records are kept anonymously for as long as tax and accounting law
-          requires (<Fill>[usually 6–7 years: confirm for your country]</Fill>).</li>
+          requires.</li>
       </ul>
 
       <h2>Your choices and rights</h2>
@@ -113,7 +110,7 @@ export function Privacy() {
         email {EMAIL} and we'll delete it.</p>
 
       <h2>Security</h2>
-      <p>Connections are encrypted, passwords are hashed, payments run through Stripe and access to our systems is limited. No service can
+      <p>Connections are encrypted, passwords are hashed, payments run through a certified payment processor and access to our systems is limited. No service can
         promise perfect security; if a breach affects you, we'll tell you as the law requires.</p>
 
       <h2>Changes</h2>
@@ -162,9 +159,9 @@ export function Terms() {
         <li>If a session or video fails on our side, its credits are returned automatically.</li>
         <li>Credits don't expire while your account is open, have no cash value and can't be transferred. They're lost if you delete your
           account or it's closed for breaking these terms.</li>
-        <li>Prices are shown in the app before you pay, and payments are processed by Stripe.</li>
-        <li><strong>Refunds:</strong> <Fill>[Choose one: e.g. "Unused credit packs can be refunded within 14 days of purchase by emailing
-          us; credits already used are not refundable."]</Fill> If we refund a payment, the credits it bought are removed.</li>
+        <li>Prices are shown in the app before you pay, and payments are handled by our payment processor.</li>
+        <li><strong>All credit purchases are final and non-refundable</strong>, except where the law says otherwise or a payment was taken
+          in error. If a payment is reversed or refunded, the credits it bought are removed.</li>
         <li>New accounts may receive a small free trial, once per person. We may withhold or remove it if we see signs of abuse.</li>
       </ul>
 
@@ -192,10 +189,11 @@ export function Terms() {
 
       <h2>11. Changes and law</h2>
       <p>We may update these terms; for significant changes we'll tell signed-in users before they apply. These terms are governed by the
-        laws of <Fill>[country / state]</Fill>, and disputes go to its courts, unless your local consumer law says otherwise.</p>
+        laws of the country where {COMPANY} is registered, and disputes go to its courts, unless your local consumer law says
+        otherwise.</p>
 
       <h2>12. Contact</h2>
-      <p>{COMPANY}, <Fill>[registered address]</Fill>. Email {EMAIL}.</p>
+      <p>{COMPANY}. Email {EMAIL}.</p>
     </LegalPage>
   );
 }

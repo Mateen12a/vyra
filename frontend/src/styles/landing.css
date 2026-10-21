@@ -18,9 +18,8 @@
 .hero { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: 170px 64px minmax(0, 1fr);
   gap: var(--gap); height: 100svh; min-height: 720px; max-height: 1100px; padding: var(--gap) 0; }
 .name-band { grid-column: 1 / -1; position: relative; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
-.name-text { white-space: nowrap; font-size: clamp(140px, 17vw, 300px); font-weight: 600; letter-spacing: -0.04em; line-height: 0.8;
-  animation: band-drift 26s linear infinite alternate; }
-@keyframes band-drift { from { transform: translateX(-6%); } to { transform: translateX(6%); } }
+/* The name once, whole and centred: never cropped, so it can't read as a different word. */
+.name-text { white-space: nowrap; font-size: clamp(96px, 13vw, 200px); font-weight: 600; letter-spacing: -0.04em; line-height: 0.8; }
 
 .links { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); }
 .link-tile { padding: 20px; font-weight: 500; color: var(--text); transition: background-color 160ms var(--ease); }
@@ -210,7 +209,7 @@
   .landing { --gap: 6px; }
   .hero { grid-template-columns: 1fr 1fr; grid-template-rows: none; height: auto; min-height: 0; max-height: none; }
   .name-band { grid-column: 1 / -1; height: 110px; }
-  .name-text { font-size: 30vw; }
+  .name-text { font-size: 21vw; }
   .links { grid-template-columns: 1fr 1fr; }
   .link-tile { padding: 16px; }
   .hero-stage { grid-column: 1 / -1; }
@@ -279,6 +278,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .name-text, .marquee-track, .fx-voice span, .fx-rec-dot, .fx-golive-btn { animation: none; }
+  .marquee-track, .fx-voice span, .fx-rec-dot, .fx-golive-btn { animation: none; }
   [data-reveal], .panel, .panel-name, .panel-text, .ftile img { transition: none; }
 }

@@ -260,9 +260,32 @@ function drawBroadcastOverlay(ctx: CanvasRenderingContext2D, w: number, h: numbe
 }
 
 /** Master Output Compositor: draws the AI video (or camera fallback), broadcast overlay, and VYRANI · AI watermark. */
+/** Freezes the last AI frame, dimmed, with a "Be right back" card: shown to calls and streams after an unplanned stop. */
+export function holdCard(video: HTMLVideoElement | null, title = "Be right back", sub = "VYRANI") {
+  const canvas = Object.assign(document.createElement("canvas"), { width: 1280, height: 720 });
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#09090b";
+  ctx.fillRect(0, 0, 1280, 720);
+  if (video && video.videoWidth) {
+    ctx.filter = "blur(18px) brightness(0.45)";
+    ctx.drawImage(video, -40, -40, 1360, 800);
+    ctx.filter = "none";
+  }
+  ctx.fillStyle = "rgba(9, 9, 11, 0.55)";
+  ctx.fillRect(0, 0, 1280, 720);
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#f4f4f5";
+  ctx.font = "600 64px Chillax, system-ui, sans-serif";
+  ctx.fillText(title, 640, 370);
+  ctx.fillStyle = "#ff6b2b";
+  ctx.font = "600 24px Chillax, system-ui, sans-serif";
+  ctx.fillText(sub, 640, 420);
+  return canvas;
+}
+
 export function compositor(
   video: HTMLVideoElement,
-  opts: boolean | { label: boolean; compactLabel?: boolean; getOverlay?: () => OverlayConfig | undefined }
+  opts: boolean | { label: boolean; compactLabel?: boolean; getOverlay?: () => OverlayConfig | undefined; getHold?: () => CanvasImageSource | null }
 ) {
   const getOpts = typeof opts === "boolean" ? { label: opts, compactLabel: false } : opts;
   const canvas = document.createElement("canvas");
@@ -276,7 +299,9 @@ export function compositor(
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
     }
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // A "Be right back" card replaces the picture after an unplanned stop, so viewers never see a frozen or real face.
+    const hold = "getHold" in getOpts ? getOpts.getHold?.() : null;
+    ctx.drawImage(hold || video, 0, 0, canvas.width, canvas.height);
     const ov = getOpts.getOverlay?.();
     if (ov) drawBroadcastOverlay(ctx, canvas.width, canvas.height, ov);
     if (getOpts.label) {

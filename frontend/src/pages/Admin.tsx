@@ -5,6 +5,7 @@ import { api, LEDGER_LABELS, type LedgerRow } from "../lib/api";
 type Stats = { users: number; verified: number; revenue_cents: number; purchases: number; credits_sold: number;
   credits_outstanding: number; live_minutes: number; live_now: number };
 type AdminUser = { id: string; email: string; role: "user" | "admin"; verified: boolean; balance: number };
+type Provider = { fal_balance: number | null; min_live: number; min_clip: number; alert_below: number; accepting_live: boolean; accepting_clips: boolean };
 type LiveRow = { id: string; email: string; state: string; provider: string | null; started_at: string; paid_seconds: number; used_seconds: number | null };
 
 const num = (n: number) => Number(n || 0).toLocaleString("en-US");
@@ -16,6 +17,7 @@ export default function Admin() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [live, setLive] = useState<LiveRow[]>([]);
+  const [provider, setProvider] = useState<Provider | null>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<AdminUser | null>(null);
 
@@ -24,13 +26,24 @@ export default function Admin() {
     .catch((e) => toast(e.message, true)), [toast]);
   const loadLive = useCallback(() => api<LiveRow[]>("/api/admin/live").then(setLive).catch(() => {}), []);
 
-  useEffect(() => { loadStats(); loadLive(); }, [loadStats, loadLive]);
+  const loadProvider = useCallback(() => api<Provider>("/api/admin/provider").then(setProvider).catch(() => {}), []);
+  useEffect(() => { loadStats(); loadLive(); loadProvider(); }, [loadStats, loadLive, loadProvider]);
   useEffect(() => { const t = setTimeout(() => loadUsers(query.trim()), 250); return () => clearTimeout(t); }, [query, loadUsers]);
 
   return (
     <div className="page">
       <header className="page-head"><div><p className="kicker">Admin</p><h1 className="page-title">Overview</h1></div>
-        <button className="btn btn-ghost" onClick={() => { loadStats(); loadLive(); loadUsers(query.trim()); }}>Refresh</button></header>
+        <button className="btn btn-ghost" onClick={() => { loadStats(); loadLive(); loadProvider(); loadUsers(query.trim()); }}>Refresh</button></header>
+      {provider && (
+        <div className={`alert ${provider.fal_balance == null ? "alert-info" : !provider.accepting_live ? "alert-error" : provider.fal_balance < provider.alert_below ? "alert-info" : "alert-ok"}`}>
+          <strong>fal balance: {provider.fal_balance == null ? "unknown" : `$${provider.fal_balance.toFixed(2)}`}</strong>{" "}
+          {provider.fal_balance == null ? "Couldn't read it right now."
+            : !provider.accepting_live ? `New live sessions are paused (below $${provider.min_live.toFixed(2)}); users see "very busy, try again". Top up now.`
+            : provider.fal_balance < provider.alert_below ? `Below $${provider.alert_below.toFixed(0)}: top up soon. Live pauses below $${provider.min_live.toFixed(2)}.`
+            : "Healthy."}{" "}
+          <a href="https://fal.ai/dashboard/billing" target="_blank" rel="noreferrer">Open fal billing</a>
+        </div>
+      )}
       <section className="stat-row stat-row-4">
         <div className="stat"><span className="stat-label">Revenue</span><strong className="stat-value num">{stats ? `$${num(stats.revenue_cents / 100)}` : "–"}</strong><span className="muted">{stats ? `${num(stats.purchases)} purchases` : ""}</span></div>
         <div className="stat"><span className="stat-label">Users</span><strong className="stat-value num">{stats ? num(stats.users) : "–"}</strong><span className="muted">{stats ? `${num(stats.verified)} verified` : ""}</span></div>

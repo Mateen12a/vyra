@@ -9,7 +9,7 @@ import { every } from "../lib/ticker";
 import { useAuth } from "../lib/auth";
 import { VIDEO_QUALITY, measured, qualityHint, uplinkLimited, type QualityMode, type QualityMetrics, type QualityReport, type UploadQuality } from "./quality";
 import {
-  characterPrompt, compositor, connect, createLookPrompt, describePhoto, endMeter, endMeterOnUnload, fitToCamera, getStatus, heartbeat,
+  characterPrompt, compositor, holdCard, connect, createLookPrompt, describePhoto, endMeter, endMeterOnUnload, fitToCamera, getStatus, heartbeat,
   loadScript, PLATFORMS, recorderType, startStream, withAiVoice, withProvenance,
   type AccentVoice, type LiveStatus, type OverlayConfig, type SceneRule, type Session, type StreamHandle, type VoiceRigHandle,
 } from "./engine";
@@ -57,6 +57,7 @@ const SCENE_TRIGGERS = [
 const HIDDEN_GRACE_MS = 60000;
 const FIRST_FRAME_TIMEOUT_MS = 40000;
 const HEARTBEAT_MS = 15000;
+const LIVE_BLOCK = 30; // seconds bought per block; keep in step with pricing.LIVE_BLOCK_SECONDS
 const probe = document.createElement("canvas");
 probe.width = 32;
 probe.height = 18;
@@ -81,6 +82,17 @@ export default function Studio() {
   const perMinute = catalogue?.live_credits_per_minute || 60;
 
   const [tab, setTab] = useState<InspectorTab>("look");
+  // After an unplanned stop, calls and streams show this card instead of the real camera until the user decides.
+  const holdRef = useRef<HTMLCanvasElement | null>(null);
+  const [holding, setHolding] = useState(false);
+  // Credits left in this session, in seconds, as of `at` (from the last heartbeat).
+  const [left, setLeft] = useState<{ seconds: number; at: number } | null>(null);
+  const [, forceTick] = useState(0);
+  useEffect(() => {
+    if (!left) return;
+    const t = setInterval(() => forceTick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [left]);
   const [phone] = useState(isPhone); // no browser extensions or OBS on phones
   const [status, setStatus] = useState<LiveStatus | null>(null);
   const [phase, setPhase] = useState<Phase>("off");
@@ -191,7 +203,7 @@ export default function Studio() {
   const sessionRef = useRef<Session | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const billingRef = useRef<{ id: string | null }>({ id: null });
-  const timersRef = useRef<{ stopBeat?: () => void; tick?: number; stall?: number; hidden?: number; startedAt?: number }>({});
+  const timersRef = useRef<{ stopBeat?: () => void; tick?: number; stall?: number; hidden?: number; startedAt?: number; streamGrace?: number }>({});
   const recorderRef = useRef<{ rec: MediaRecorder; chunks: Blob[]; stop: () => void; accentId: string } | null>(null);
   const lookRef = useRef<Look | null>(null);
   lookRef.current = look;
@@ -427,8 +439,9 @@ export default function Studio() {
       const stream = canvas.captureStream(30);
       const stop = every(33, () => {
         const sourceVideo = live && aiRef.current?.videoWidth ? aiRef.current : camRef.current;
-        if (!sourceVideo || !sourceVideo.videoWidth) return;
-        ctx.drawImage(sourceVideo, 0, 0, W, H);
+        if (holdRef.current) ctx.drawImage(holdRef.current, 0, 0, W, H);
+        else if (!sourceVideo || !sourceVideo.videoWidth) return;
+        else ctx.drawImage(sourceVideo, 0, 0, W, H);
         decorate();
         sent++;
         sendNative();
@@ -453,7 +466,7 @@ export default function Studio() {
             const { value: frame, done } = await reader.read().catch(() => ({ value: undefined, done: true }));
             if (done || !frame) break;
             if (!running || stopped) { frame.close(); break; }
-            ctx.drawImage(frame as unknown as CanvasImageSource, 0, 0, W, H);
+            ctx.drawImage(holdRef.current || (frame as unknown as CanvasImageSource), 0, 0, W, H);
             const timestamp = frame.timestamp;
             frame.close();
             decorate();
@@ -812,12 +825,23 @@ export default function Studio() {
   }, [commandMode, executeRuleOrCommand]);
 
   // ---------- Live Session ----------
-  const stop = useCallback(async (message?: string) => {
+  // `unplanned`: the session ended without the user asking (credits, service, network). Calls and streams then show a
+  // "Be right back" card and the stream stays up for two minutes so the user can top up and go live again.
+  const stop = useCallback(async (message?: string, unplanned = false) => {
     const t = timersRef.current;
     t.stopBeat?.(); t.stopBeat = undefined; clearInterval(t.tick); clearTimeout(t.stall); clearTimeout(t.hidden);
     abortRef.current?.abort(); abortRef.current = null;
     if (recorderRef.current) recorderRef.current.rec.stop();
-    stopStream();
+    const wasLive = phaseRef.current === "live";
+    if (wasLive) {
+      holdRef.current = holdCard(aiRef.current, unplanned ? "Be right back" : "Paused", "VYRANI");
+      setHolding(true);
+    }
+    setLeft(null);
+    if (unplanned && wasLive && liveStreamRef.current) {
+      clearTimeout(t.streamGrace);
+      t.streamGrace = window.setTimeout(() => { if (phaseRef.current !== "live") stopStream(); }, 120000);
+    } else stopStream();
     const session = sessionRef.current; sessionRef.current = null;
     if (session) setPhase("stopping");
     try { session?.disconnect(); } catch { /* already closed */ }
@@ -843,7 +867,7 @@ export default function Studio() {
     if (live || busy) return stop("Session ended.");
     if (!look) return toast("Describe a look or add a photo first.", true);
     if (!status?.available) return toast(status?.message || "Live isn't available right now.", true);
-    if (me && me.balance < perMinute) return toast(`Going live needs at least ${perMinute} credits (1 minute). Add credits to continue.`, true);
+    if (me && me.balance < LIVE_BLOCK) return toast(`Going live needs at least ${LIVE_BLOCK} credits (${LIVE_BLOCK} seconds). Add credits to continue.`, true);
     startingRef.current = true;
     pressedAtRef.current = performance.now();
     desiredQualityRef.current = qualityModeRef.current === "smooth" ? "smooth" : "sharp";
@@ -894,8 +918,8 @@ export default function Studio() {
       });
       applyUploadQuality(desiredQualityRef.current, session).catch(() => toast("Couldn't apply upload quality to the live connection.", true));
       setWarmup("Warming up");
-      session.on("connectionChange", (s: string) => { if (s === "reconnecting") setWarmup("Reconnecting"); if (s === "disconnected" && sessionRef.current === session) stop("The live connection dropped."); });
-      session.on("sessionEnded", ({ message }: { message?: string }) => { if (sessionRef.current === session) stop(message || "The live session ended."); });
+      session.on("connectionChange", (s: string) => { if (s === "reconnecting") setWarmup("Reconnecting"); if (s === "disconnected" && sessionRef.current === session) stop("The live connection dropped. Calls and streams show a 'Be right back' card; go live again to continue.", true); });
+      session.on("sessionEnded", () => { if (sessionRef.current === session) stop("The live service paused the session. Unused time was returned. Go live again in a moment.", true); });
       session.on("error", (e: Error) => toast(e?.message || "Live error.", true));
       const t = timersRef.current;
       t.stall = window.setTimeout(() => { if (sessionRef.current === session && phaseRef.current !== "live") stop("No video came back. Go live again."); }, FIRST_FRAME_TIMEOUT_MS);
@@ -905,8 +929,11 @@ export default function Studio() {
         try {
           const m = await heartbeat(id);
           setBalance(m.balance);
-          if (m.stop) { billingRef.current.id = null; stop("You're out of credits, so the session ended."); }
-          else if (m.low_balance) toast("Less than a minute of credits left.");
+          setLeft({ seconds: Math.max(0, m.paid_seconds - m.elapsed) + Math.max(0, m.balance), at: Date.now() });
+          if (m.stop) {
+            billingRef.current.id = null;
+            stop("You're out of credits. Calls and streams show a 'Be right back' card; add credits and go live again.", true);
+          }
         } catch { /* next beat */ }
       });
     } catch (error) {
@@ -934,6 +961,8 @@ export default function Studio() {
       return;
     }
     clearTimeout(timersRef.current.stall);
+    clearTimeout(timersRef.current.streamGrace);
+    holdRef.current = null; setHolding(false);
     setPhase("live"); setWarmup("");
     timersRef.current.startedAt = performance.now();
     timersRef.current.tick = window.setInterval(() => {
@@ -967,7 +996,7 @@ export default function Studio() {
     const video = aiRef.current;
     if (!video || phaseRef.current !== "live") return toast("Go live first, then start streaming.", true);
     setStreaming("starting");
-    const comp = compositor(video, { label: showWatermark, compactLabel: compactWatermark, getOverlay: () => overlayConfigRef.current });
+    const comp = compositor(video, { label: showWatermark, compactLabel: compactWatermark, getOverlay: () => overlayConfigRef.current, getHold: () => holdRef.current });
     let mic: MediaStream | null = null;
     let audioTrack: MediaStreamTrack | null = voiceRigRef.current?.track() || null;
     if (!audioTrack && voiceMode !== "off") {
@@ -1011,7 +1040,7 @@ export default function Studio() {
     if (recorderRef.current) { recorderRef.current.rec.stop(); return; }
     const video = aiRef.current;
     if (!video || !live) return;
-    const comp = compositor(video, { label: showWatermark, compactLabel: compactWatermark, getOverlay: () => overlayConfigRef.current });
+    const comp = compositor(video, { label: showWatermark, compactLabel: compactWatermark, getOverlay: () => overlayConfigRef.current, getHold: () => holdRef.current });
     let rigTrack: MediaStreamTrack | null = null;
     if (voiceMode !== "off") {
       const rig = await ensureVoiceRig();
@@ -1089,6 +1118,25 @@ export default function Studio() {
   return (
     <div className="studio" data-vyra-studio="true">
       <section className="studio-stage-col">
+        {live && left && (() => {
+          const remaining = Math.max(0, Math.round(left.seconds - (Date.now() - left.at) / 1000));
+          if (remaining > 120) return null;
+          return (
+            <div className={`credit-warn${remaining <= 30 ? " is-urgent" : ""}`} role="status">
+              <span><strong>{clock(remaining)}</strong> of live left.{remaining <= 30 ? " Your call will show a 'Be right back' card when it runs out." : ""}</span>
+              <button type="button" className="btn btn-sm btn-primary" onClick={() => window.open("/app/credits", "_blank", "noopener")}>Add credits</button>
+            </div>
+          );
+        })()}
+        {holding && !live && (
+          <div className="credit-warn" role="status">
+            <span>Calls and streams are showing a <strong>Be right back</strong> card, not your camera.</span>
+            <span className="credit-warn-actions">
+              <button type="button" className="btn btn-sm btn-primary" onClick={goLive}>Go live again</button>
+              <button type="button" className="btn btn-sm btn-ghost" onClick={() => { holdRef.current = null; setHolding(false); stopStream(); }}>Show my real camera</button>
+            </span>
+          </div>
+        )}
         <div ref={stageRef} className={`stage stage-${phase}`}>
           <video ref={aiRef} className="stage-ai" playsInline autoPlay muted onPlaying={onFrame} />
           <video ref={camRef} className={`stage-cam${mirrored ? " mirrored" : ""}${live ? " pip" : ""}`} playsInline autoPlay muted />

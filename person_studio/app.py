@@ -31,6 +31,7 @@ from .assist import AssistError, Assistant
 from .billing import Billing
 from .config import Settings
 from .clip_fal import pick_engine
+from .provider import BUSY_MESSAGE, ProviderGuard
 from .credits import InsufficientCredits, Ledger, LiveMeter
 from .routes_accounts import build_router
 from .streaming import DestinationError, destination
@@ -183,6 +184,21 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         except InsufficientCredits:
             raise HTTPException(402, f"This needs {credits} credits. Add credits to continue.")
         return lambda: ledger.apply(user["_id"], credits, f"{kind}_refund", f"{key}:refund")
+
+    # Operator alerts go to ALERT_EMAIL, or else to every admin account.
+    def notify_operator(subject, text):
+        emails = [settings.alert_email] if settings.alert_email else             [u["email"] for u in store.users.find({"role": "admin"}, {"email": 1})] if store is not None else []
+        for email in emails:
+            accounts.mailer.notify(email, subject, text)
+
+    guard = ProviderGuard(settings, notify=notify_operator if store is not None else None)
+    app.state.provider_guard = guard
+
+    @app.get("/api/admin/provider")
+    def provider_status(admin=Depends(require_admin)):
+        return {"fal_balance": guard.current(), "min_live": settings.fal_min_balance_live,
+                "min_clip": settings.fal_min_balance_clip, "alert_below": settings.fal_alert_balance,
+                "accepting_live": guard.allows("live"), "accepting_clips": guard.allows("clip")}
 
     if store is not None:
         app.include_router(build_router(settings, store, accounts, ledger, billing, authorize, require_admin, google))
@@ -548,6 +564,8 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
                 if metered["state"] != "live":
                     raise HTTPException(409, "This live session has ended. Start a new one.")
             else:
+                if not await run_in_threadpool(guard.allows, "live"):
+                    raise HTTPException(503, BUSY_MESSAGE)
                 try:
                     metered = await run_in_threadpool(meter.start, user["_id"], provider or live.default_provider())
                 except InsufficientCredits:
@@ -603,6 +621,8 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
             status = engine.status()
             if not status["configured"]:
                 raise HTTPException(503, status["message"])
+            if status.get("provider") == "fal" and not await run_in_threadpool(guard.allows, "clip"):
+                raise HTTPException(503, BUSY_MESSAGE)
             try:
                 job_id, folder = jobs.create()
                 reserved = True

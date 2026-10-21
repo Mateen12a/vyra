@@ -193,6 +193,10 @@ class LogMailer:
         self.base_url = base_url.rstrip("/")
         self.sent = []
 
+    def notify(self, email, subject, text):
+        """Operator alerts (plain text). The log mailer only prints them."""
+        print(f"[mail] alert to {email}: {subject}", flush=True)
+
     def send(self, email, kind, token):
         link = f"{self.base_url}/{kind}?token={token}"  # /verify or /reset in the web app
         self.sent.append((email, kind, token))
@@ -242,6 +246,20 @@ class ResendMailer(LogMailer):
         super().__init__(settings.public_url)
         self.key = settings.resend_api_key
         self.sender = settings.smtp_from
+
+    def notify(self, email, subject, text):
+        super().notify(email, subject, text)
+        self._post({"from": self.sender, "to": [email], "subject": subject, "text": text}, email)
+
+    def _post(self, body, email):
+        request = urllib.request.Request("https://api.resend.com/emails", data=json.dumps(body).encode(), method="POST",
+                                         headers={"Authorization": f"Bearer {self.key}", "Content-Type": "application/json",
+                                                  "User-Agent": "vyrani/1.0"})
+        try:
+            with urllib.request.urlopen(request, timeout=10) as response:
+                response.read()
+        except (OSError, urllib.error.HTTPError) as exc:
+            print(f"[mail] Resend delivery warning for {email}: {exc}", flush=True)
 
     def send(self, email, kind, token):
         super().send(email, kind, token)

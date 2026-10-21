@@ -342,3 +342,11 @@ tr:last-child td { border-bottom: 0; }
 .create-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 8px; }
 .alert-danger { background: rgba(248, 113, 113, 0.12); color: #fecaca; }
 @media (max-width: 860px) { .create-submit { bottom: calc(64px + env(safe-area-inset-bottom)); } }
+
+/* ---------- live: credits countdown and "Be right back" notice ---------- */
+.credit-warn { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 10px; padding: 12px 14px;
+  border-radius: var(--radius-sm); background: var(--accent-soft); font-size: 0.9375rem; }
+.credit-warn.is-urgent { background: rgba(239, 68, 68, 0.16); animation: warn-pulse 1.6s var(--ease) infinite; }
+.credit-warn-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+@keyframes warn-pulse { 50% { background: rgba(239, 68, 68, 0.26); } }
+@media (prefers-reduced-motion: reduce) { .credit-warn.is-urgent { animation: none; } }

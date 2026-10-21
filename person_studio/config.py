@@ -69,6 +69,11 @@ class Settings:
     smtp_port: int = field(default_factory=lambda: int(os.getenv("SMTP_PORT", "587")))
     smtp_user: str = field(default_factory=lambda: os.getenv("SMTP_USER", "").strip())
     smtp_password: str = field(default_factory=lambda: os.getenv("SMTP_PASSWORD", "").strip())
+    # fal balance guard (USD): below these, new live sessions / clips are politely refused; alert well before.
+    fal_min_balance_live: float = field(default_factory=lambda: float(os.getenv("FAL_MIN_BALANCE_LIVE", "2.5")))
+    fal_min_balance_clip: float = field(default_factory=lambda: float(os.getenv("FAL_MIN_BALANCE_CLIP", "1.5")))
+    fal_alert_balance: float = field(default_factory=lambda: float(os.getenv("FAL_ALERT_BALANCE", "20")))
+    alert_email: str = field(default_factory=lambda: os.getenv("ALERT_EMAIL", "").strip())
     resend_api_key: str = field(default_factory=lambda: os.getenv("RESEND_API_KEY", "").strip())
     smtp_from: str = field(default_factory=lambda: os.getenv("SMTP_FROM", "VYRANI AI <noreply@vyrani.blackhevents.com>").strip())
     max_duration: float = 10.0

@@ -35,8 +35,16 @@ export function Dashboard() {
 
       {!me.user.verified && (
         <div className="banner">
-          <div><strong>Verify your email to get a free minute.</strong> <span className="muted">We sent a link to {me.user.email}.</span></div>
+          <div><strong>Verify your email to unlock a free 30-second live trial.</strong> <span className="muted">We sent a link to {me.user.email}.</span></div>
           <button className="btn btn-sm btn-ghost" onClick={resend} disabled={resent}>{resent ? "Sent" : "Resend email"}</button>
+        </div>
+      )}
+
+      {me.user.trial && me.user.trial !== "granted" && me.balance === 0 && (
+        <div className="banner">
+          <div><strong>{me.user.trial === "disposable_email" ? "Free trials aren't available for temporary email addresses."
+            : "A free trial has already been used from this email or network."}</strong> <span className="muted">Add credits to go live.</span></div>
+          <Link className="btn btn-sm btn-primary" to="/app/credits">Add credits</Link>
         </div>
       )}
 

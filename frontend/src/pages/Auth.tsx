@@ -241,7 +241,7 @@ export function Verify() {
   }, [params, refresh]);
   return (
     <AuthLayout title={state === "done" ? "Email verified" : state === "failed" ? "That link didn't work" : "Verifying"}
-      lead={state === "done" ? "Your free minute of live is in your balance." : state === "failed" ? message : "One moment."}>
+      lead={state === "done" ? "Your free 30-second trial is ready, if this is your first VYRANI account." : state === "failed" ? message : "One moment."}>
       {state === "working" ? <Spinner /> : <Link className="btn btn-primary btn-lg btn-block" to="/app">Go to VYRANI</Link>}
     </AuthLayout>
   );

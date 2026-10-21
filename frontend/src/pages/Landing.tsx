@@ -217,7 +217,7 @@ const FAQ: [string, string][] = [
   ["Can I become a real person?", "Only yourself, or someone who has agreed to it in writing. Passing yourself off as someone else closes the account."],
   ["Is the video marked as AI?", "Yes. Every recording carries a tag that says it was made with AI, and live video can show a visible VYRANI label."],
   ["Does it work on my phone?", "You can browse and manage your account on a phone. Going live is built for a laptop or desktop with a webcam."],
-  ["What does it cost?", "Every new account gets a free live minute after confirming its email. Plans and prices are shown once you sign in."],
+  ["What does it cost?", "Your first account gets a free 30-second live trial after confirming its email. Plans and prices are shown once you sign in."],
 ];
 
 const FEATURES = [
@@ -321,7 +321,7 @@ export function Landing() {
           <p className="tile rr rr-1">Starts in seconds</p>
           <p className="tile rr rr-2">Talk, turn, laugh</p>
           <p className="tile rr rr-3">Record or stream</p>
-          <p className="tile rr rr-4">A free live minute</p>
+          <p className="tile rr rr-4">A free live trial</p>
           <Link className="tile rr rr-action" to={primary.to}>{primary.label}<span aria-hidden="true">→</span></Link>
         </div>
       </header>
@@ -410,7 +410,7 @@ export function Landing() {
           <img className="tile cta-side" src={src("neon")} alt="" width={1376} height={768} loading="lazy" />
           <div className="tile cta-main" data-reveal>
             <h2 id="cta-title">Who will you be today?</h2>
-            <p>Make an account, confirm your email and your first live minute is on us. Use it with your own face, or with someone's consent.</p>
+            <p>Make an account, confirm your email and your first 30 seconds live are on us. Use it with your own face, or with someone's consent.</p>
             <Link className="btn-board" to={primary.to}>{primary.label}</Link>
           </div>
           <div className="tile cta-side cta-flat" aria-hidden="true" />

@@ -7,8 +7,10 @@ Re-check the provider cost on the fal dashboard before changing anything here.
 CREDIT_USD = 0.10
 LIVE_CREDITS_PER_SECOND = 1
 # Live is billed in prepaid blocks: the browser must buy the next block before the current one ends.
-LIVE_BLOCK_SECONDS = 60
-FREE_CREDITS_ON_VERIFY = 60
+LIVE_BLOCK_SECONDS = 30
+# The free trial: long enough to see yourself transformed, short enough that farming accounts isn't worth it.
+# Who gets it is decided in trial.py.
+FREE_CREDITS_ON_VERIFY = 30
 
 # Packs sold through Stripe Checkout. Amounts are in US cents; credits never expire. Credits are whole minutes
 # (multiples of 60) and the bonus grows with every step, so a bigger pack is always better value.

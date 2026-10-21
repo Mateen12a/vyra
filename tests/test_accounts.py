@@ -178,7 +178,8 @@ def test_ledger_never_goes_negative_and_is_idempotent(store):
     assert sum(row["delta"] for row in store.ledger.find({"user_id": uid})) == 0
 
 
-def test_live_meter_blocks_and_refund(store):
+def test_live_meter_blocks_and_refund(store, monkeypatch):
+    monkeypatch.setattr(pricing, "LIVE_BLOCK_SECONDS", 60)  # block arithmetic below is written for 60 s blocks
     ledger = Ledger(store)
     meter = LiveMeter(store, ledger)
     uid = store.users.insert_one({"email": f"m{secrets.token_hex(4)}@example.com"}).inserted_id
@@ -201,7 +202,8 @@ def test_live_meter_blocks_and_refund(store):
     assert ended["state"] == "ended" and 30 <= ledger.balance(uid) <= 40  # slow networks add seconds
 
 
-def test_live_meter_stops_when_out_of_credits(store):
+def test_live_meter_stops_when_out_of_credits(store, monkeypatch):
+    monkeypatch.setattr(pricing, "LIVE_BLOCK_SECONDS", 60)  # block arithmetic below is written for 60 s blocks
     ledger = Ledger(store)
     meter = LiveMeter(store, ledger)
     uid = store.users.insert_one({"email": f"s{secrets.token_hex(4)}@example.com"}).inserted_id
@@ -261,7 +263,8 @@ def test_stripe_webhook_grants_once(client, mailer, store):
     assert status["likeness_watermark_always"] is True
 
 
-def test_live_meter_sweep_refunds_after_heartbeat(store):
+def test_live_meter_sweep_refunds_after_heartbeat(store, monkeypatch):
+    monkeypatch.setattr(pricing, "LIVE_BLOCK_SECONDS", 60)  # block arithmetic below is written for 60 s blocks
     from bson import ObjectId
     ledger = Ledger(store)
     meter = LiveMeter(store, ledger)
@@ -309,11 +312,12 @@ def test_failed_clip_is_refunded_once(client, mailer, store):
     uid = user_id(store, email)
     ledger = Ledger(store)
     job_id = "11111111-1111-4111-8111-" + secrets.token_hex(6)
+    ledger.apply(uid, pricing.TOOLS["clip"], "test", f"seed:{job_id}")
     ledger.apply(uid, -pricing.TOOLS["clip"], "clip", f"clip:{job_id}")
     record = {"id": job_id, "owner": str(uid), "status": "failed"}
     client.app.state.jobs.on_failed(record)
     client.app.state.jobs.on_failed(record)  # a second report must not refund again
-    assert ledger.balance(uid) == pricing.FREE_CREDITS_ON_VERIFY
+    assert ledger.balance(uid) == pricing.FREE_CREDITS_ON_VERIFY + pricing.TOOLS["clip"]  # seed came back once
 
 
 def test_clips_are_private_to_their_owner(client, mailer, store):
@@ -403,3 +407,23 @@ def test_google_unverified_email_is_refused(settings, store, mailer):
     client, _ = google_client(settings, store, mailer, {"sub": "y", "email": "y@example.com", "email_verified": False})
     with client:
         assert "auth_error=google" in google_round_trip(client).headers["location"]
+
+
+def test_trial_rules(store):
+    from person_studio import trial
+    assert trial.canonical_email("A.B+promo@GoogleMail.com") == "ab@gmail.com"
+    assert trial.canonical_email("a.b+x@outlook.com") == "a.b@outlook.com"
+    assert trial.decide(store, "x@mailinator.com", "8.8.8.8") == "disposable_email"
+    trial.record(store, "u1", "jane.doe@gmail.com", "8.8.4.4")
+    assert trial.decide(store, "janedoe+2@gmail.com", "1.1.1.1") == "mailbox_used"
+    trial.record(store, "u2", "other@example.com", "8.8.4.4")
+    assert trial.decide(store, "third@example.com", "8.8.4.4") == "address_limit"
+    assert trial.decide(store, "third@example.com", "127.0.0.1") is None  # local/dev addresses aren't limited
+
+
+def test_disposable_signup_gets_no_trial(client, mailer, store):
+    email = "farm@yopmail.com"
+    client.post("/api/auth/signup", json={"email": email, "password": "correct horse battery"})
+    assert client.post("/api/auth/verify", json={"token": mailer.last("verify")}).status_code == 200
+    me = client.get("/api/auth/me").json()
+    assert me["balance"] == 0 and me["user"]["trial"] == "disposable_email"

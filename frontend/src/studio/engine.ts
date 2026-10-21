@@ -402,8 +402,11 @@ export type StreamHandle = { stop: () => Promise<void> };
 
 /** Sends `video` (+ optional `audio`) to the user's destination. Calls onEnd with a message if it drops. */
 export async function startStream(opts: { video: MediaStream; audio?: MediaStreamTrack | null; url: string; key: string; onEnd: (message?: string) => void }): Promise<StreamHandle> {
+  // H.264 from the browser lets the server pass video straight through instead of re-encoding it (Chrome, Edge).
+  const h264 = ["video/webm;codecs=h264,opus", "video/webm;codecs=avc1,opus"].find((t) => MediaRecorder.isTypeSupported(t)) || "";
+  const mime = h264 || ["video/webm;codecs=vp8,opus", "video/webm;codecs=vp9,opus", "video/webm"].find((t) => MediaRecorder.isTypeSupported(t)) || "";
   const { ticket } = await api<{ ticket: string }>("/api/live/stream/ticket", { url: opts.url, key: opts.key });
-  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/live/stream/${encodeURIComponent(ticket)}`);
+  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/live/stream/${encodeURIComponent(ticket)}${h264 ? "?video=h264" : ""}`);
   ws.binaryType = "arraybuffer";
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("The streaming relay didn't answer. Try again.")), 15000);
@@ -411,8 +414,9 @@ export async function startStream(opts: { video: MediaStream; audio?: MediaStrea
     ws.onclose = (e) => { clearTimeout(timer); reject(new Error(e.reason || "Couldn't start the stream.")); };
   });
   const tracks = [...opts.video.getVideoTracks(), ...(opts.audio ? [opts.audio] : [])];
-  const mime = ["video/webm;codecs=vp8,opus", "video/webm;codecs=vp9,opus", "video/webm"].find((t) => MediaRecorder.isTypeSupported(t)) || "";
-  const recorder = new MediaRecorder(new MediaStream(tracks), mime ? { mimeType: mime, videoBitsPerSecond: 3_500_000 } : undefined);
+  // A keyframe every 2 s lets viewers who join mid-stream see video quickly (ignored by browsers without the option).
+  const recorder = new MediaRecorder(new MediaStream(tracks), mime
+    ? { mimeType: mime, videoBitsPerSecond: 3_500_000, videoKeyFrameIntervalDuration: 2000 } as MediaRecorderOptions : undefined);
   let queue = Promise.resolve();
   let ended = false;
   const finish = (message?: string) => { if (ended) return; ended = true; try { if (recorder.state !== "inactive") recorder.stop(); } catch { /* stopped */ } opts.onEnd(message); };

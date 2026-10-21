@@ -17,7 +17,7 @@ class Store:
         self.client = client or MongoClient(settings.mongo_uri, serverSelectionTimeoutMS=30000, retryWrites=True, retryReads=True, tz_aware=True)
         self.db = self.client[settings.db_name]
         for name in ("users", "sessions", "accounts", "ledger", "live_sessions", "rate_limits",
-                     "tokens", "stripe_events", "audit_log"):
+                     "tokens", "stripe_events", "audit_log", "trial_grants"):
             setattr(self, name, self.db[name])
 
     def ensure_indexes(self, attempts=4):
@@ -41,6 +41,8 @@ class Store:
         self.ledger.create_index([("user_id", ASCENDING), ("at", ASCENDING)])
         self.live_sessions.create_index([("user_id", ASCENDING), ("state", ASCENDING)])
         self.audit_log.create_index("at")
+        self.trial_grants.create_index("mailbox")
+        self.trial_grants.create_index([("ip", ASCENDING), ("at", ASCENDING)])
 
     def audit(self, actor, action, **details):
         self.audit_log.insert_one({"at": utcnow(), "actor": actor, "action": action, **details})

@@ -6,7 +6,7 @@ from bson.errors import InvalidId
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 
-from . import pricing
+from . import pricing, trial
 from .accounts import SESSION_COOKIE, SESSION_DAYS, AccountError
 from .billing import BillingError
 from .google_oauth import STATE_COOKIE, GoogleError, GoogleSignIn
@@ -62,8 +62,18 @@ def build_router(settings, store, accounts, ledger, billing, current_user, requi
         start_session(response, user)
         return me_payload(user)
 
-    def grant_free(user_id):
-        ledger.apply(user_id, pricing.FREE_CREDITS_ON_VERIFY, "free", f"free:{user_id}")
+    def grant_free(user_id, request):
+        """Free trial credits on first verification, unless trial.py sees a repeat or a throwaway address."""
+        user = store.users.find_one({"_id": user_id}) or {}
+        ip = request.client.host if request.client else ""
+        reason = trial.decide(store, user.get("email"), ip)
+        if reason:
+            store.users.update_one({"_id": user_id}, {"$set": {"trial": reason}})
+            store.audit(user_id, "trial_refused", reason=reason)
+            return
+        if ledger.apply(user_id, pricing.FREE_CREDITS_ON_VERIFY, "free", f"free:{user_id}") is not None:
+            trial.record(store, user_id, user.get("email"), ip)
+            store.users.update_one({"_id": user_id}, {"$set": {"trial": "granted"}})
 
     @router.get("/auth/providers")
     def providers():
@@ -96,7 +106,7 @@ def build_router(settings, store, accounts, ledger, billing, current_user, requi
             response.headers["location"] = base + "/signin?auth_error=google"
             return response
         if newly_verified:
-            grant_free(user["_id"])
+            grant_free(user["_id"], request)
         store.audit(user["_id"], "google_login")
         start_session(response, user)
         return response
@@ -119,7 +129,7 @@ def build_router(settings, store, accounts, ledger, billing, current_user, requi
         except AccountError as exc:
             raise HTTPException(exc.status, str(exc))
         if user_id:  # free starter credits, once per account
-            grant_free(user_id)
+            grant_free(user_id, request)
         return {"verified": True}
 
     @router.post("/auth/resend")

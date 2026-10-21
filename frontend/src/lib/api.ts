@@ -39,6 +39,7 @@ export type User = {
   email: string;
   role: "user" | "admin";
   verified: boolean;
+  trial?: "granted" | "disposable_email" | "mailbox_used" | "address_limit" | null;
   google: boolean;
   has_password: boolean;
   can_remove_watermark?: boolean;

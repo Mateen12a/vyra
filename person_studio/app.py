@@ -451,11 +451,16 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
             await websocket.close(code=1008)
             return
         _origin, _expiry, target, owner = grant
+        # Browsers that record H.264 are passed straight through, which costs almost no server CPU; only the
+        # audio is converted (Opus to AAC). Others are re-encoded at 720p with the cheapest x264 preset.
+        if websocket.query_params.get("video") == "h264":
+            video = ["-c:v", "copy"]
+        else:
+            video = ["-vf", "scale=-2:'min(720,ih)'", "-c:v", "libx264", "-preset", "ultrafast", "-tune", "zerolatency",
+                     "-g", "60", "-pix_fmt", "yuv420p", "-r", "30", "-b:v", "3000k", "-maxrate", "3500k", "-bufsize", "6000k"]
         command = [settings.ffmpeg_path, "-hide_banner", "-loglevel", "warning", "-nostdin",
                    "-fflags", "+genpts", "-f", "webm", "-i", "pipe:0", "-map", "0:v:0", "-map", "0:a:0?",
-                   "-af", "aresample=async=1:first_pts=0",
-                   "-c:v", "libx264", "-preset", "veryfast", "-tune", "zerolatency",
-                   "-pix_fmt", "yuv420p", "-r", "30", "-c:a", "aac", "-b:a", "128k",
+                   "-af", "aresample=async=1:first_pts=0", *video, "-c:a", "aac", "-b:a", "128k",
                    "-f", "flv", target]
         stream_id = secrets.token_urlsafe(16)
         try:
@@ -538,7 +543,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
                 try:
                     metered = await run_in_threadpool(meter.start, user["_id"], provider or live.default_provider())
                 except InsufficientCredits:
-                    raise HTTPException(402, f"Going live needs {pricing.LIVE_BLOCK_SECONDS} credits (1 minute). Add credits to continue.")
+                    raise HTTPException(402, f"Going live needs {pricing.LIVE_BLOCK_SECONDS} credits ({pricing.LIVE_BLOCK_SECONDS} seconds). Add credits to continue.")
                 except RuntimeError as exc:
                     raise HTTPException(409, str(exc))
         try:

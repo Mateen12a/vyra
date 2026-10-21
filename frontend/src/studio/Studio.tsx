@@ -4,7 +4,7 @@ import {
   BroadcastIcon, CameraIcon, CloseIcon, Dialog, ExpandIcon, Field, ImageIcon, MirrorIcon, RecordIcon, Spinner, StudioIcon, useToast,
 } from "../components/ui";
 import { api, minutes } from "../lib/api";
-import { SetupTour } from "./SetupTour";
+import { SetupTour, isPhone } from "./SetupTour";
 import { every } from "../lib/ticker";
 import { useAuth } from "../lib/auth";
 import { VIDEO_QUALITY, measured, qualityHint, uplinkLimited, type QualityMode, type QualityMetrics, type QualityReport, type UploadQuality } from "./quality";
@@ -81,6 +81,7 @@ export default function Studio() {
   const perMinute = catalogue?.live_credits_per_minute || 60;
 
   const [tab, setTab] = useState<InspectorTab>("look");
+  const [phone] = useState(isPhone); // no browser extensions or OBS on phones
   const [status, setStatus] = useState<LiveStatus | null>(null);
   const [phase, setPhase] = useState<Phase>("off");
   const [sourceStarting, setSourceStarting] = useState(false);
@@ -1226,9 +1227,9 @@ export default function Studio() {
           <button type="button" role="tab" aria-selected={tab === "scenes"} className={`studio-tab${tab === "scenes" ? " active" : ""}`} onClick={() => setTab("scenes")}>
             <span>Scenes</span>
           </button>
-          <button type="button" role="tab" aria-selected={tab === "vcam"} className={`studio-tab${tab === "vcam" ? " active" : ""}`} onClick={() => setTab("vcam")}>
+          {!phone && <button type="button" role="tab" aria-selected={tab === "vcam"} className={`studio-tab${tab === "vcam" ? " active" : ""}`} onClick={() => setTab("vcam")}>
             <StudioIcon /><span>Virtual Cam</span>
-          </button>
+          </button>}
         </div>
 
         {tab === "look" && (

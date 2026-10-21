@@ -12,8 +12,12 @@ const CHAPTERS = [
   { label: "Calls", title: "Choose where to show up.", text: "For supported calling websites, install the extension and select VYRANI AI Virtual Camera. Keep Studio live in another tab.", action: "Open studio" },
 ];
 
+// Phones have no browser extensions or OBS: the last step there is recording and sharing instead of calls.
+const PHONE_LAST = { label: "Share", title: "Keep it, post it.", text: "Press Record while you're live, then download the video to share anywhere. Calls and streaming work from a computer with Chrome or Edge.", action: "Open studio" };
+export const isPhone = () => typeof matchMedia === "function" && matchMedia("(pointer: coarse) and (max-width: 900px)").matches;
+
 // These illustrations never open a camera, connect to an AI service, or spend credits.
-function MotionScene({ chapter, paused }: { chapter: number; paused: boolean }) {
+function MotionScene({ chapter, paused, phone }: { chapter: number; paused: boolean; phone: boolean }) {
   return (
     <div className={`tour-scene tour-scene-${chapter}${paused ? " tour-paused" : ""}`} aria-hidden="true" key={chapter}>
       <div className="tour-scene-top"><span className="tour-window-dots"><i /><i /><i /></span><span>YOUR STUDIO</span></div>
@@ -24,15 +28,18 @@ function MotionScene({ chapter, paused }: { chapter: number; paused: boolean }) 
         {chapter === 0 && <div className="tour-permission"><CameraIcon /><span>Allow camera</span><span className="tour-permission-yes">Allow</span></div>}
         {chapter === 1 && <div className="tour-prompt"><ImageIcon /><span>A tailored black tuxedo</span></div>}
         {chapter === 2 && <div className="tour-live"><span />LIVE PREVIEW</div>}
-        {chapter === 3 && <div className="tour-device"><CameraIcon /><span>VYRANI AI Virtual Camera</span><span className="tour-device-check">✓</span></div>}
+        {chapter === 3 && phone && <div className="tour-device"><BroadcastIcon /><span>Recording saved</span><span className="tour-device-check">✓</span></div>}
+        {chapter === 3 && !phone && <div className="tour-device"><CameraIcon /><span>VYRANI AI Virtual Camera</span><span className="tour-device-check">✓</span></div>}
       </div>
-      <div className="tour-scene-bottom"><span>{["Camera permission", "A new look. Same movement.", "Preview → record or call", "Studio → extension → calling tab"][chapter]}</span><BroadcastIcon /></div>
+      <div className="tour-scene-bottom"><span>{["Camera permission", "A new look. Same movement.", "Preview → record or call", phone ? "Record → download → share" : "Studio → extension → calling tab"][chapter]}</span><BroadcastIcon /></div>
     </div>
   );
 }
 
 export function SetupTour({ extensionReady, onClose }: { extensionReady: boolean; onClose: () => void }) {
   const [chapter, setChapter] = useState(0);
+  const [phone] = useState(isPhone);
+  const chapters = phone ? [...CHAPTERS.slice(0, 3), PHONE_LAST] : CHAPTERS;
   const [paused, setPaused] = useState(false);
   const [setup, setSetup] = useState<SetupState | null>(null);
   const [error, setError] = useState("");
@@ -89,19 +96,19 @@ export function SetupTour({ extensionReady, onClose }: { extensionReady: boolean
 
   const engine = setup?.steps.find(step => step.id === "engine");
   const ready = !loading && !error && engine?.status === "done";
-  const page = CHAPTERS[chapter];
+  const page = chapters[chapter];
   const displaySteps = setup?.steps.filter(step => step.id === "engine" || step.id === "ffmpeg" || step.id === (destination === "browser" ? "extension" : "camera_apps")) ?? [];
 
   return (
     <Dialog title="Your first look, in four steps" onClose={onClose} wide>
       <div className="studio-tour" ref={contentRef} data-testid="studio-tour">
         <nav className="tour-chapters" aria-label="Studio tour steps">
-          {CHAPTERS.map((item, index) => <button type="button" key={item.label} aria-current={index === chapter ? "step" : undefined} onClick={() => setChapter(index)}>
+          {chapters.map((item, index) => <button type="button" key={item.label} aria-current={index === chapter ? "step" : undefined} onClick={() => setChapter(index)}>
             <span>{String(index + 1).padStart(2, "0")}</span>{item.label}
           </button>)}
         </nav>
         <div className="tour-art">
-          <MotionScene chapter={chapter} paused={paused} />
+          <MotionScene chapter={chapter} paused={paused} phone={phone} />
           <div className="tour-art-caption"><span>Animated walkthrough</span><button type="button" className="tour-motion-toggle" aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? "Play motion" : "Pause motion"}</button></div>
         </div>
         <div className="tour-copy" key={chapter}>
@@ -112,7 +119,8 @@ export function SetupTour({ extensionReady, onClose }: { extensionReady: boolean
           {chapter === 1 && <p className="tour-note">Using a real likeness? Confirm consent. VYRANI adds an AI disclosure.</p>}
           {chapter === 2 && <p className="tour-note">Live transformations use credits. Watching this tour uses none.</p>}
         </div>
-        {chapter === 3 && <section className="tour-readiness" aria-label="Your setup">
+        {chapter === 3 && phone && error && <div className="tour-error" role="alert"><p>{error}</p><button type="button" className="btn btn-ghost" disabled={loading} onClick={() => void refresh()}>Try again</button></div>}
+        {chapter === 3 && !phone && <section className="tour-readiness" aria-label="Your setup">
           <div className="tour-destinations" role="group" aria-label="Where you will use VYRANI">
             <button type="button" aria-pressed={destination === "browser"} onClick={() => setDestination("browser")}>Browser calls</button>
             <button type="button" aria-pressed={destination === "desktop"} onClick={() => setDestination("desktop")}>Desktop apps</button>

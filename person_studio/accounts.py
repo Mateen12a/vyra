@@ -69,7 +69,7 @@ class Accounts:
     def public(self, user):
         return {"id": str(user["_id"]), "email": user["email"], "role": user["role"],
                 "verified": user.get("verified", False), "google": bool(user.get("google_sub")),
-                "has_password": bool(user.get("password")),
+                "has_password": bool(user.get("password")), "trial": user.get("trial"),
                 "can_remove_watermark": self.can_remove_watermark(user)}
 
     def signup(self, email, password):

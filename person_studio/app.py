@@ -673,9 +673,22 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
     # Every admin API call checks the role server-side; these routes only return the page shell.
     # Without a build, everything falls back to the classic studio page.
     spa = WEB / "dist" / "index.html"
+    from fastapi.responses import HTMLResponse, PlainTextResponse
+    from . import seo
+    shell = spa.read_text(encoding="utf-8") if spa.is_file() else None
 
-    def spa_page():
-        return FileResponse(spa if spa.is_file() else WEB / "index.html")
+    def spa_page(request: Request):
+        if shell is None:
+            return FileResponse(WEB / "index.html")
+        return HTMLResponse(seo.render(shell, request.url.path.rstrip("/") or "/", settings.public_url))
+
+    @app.get("/robots.txt", include_in_schema=False)
+    def robots():
+        return PlainTextResponse(seo.robots(settings.public_url))
+
+    @app.get("/sitemap.xml", include_in_schema=False)
+    def sitemap():
+        return Response(seo.sitemap(settings.public_url), media_type="application/xml")
 
     for path in ("/", "/signin", "/signup", "/forgot", "/reset", "/verify", "/app", "/app/{rest:path}", "/admin"):
         app.add_api_route(path, spa_page, methods=["GET"], include_in_schema=False)

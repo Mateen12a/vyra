@@ -12,117 +12,18 @@ const LOOKS_DIR = "/assets/site/looks/";
 const SAMPLES = "/assets/site/samples/";
 
 type Look = { id: string; name: string; source: "Photo" | "Words"; prompt: string; detail: string };
-const CAMERA = { id: "cam", name: "Your camera" };
 const LOOKS: Look[] = [
-  { id: "jazz", name: "Jazz singer", source: "Words", prompt: "1920s jazz singer, pearls", detail: "Finger waves, pearls and stage light, typed in one line. Lips and eyes still follow her speech." },
   { id: "astronaut", name: "Astronaut", source: "Words", prompt: "Astronaut on a space station", detail: "The room behind her changes too: the bookshelf becomes a cabin window with the Earth in it." },
   { id: "professor", name: "Seventy years on", source: "Words", prompt: "Same person, age 70", detail: "She stays herself: silver hair, glasses, tweed. Useful for film, theatre and storytelling." },
   { id: "anchor", name: "News anchor", source: "Photo", prompt: "Reference photo: studio portrait", detail: "One clear photo sets the look. The suit and studio come from the photo; the expression comes from her." },
   { id: "warrior", name: "Norse warrior", source: "Words", prompt: "Norse warrior by firelight", detail: "Braids, fur and firelight. Costume looks for streams and live shows, without a costume." },
+  { id: "jazz", name: "Jazz singer", source: "Words", prompt: "1920s jazz singer, pearls", detail: "Finger waves, pearls and stage light, typed in one line. Lips and eyes still follow her speech." },
   { id: "neon", name: "Night courier", source: "Words", prompt: "Cyberpunk courier, neon rain", detail: "Neon from a rainy street lights her face from the side, the way the words asked." },
   { id: "painting", name: "Oil portrait", source: "Words", prompt: "Renaissance oil painting", detail: "Not only people: styles too. Brush strokes and cracked varnish, still moving when she does." },
 ];
 const src = (id: string) => `${LOOKS_DIR}${id}.jpg`;
 
 const reduceMotion = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-// 8×8 ordered-dither matrix: the order in which blocks of the frame are redrawn.
-const BAYER = [0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38, 60, 28, 52, 20, 62, 30, 54, 22,
-  3, 35, 11, 43, 1, 33, 9, 41, 51, 19, 59, 27, 49, 17, 57, 25, 15, 47, 7, 39, 13, 45, 5, 37, 63, 31, 55, 23, 61, 29, 53, 21];
-
-function loadImage(url: string) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
-    img.decoding = "async";
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = url;
-  });
-}
-
-// The frame: draws `from`, then redraws it block by block into `to`. Blocks on the moving front are shown coarse first.
-function PixelFrame({ lookId, label }: { lookId: string; label: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const shownRef = useRef<string>(CAMERA.id);
-  const cache = useRef(new Map<string, { full: HTMLImageElement; coarse: HTMLCanvasElement }>());
-  const [ready, setReady] = useState(false);
-
-  async function get(id: string) {
-    const hit = cache.current.get(id);
-    if (hit) return hit;
-    const full = await loadImage(src(id));
-    const coarse = document.createElement("canvas");
-    coarse.width = 48; coarse.height = 27;
-    coarse.getContext("2d")!.drawImage(full, 0, 0, 48, 27);
-    const entry = { full, coarse };
-    cache.current.set(id, entry);
-    return entry;
-  }
-
-  useEffect(() => {
-    let cancelled = false, raf = 0;
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext("2d")!;
-    const W = canvas.width, H = canvas.height, COLS = 48, ROWS = 27, cw = W / COLS, ch = H / ROWS;
-    (async () => {
-      const [a, b] = await Promise.all([get(shownRef.current), get(lookId)]).catch(() => [null, null]);
-      if (cancelled || !a || !b) return;
-      setReady(true);
-      if (shownRef.current === lookId || reduceMotion()) {
-        ctx.drawImage(b.full, 0, 0, W, H);
-        shownRef.current = lookId;
-        return;
-      }
-      const start = performance.now(), DURATION = 1100;
-      const tick = (now: number) => {
-        if (cancelled) return;
-        const t = Math.min(1, (now - start) / DURATION);
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(a.full, 0, 0, W, H);
-        for (let y = 0; y < ROWS; y++) {
-          for (let x = 0; x < COLS; x++) {
-            // Sweep left to right, broken up by the dither order so the edge reads as pixels, not a wipe.
-            const order = (x / COLS) * 0.6 + (BAYER[((y & 7) << 3) | (x & 7)] / 64) * 0.4;
-            const done = t * 1.25 - order;
-            if (done <= 0) continue;
-            if (done < 0.18) {
-              ctx.imageSmoothingEnabled = false;
-              ctx.drawImage(b.coarse, x, y, 1, 1, x * cw, y * ch, cw + 0.5, ch + 0.5);
-            } else {
-              ctx.imageSmoothingEnabled = true;
-              const sx = (x / COLS) * b.full.naturalWidth, sy = (y / ROWS) * b.full.naturalHeight;
-              ctx.drawImage(b.full, sx, sy, b.full.naturalWidth / COLS, b.full.naturalHeight / ROWS, x * cw, y * ch, cw + 0.5, ch + 0.5);
-            }
-          }
-        }
-        if (t < 1) raf = requestAnimationFrame(tick);
-        else { ctx.drawImage(b.full, 0, 0, W, H); shownRef.current = lookId; }
-      };
-      raf = requestAnimationFrame(tick);
-    })();
-    return () => { cancelled = true; cancelAnimationFrame(raf); };
-  }, [lookId]);
-
-  return (
-    <div className="pframe">
-      <img className="pframe-fallback" src={src(CAMERA.id)} alt="" width={1376} height={768} hidden={ready} />
-      <canvas ref={canvasRef} className="pframe-canvas" width={1376} height={768} role="img" aria-label={`Illustration: the same person, now ${label}`} />
-      <p className="pframe-tag"><span className="live-dot" aria-hidden="true" />{label}</p>
-    </div>
-  );
-}
-
-// Cycles the hero frame through the looks until the visitor picks one on the board.
-function useLookCycle() {
-  const [index, setIndex] = useState(-1); // -1 = the camera, before any look
-  const [held, setHeld] = useState(false);
-  useEffect(() => {
-    if (held || reduceMotion()) return;
-    const timer = setInterval(() => setIndex((i) => (i + 1) % LOOKS.length), index < 0 ? 1600 : 3400);
-    return () => clearInterval(timer);
-  }, [held, index]);
-  return { index, pick: (i: number) => { setHeld(true); setIndex(i); } };
-}
 
 // Reveals the parts of each section once as it scrolls in. Content is visible without script.
 function useReveal() {
@@ -187,11 +88,11 @@ const FAQ: [string, string][] = [
 ];
 
 const FEATURES = [
-  { title: "Talk and move", line: "Your mouth, eyes and turns drive the look as you speak.", size: "t-6x4", kind: "image", id: "jazz", clip: "clip-jazz.mp4" },
+  { title: "Talk and move", line: "Your mouth, eyes and turns drive the look as you speak.", size: "t-6x4", kind: "image", id: "split-astro", clip: "split-astro.mp4" },
   { title: "Go live in one press", line: "One button. The studio handles the rest.", size: "t-3x2", kind: "golive" },
   { title: "Record", line: "Download the file the moment you stop.", size: "t-3x2", kind: "rec" },
   { title: "Present as anyone", line: "Read the news, pitch, teach.", size: "t-3x4", kind: "image", id: "anchor", clip: "clip-anchor.mp4" },
-  { title: "Change looks mid-call", line: "Type a new look; no restart.", size: "t-3x2", kind: "image", id: "astronaut" },
+  { title: "Change looks mid-call", line: "Type a new look; no restart.", size: "t-3x2", kind: "image", id: "neon" },
   { title: "Age, era, style", line: "Yourself at seventy, or in 1520.", size: "t-3x2", kind: "image", id: "professor" },
   { title: "Marked as AI", line: "A tag in every file, a label on screen.", size: "t-3x4", kind: "label" },
   { title: "Match your voice", line: "Sound like who you've become.", size: "t-6x2", kind: "voice" },
@@ -200,8 +101,8 @@ const FEATURES = [
 ] as { title: string; line: string; size: string; kind: string; id?: string; clip?: string }[];
 
 const ALT: Record<string, string> = {
-  jazz: "the same woman as a 1920s jazz singer", anchor: "the same woman as a news anchor", astronaut: "the same woman as an astronaut",
-  professor: "the same woman at seventy", warrior: "the same woman as a Norse warrior", painting: "the same woman as an oil portrait",
+  jazz: "the same woman as a 1920s jazz singer", "split-astro": "the same woman as an astronaut, changed live", anchor: "the same woman as a news anchor", astronaut: "the same woman as an astronaut",
+  professor: "the same woman at seventy", neon: "the same woman as a neon-lit night courier", warrior: "the same woman as a Norse warrior", painting: "the same woman as an oil portrait",
 };
 
 // A muted loop with its still as the poster; the still alone if the clip can't play or motion is reduced.
@@ -242,14 +143,14 @@ function FeatureUi({ kind }: { kind: string }) {
 
 export function Landing() {
   const { me } = useAuth();
-  const { index, pick } = useLookCycle();
+  const [heroLook, setHeroLook] = useState(0);
+  const heroLoops = useRef(0);
   const heroClip = useClip("hero.mp4");
   const [stage, setStage] = useState(0);
   const [question, setQuestion] = useState(0);
   const [openRow, setOpenRow] = useState(0);
   useReveal();
 
-  const current = index < 0 ? null : LOOKS[index];
   const primary = me ? { to: "/app/studio", label: "Open the studio" } : { to: "/signup", label: "Try it free" };
 
   return (
@@ -278,7 +179,8 @@ export function Landing() {
         <div className="hero-stage">
           {heroClip
             ? <video className="pframe-video" src={`${SAMPLES}hero.mp4`} autoPlay muted loop playsInline aria-label="A VYRANI live session" />
-            : <PixelFrame lookId={current ? current.id : CAMERA.id} label={current ? current.name : CAMERA.name} />}
+            : <StudioDemo variant="pip" look={heroLook} className="hero-demo"
+                onLoop={() => { heroLoops.current++; if (heroLoops.current % 3 === 0) setHeroLook((n) => n + 1); }} />}
           <div className="tile statement">
             <h1>Turn your webcam into anyone, live.</h1>
           </div>
@@ -293,7 +195,7 @@ export function Landing() {
       </header>
 
       <main>
-        {/* Looks, set like a departure board. Opening a row also sends that look to the frame above. */}
+        {/* Looks, set like a departure board. */}
         <section id="looks" className="looks" aria-labelledby="looks-title">
           <h2 id="looks-title" className="sr-only">Looks</h2>
           <div className="departures" data-ui>
@@ -301,14 +203,14 @@ export function Landing() {
               const open = openRow === i;
               return (
                 <button key={look.id} className={`dep${open ? " is-open" : ""}`} aria-expanded={open}
-                  onClick={() => { setOpenRow(i); pick(i); document.querySelector(".hero")?.scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth" }); }}
+                  onClick={() => setOpenRow(i)}
                   onMouseEnter={() => setOpenRow(i)} onFocus={() => setOpenRow(i)}>
                   <img className="dep-thumb" src={src(look.id)} alt="" width={1376} height={768} loading="lazy" />
                   <span className="dep-name">{look.name}</span>
                   <span className="dep-src">{look.source}</span>
                   <span className="dep-prompt">“{look.prompt}”</span>
                   <span className="dep-status">Live</span>
-                  {open && <span className="dep-detail">{look.detail} <u>Show it on the frame</u></span>}
+                  {open && <span className="dep-detail">{look.detail}</span>}
                 </button>
               );
             })}

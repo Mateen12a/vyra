@@ -104,7 +104,7 @@ def build_router(settings, store, accounts, ledger, billing, current_user, requi
     @router.post("/auth/logout")
     def logout(request: Request, response: Response):
         accounts.logout(request.cookies.get(SESSION_COOKIE))
-        response.delete_cookie(SESSION_COOKIE, path="/")
+        response.delete_cookie(SESSION_COOKIE, path="/", httponly=True, secure=secure_cookie, samesite="lax")
         return {"ok": True}
 
     @router.get("/auth/me")

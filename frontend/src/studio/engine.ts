@@ -119,6 +119,18 @@ export function characterPrompt(description: string) {
   return start + (details ? `: ${details}` : "") + end;
 }
 
+// Video models drift a person's identity (skin tone, face, hair) when restyling clothes or scenes. Every text look
+// keeps the person as they are unless it asks to change them; a reference photo is a deliberate character swap.
+export const KEEP_IDENTITY = "Keep the person's own face, skin tone, facial features, hair and expressions exactly as they are.";
+const KEEP_FACE = "Keep the person's own face, skin tone, facial features and expressions exactly as they are.";
+const CHANGES_FACE = /(face|skin|complexion|aged?|ageing|aging|older|younger|elderly|child|makeup|make-up|beard|moustache|mustache|tattoos?|become someone|turn (them|the person) into|replace the person)/i;
+const CHANGES_HAIR = /(hair|hairstyle|haircut|wig|braids?|bob|curls|bald)/i;
+export function guardPrompt(prompt: string, hasImage: boolean) {
+  const text = prompt.trim();
+  if (!text || hasImage || CHANGES_FACE.test(text) || text.includes(KEEP_FACE) || text.includes(KEEP_IDENTITY)) return text;
+  return `${text} ${CHANGES_HAIR.test(text) ? KEEP_FACE : KEEP_IDENTITY}`;
+}
+
 /** Connects one live session. `billing.id` is filled by the first token and reused by reconnects. */
 export async function connect(opts: {
   stream: MediaStream; provider: string; model: string; state: LiveState; signal: AbortSignal;
@@ -131,7 +143,7 @@ export async function connect(opts: {
     if (token.meter) { billing.id = token.meter.session_id; billing.onMeter(token.meter); }
     return token;
   };
-  const initialState = { ...(state.image ? { image: state.image } : {}), prompt: { text: state.prompt, enhance: state.enhance } };
+  const initialState = { ...(state.image ? { image: state.image } : {}), prompt: { text: guardPrompt(state.prompt, Boolean(state.image)), enhance: state.enhance } };
 
   // fal keeps its single live slot for up to two minutes after a session ends, so "busy" is retried.
   const RETRIES = 7;
@@ -139,7 +151,11 @@ export async function connect(opts: {
     if (signal.aborted) return null;
     const token = await mint();
     try {
-      return await window.FalLucy!.connect(stream, { url: token.url, token: token.token, initialState, onRemoteStream: onRemote, signal });
+      const session = await window.FalLucy!.connect(stream, { url: token.url, token: token.token, initialState, onRemoteStream: onRemote, signal });
+      if (!session) return session;
+      const set = session.set.bind(session);
+      session.set = (next) => set({ ...next, prompt: guardPrompt(next.prompt, Boolean(next.image)) });
+      return session;
     } catch (error) {
       if (signal.aborted) return null;
       const busy = (error as { code?: string }).code === "busy";

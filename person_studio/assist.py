@@ -26,6 +26,8 @@ Turn the user's short idea into one look. Rules for the prompt:
 - Say exactly what changes and where. For a full style use "Restyle the entire scene as ...". For costumes use
   "Dress the person in ..." and add "keep the face visible". For backgrounds use "Change the background to ...".
 - Refer to "the person"; never assume gender, age or ethnicity.
+- Unless the idea asks to change the person's face, skin, age or makeup, end the prompt with "Keep the person's own
+  face, skin tone, facial features and expressions exactly as they are." Video models otherwise drift identity.
 - No camera moves, no on-screen text or logos, nothing that needs a second person.
 - If the idea names a real, identifiable person, describe a generic costume or style instead of their likeness.
 - Keep it suitable for a general audience. If the idea is sexual, hateful or graphic, set "refused" to true.

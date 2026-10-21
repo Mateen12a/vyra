@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "../components/ui";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -7,7 +6,6 @@ import { useAuth } from "../lib/auth";
 export function Settings() {
   const { me, signOut } = useAuth();
   const toast = useToast();
-  const navigate = useNavigate();
   const [sent, setSent] = useState(false);
   if (!me) return null;
   const u = me.user;
@@ -38,7 +36,7 @@ export function Settings() {
         </div>
         <div className="setting">
           <div><h2>Sign out</h2><p className="muted">Ends this session on this device.</p></div>
-          <button className="btn btn-sm btn-ghost" onClick={async () => { await signOut(); navigate("/", { replace: true }); }}>Sign out</button>
+          <button className="btn btn-sm btn-ghost" onClick={signOut}>Sign out</button>
         </div>
       </section>
       <p className="dim small-line">Use VYRANI only with the consent of anyone shown. Recordings carry a hidden tag that marks them as made with AI.</p>

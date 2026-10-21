@@ -5,6 +5,8 @@
   --tile-2: #1c1c21;
   --o1: #2a1208; --o2: #5a240c; --o3: #9a3d14; --o4: #d9561f;
   --r: 6px;
+  --blue: #0b1d4a;
+  --blue-2: #13296a;
   overflow-x: clip;
   padding: 0 var(--gap);
   font-size: 1rem;
@@ -72,14 +74,14 @@
 .dep-detail u { font-weight: 600; text-underline-offset: 3px; }
 
 /* ---------- before / after ---------- */
-.split { padding-top: clamp(120px, 12vw, 200px); }
+.split { margin: clamp(120px, 12vw, 200px) calc(var(--gap) * -1) 0; padding: clamp(64px, 7vw, 112px) 16px; background: var(--blue); }
 .split-head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); align-items: end; margin-bottom: 32px; }
 .split-head h2 { grid-column: 1 / 6; font-size: clamp(2.25rem, 4vw, 3.75rem); font-weight: 600; letter-spacing: -0.035em; line-height: 1; }
 .split-head p { grid-column: 6 / 10; font-size: 1.125rem; line-height: 1.5; }
 .split-picks { grid-column: 10 / 13; display: flex; gap: var(--gap); justify-content: flex-end; flex-wrap: wrap; }
-.split-pick { min-height: 44px; padding: 0 18px; border: 0; border-radius: var(--r); background: var(--tile-2); font-weight: 600; cursor: pointer;
+.split-pick { min-height: 44px; padding: 0 18px; border: 0; border-radius: var(--r); background: var(--blue-2); font-weight: 600; cursor: pointer;
   transition: background-color 160ms var(--ease), transform 120ms var(--ease); }
-.split-pick:hover { background: var(--raised-2); }
+.split-pick:hover { background: #1b3787; }
 .split-pick:active { transform: scale(0.97); }
 .split-pick.is-on { background: var(--accent); color: var(--accent-ink); }
 .split-box { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r); overflow: hidden; background: #000; touch-action: pan-y; cursor: ew-resize; }
@@ -93,7 +95,7 @@
 .split-tag-l { left: 16px; } .split-tag-r { right: 16px; max-width: 45%; text-align: right; }
 .split-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
 .split-box:has(.split-range:focus-visible) { outline: 3px solid var(--text); outline-offset: 2px; }
-.split-note { margin-top: 14px; max-width: 70ch; font-size: 0.9375rem; color: var(--text-2); }
+.split-note { margin-top: 14px; max-width: 70ch; font-size: 0.9375rem; color: #c3cde8; }
 
 /* ---------- marquee ---------- */
 .marquee { margin: clamp(120px, 12vw, 200px) calc(var(--gap) * -1) 0; overflow: hidden; background: var(--accent); color: var(--accent-ink); }

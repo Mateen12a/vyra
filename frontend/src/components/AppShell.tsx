@@ -11,7 +11,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 // Signed-in frame: a sidebar on desktop, a bottom bar on phones. The balance is always one glance away.
 export function AppShell() {
-  const { me, catalogue } = useAuth();
+  const { me, catalogue, signOut } = useAuth();
   const navigate = useNavigate();
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
@@ -60,12 +60,14 @@ export function AppShell() {
           <span className="balance-time num">{minutes(me.balance, perMinute)} of live</span>
           <span className="balance-add"><PlusIcon /> Add credits</span>
         </button>
+        <button type="button" className="btn btn-ghost btn-sm btn-block shell-signout" onClick={signOut}>Sign out</button>
       </aside>
       <header className="shell-top">
         <Wordmark to="/app" />
         <button type="button" className="balance-chip num" onClick={() => navigate("/app/credits")}>
           {me.balance.toLocaleString("en-US")} <small>credits</small><span className="balance-chip-add"><PlusIcon /></span>
         </button>
+        <button type="button" className="shell-top-signout" onClick={signOut}>Sign out</button>
       </header>
       <main className="shell-main"><Outlet /></main>
       <nav className="shell-tabbar" aria-label="App">

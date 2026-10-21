@@ -44,11 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setBalance = useCallback((balance: number) => {
     setMe(current => current && current.balance !== balance ? { ...current, balance } : current);
   }, []);
+  // Ends the session on the server, then reloads the landing page so no signed-in state survives in memory.
   const signOut = useCallback(async () => {
     await api("/api/auth/logout", {}).catch(() => {});
-    // In single-user mode /api/auth/me keeps answering; re-check instead of forcing null.
-    const next = await api<Me>("/api/auth/me").catch(() => null);
-    setMe(next);
+    setCatalogue(null);
+    window.location.assign("/");
   }, []);
 
   const value = useMemo<AuthState>(() => ({

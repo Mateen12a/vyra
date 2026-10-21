@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../lib/auth";
+import { DEMO_LOOKS, StudioDemo } from "../components/StudioDemo";
 import "../styles/landing.css";
 
 // The landing page is one board of tiles, like the pixels of a webcam frame. The hero frame re-renders itself from
@@ -141,56 +142,21 @@ function useReveal() {
   }, []);
 }
 
-// The real person and the changed video, playing in step, with a divider the visitor can drag.
-const SPLITS = [
-  { id: "astro", name: "Astronaut", prompt: "White spacesuit, space station, Earth in the window" },
-  { id: "jazz", name: "Jazz singer", prompt: "Flapper dress, pearls, finger waves, jazz club stage" },
-];
-
+// The real person and the changed video, playing in step inside a drawing of the studio, with a draggable divider.
 function Split() {
   const [pick, setPick] = useState(0);
-  const [at, setAt] = useState(50);
-  const before = useRef<HTMLVideoElement>(null), after = useRef<HTMLVideoElement>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const a = before.current, b = after.current;
-    if (!a || !b) return;
-    if (reduceMotion()) { a.pause(); b.pause(); return; }
-    // Keep the two clips on the same frame: the changed one leads, the original follows it.
-    const sync = () => { if (Math.abs(a.currentTime - b.currentTime) > 0.08) a.currentTime = b.currentTime; };
-    const restart = () => { a.currentTime = 0; b.currentTime = 0; a.play().catch(() => {}); b.play().catch(() => {}); };
-    b.addEventListener("timeupdate", sync); b.addEventListener("ended", restart);
-    restart();
-    return () => { b.removeEventListener("timeupdate", sync); b.removeEventListener("ended", restart); };
-  }, [pick]);
-  function drag(clientX: number) {
-    const r = boxRef.current!.getBoundingClientRect();
-    setAt(Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100)));
-  }
-  const look = SPLITS[pick];
   return (
     <section className="split" aria-labelledby="split-title">
       <div className="split-head" data-reveal>
         <h2 id="split-title">Same person, same second</h2>
-        <p>Left is the camera. Right is the same clip changed by the model behind VYRANI. Drag the line to compare.</p>
+        <p>Left is the camera. Right is the same moment changed by the model behind VYRANI. Drag the line to compare.</p>
         <div className="split-picks" role="group" aria-label="Choose a look">
-          {SPLITS.map((s, i) => (
+          {DEMO_LOOKS.map((s, i) => (
             <button key={s.id} className={`split-pick${i === pick ? " is-on" : ""}`} aria-pressed={i === pick} onClick={() => setPick(i)}>{s.name}</button>
           ))}
         </div>
       </div>
-      <div ref={boxRef} className="split-box" data-ui data-reveal
-        onPointerDown={(e) => { (e.target as HTMLElement).setPointerCapture?.(e.pointerId); drag(e.clientX); }}
-        onPointerMove={(e) => { if (e.buttons) drag(e.clientX); }}>
-        <video ref={after} key={`a-${look.id}`} className="split-video" src={`${LOOKS_DIR}split-${look.id}.mp4`} poster={`${LOOKS_DIR}split-${look.id}.jpg`} muted playsInline preload="auto" aria-label={`Changed: ${look.name}`} />
-        <div className="split-left" style={{ clipPath: `inset(0 ${100 - at}% 0 0)` }}>
-          <video ref={before} key={`b-${look.id}`} className="split-video" src={`${LOOKS_DIR}split-cam.mp4`} poster={`${LOOKS_DIR}split-cam.jpg`} muted playsInline preload="auto" aria-label="Original camera" />
-        </div>
-        <span className="split-line" style={{ left: `${at}%` }} aria-hidden="true"><span className="split-knob" /></span>
-        <span className="split-tag split-tag-l">Camera</span>
-        <span className="split-tag split-tag-r">“{look.prompt}”</span>
-        <input className="split-range" type="range" min={0} max={100} value={Math.round(at)} onChange={(e) => setAt(Number(e.target.value))} aria-label="Move the divider between the camera and the changed video" />
-      </div>
+      <div data-reveal><StudioDemo variant="split" look={pick} /></div>
       <p className="split-note">The camera clip is an AI-generated stand-in for a webcam; the change on the right was made by the Lucy video model, not edited by hand.</p>
     </section>
   );

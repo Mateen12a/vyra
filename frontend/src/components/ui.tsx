@@ -11,6 +11,13 @@ export function Wordmark({ to = "/" }: { to?: string }) {
 
 export const Spinner = () => <span className="spinner" aria-hidden="true" />;
 
+// The brand loader: a 3×3 block of pixels lighting in dither order, like a frame being redrawn.
+export const PixelLoader = ({ label }: { label?: string }) => (
+  <span className="pixel-loader" role="status" aria-label={label || "Loading"}>
+    {[0, 5, 2, 7, 4, 1, 6, 3, 8].map((d, i) => <span key={i} style={{ animationDelay: `${d * 90}ms` }} />)}
+  </span>
+);
+
 type FieldProps = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; help?: string; reveal?: boolean };
 
 // A labelled input with its own error line. `reveal` adds a show/hide toggle for passwords.

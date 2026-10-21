@@ -84,17 +84,6 @@
 .split-pick:hover { background: #1b3787; }
 .split-pick:active { transform: scale(0.97); }
 .split-pick.is-on { background: var(--accent); color: var(--accent-ink); }
-.split-box { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r); overflow: hidden; background: #000; touch-action: pan-y; cursor: ew-resize; }
-.split-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.split-left { position: absolute; inset: 0; }
-.split-line { position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: var(--accent); pointer-events: none; }
-.split-knob { position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: var(--r); background: var(--accent); }
-.split-knob::before, .split-knob::after { content: ""; position: absolute; top: 50%; width: 0; height: 0; margin-top: -6px; border: 6px solid transparent; }
-.split-knob::before { left: 7px; border-right-color: var(--accent-ink); } .split-knob::after { right: 7px; border-left-color: var(--accent-ink); }
-.split-tag { position: absolute; bottom: 16px; padding: 8px 12px; border-radius: var(--r); background: rgba(9, 9, 11, 0.72); font-size: 0.9375rem; font-weight: 600; pointer-events: none; }
-.split-tag-l { left: 16px; } .split-tag-r { right: 16px; max-width: 45%; text-align: right; }
-.split-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
-.split-box:has(.split-range:focus-visible) { outline: 3px solid var(--text); outline-offset: 2px; }
 .split-note { margin-top: 14px; max-width: 70ch; font-size: 0.9375rem; color: #c3cde8; }
 
 /* ---------- marquee ---------- */
@@ -271,8 +260,6 @@
   .split-head h2, .split-head p, .split-picks { grid-column: 1; }
   .split-head h2 { font-size: 9vw; } .split-head p { font-size: 1.0625rem; }
   .split-picks { justify-content: flex-start; }
-  .split-box { aspect-ratio: 4 / 5; }
-  .split-tag-r { display: none; }
   .faq { grid-template-columns: 1fr; padding: 96px 8px 0; }
   .faq-list { grid-column: 1; }
   .faq-pane { display: none; }

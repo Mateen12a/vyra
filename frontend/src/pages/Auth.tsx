@@ -1,27 +1,19 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Field, Spinner, Wordmark } from "../components/ui";
+import { StudioDemo } from "../components/StudioDemo";
 import { api, EMAIL_RE, MIN_PASSWORD } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
-// Demo loops shown beside the form. AI-generated illustrations of a fictional person, not product recordings.
-const ART = [
-  { clip: "clip-jazz.mp4", poster: "jazz.jpg", look: "1920s jazz singer" },
-  { clip: "clip-anchor.mp4", poster: "anchor.jpg", look: "News anchor" },
-];
-
+// The studio, live: a real before/after pair from the model behind VYRANI, switching looks every two loops.
 function AuthArt() {
-  const [i, setI] = useState(0);
-  const still = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const item = ART[i];
+  const [look, setLook] = useState(0);
+  const loops = useRef(0);
   return (
     <div className="auth-art">
       <div className="auth-art-frame">
-        {still
-          ? <img className="auth-art-media" src={`/assets/site/looks/${item.poster}`} alt="" />
-          : <video key={item.clip} className="auth-art-media" src={`/assets/site/looks/${item.clip}`} poster={`/assets/site/looks/${item.poster}`}
-              autoPlay muted playsInline onEnded={() => setI((n) => (n + 1) % ART.length)} aria-hidden="true" />}
-        <p className="auth-art-badge"><span className="live-dot" aria-hidden="true" />{item.look}</p>
+        <StudioDemo variant="pip" look={look} className="auth-demo"
+          onLoop={() => { loops.current++; if (loops.current % 2 === 0) setLook((n) => n + 1); }} />
         <div className="auth-art-card">
           <p className="auth-art-quote">Your camera, any character.</p>
           <p className="auth-art-steps">Type a look or add a photo, press Go live, then talk and move.</p>

@@ -1,0 +1,43 @@
+/* The studio drawing around the before/after clips. Mirrors the real studio: bar, stage, composer. */
+.sdemo { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; border-radius: 10px; overflow: hidden; background: #111114; color: #f4f4f5; }
+.sdemo-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #18181c; font-size: 0.875rem; font-weight: 600; }
+.sdemo-brand { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; }
+.sdemo-mark { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.sdemo-live { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 999px; background: rgba(239, 68, 68, 0.16); color: #fca5a5;
+  font-variant-numeric: tabular-nums; }
+.sdemo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rec); animation: sdemo-blink 1.4s steps(2, jump-none) infinite; }
+.sdemo-credits { color: #b4b4bc; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.sdemo-stage { position: relative; min-height: 0; aspect-ratio: 16 / 9; background: #000; overflow: hidden; }
+.sdemo-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sdemo-left { position: absolute; inset: 0; }
+.sdemo--split .sdemo-stage { cursor: ew-resize; touch-action: pan-y; }
+.sdemo-line { position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: var(--accent); pointer-events: none; }
+.sdemo-knob { position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 8px; background: var(--accent); }
+.sdemo-knob::before, .sdemo-knob::after { content: ""; position: absolute; top: 50%; margin-top: -6px; border: 6px solid transparent; }
+.sdemo-knob::before { left: 7px; border-right-color: var(--accent-ink); } .sdemo-knob::after { right: 7px; border-left-color: var(--accent-ink); }
+.sdemo-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+.sdemo-stage:has(.sdemo-range:focus-visible) { outline: 3px solid #fff; outline-offset: -3px; }
+.sdemo-tag { position: absolute; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(9, 9, 11, 0.72); font-size: 0.875rem; font-weight: 600; pointer-events: none; }
+.sdemo-tag-l { left: 12px; } .sdemo-tag-r { right: 12px; }
+.sdemo-pip { position: absolute; top: 12px; right: 12px; width: 26%; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; outline: 2px solid rgba(255, 255, 255, 0.85); }
+.sdemo-pip-tag { position: absolute; left: 6px; bottom: 6px; padding: 2px 6px; border-radius: 4px; background: rgba(9, 9, 11, 0.72); font-size: 0.75rem; font-weight: 600; }
+
+.sdemo-composer { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #18181c; }
+.sdemo-thumb { flex: none; width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+.sdemo-input { flex: 1; min-width: 0; display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 8px; background: #09090b; font-size: 0.9375rem;
+  white-space: nowrap; overflow: hidden; }
+.sdemo-typed { overflow: hidden; text-overflow: ellipsis; }
+.sdemo-caret { flex: none; width: 2px; height: 1.1em; margin-left: 2px; background: var(--accent); animation: sdemo-blink 1s steps(2, jump-none) infinite; }
+.sdemo-go { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 999px; background: var(--accent); color: var(--accent-ink);
+  font-size: 0.9375rem; font-weight: 600; }
+.sdemo-go .sdemo-dot { background: var(--accent-ink); }
+@keyframes sdemo-blink { 50% { opacity: 0.25; } }
+
+@media (max-width: 560px) {
+  .sdemo-credits { display: none; }
+  .sdemo-bar { font-size: 0.8125rem; }
+  .sdemo-thumb { display: none; }
+  .sdemo-input { font-size: 0.875rem; }
+}
+@media (prefers-reduced-motion: reduce) { .sdemo-dot, .sdemo-caret { animation: none; } }

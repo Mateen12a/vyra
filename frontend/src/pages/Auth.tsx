@@ -34,7 +34,7 @@ function AuthLayout({ title, lead, children }: { title: string; lead: ReactNode;
           <p className="auth-lead">{lead}</p>
           {children}
         </div>
-        <p className="auth-foot dim">Use VYRANI only with the consent of anyone shown.</p>
+        <p className="auth-foot dim">Use VYRANI only with the consent of anyone shown. <Link to="/terms">Terms</Link> · <Link to="/privacy">Privacy</Link></p>
       </div>
       <AuthArt />
     </div>
@@ -149,6 +149,8 @@ export function SignUp() {
         {touched.agree && errors.agree && <small className="field-error">{errors.agree}</small>}
         {error && <div className="alert alert-error" role="alert">{error}</div>}
         <button className="btn btn-primary btn-lg btn-block" disabled={busy}>{busy ? <><Spinner /> Creating account</> : "Create account"}</button>
+        <p className="auth-agree dim">By creating an account you agree to the <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy Policy</Link>,
+          including using only your own face and voice or ones you have permission to use.</p>
       </form>
     </AuthLayout>
   );

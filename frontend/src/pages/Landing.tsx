@@ -293,6 +293,7 @@ export function Landing() {
           <nav aria-label="Footer">
             <a href="#looks">Looks</a><a href="#how">How it works</a><a href="#faq">Questions</a>
             {me ? <Link to="/app/credits">Plans and credits</Link> : <Link to="/signin">Sign in</Link>}
+            <Link to="/privacy">Privacy</Link><Link to="/terms">Terms</Link>
           </nav>
           <p>Use VYRANI only with your own face or with the consent of anyone shown. Pictures on this page are AI-generated illustrations of a fictional person.</p>
         </div>

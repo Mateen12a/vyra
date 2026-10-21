@@ -461,3 +461,31 @@ def test_refund_after_credits_were_spent_stops_at_zero(client, mailer, store):
     assert stripe_post(client, refund_event("pi_" + sid, amount, amount)).status_code == 200
     assert client.get("/api/auth/me").json()["balance"] == 0
     assert store.audit_log.find_one({"action": "refund_shortfall", "payment_intent": "pi_" + sid})["missing"] == 240 - (pricing.FREE_CREDITS_ON_VERIFY + 40)
+
+
+def test_delete_account_erases_identity_and_signs_out(client, mailer, store):
+    email = signup(client, mailer)
+    uid = user_id(store, email)
+    assert client.post("/api/account/delete", json={"confirm": "wrong@example.com"}).status_code == 422
+    assert client.post("/api/account/delete", json={"confirm": email.upper()}).status_code == 200
+    assert client.get("/api/auth/me").status_code == 401
+    record = store.users.find_one({"_id": uid})
+    assert record["email"].endswith("@deleted.invalid") and record["disabled"] and record["password"] is None
+    assert client.post("/api/auth/login", json={"email": email, "password": "correct horse battery"}).status_code == 401
+    assert store.ledger.count_documents({"user_id": uid}) >= 1  # the anonymous ledger is kept
+
+
+def test_jobs_keep_no_uploads_and_expire(tmp_path):
+    import json as _json
+    from datetime import datetime, timedelta, timezone
+    from person_studio.config import Settings
+    from person_studio.jobs import Jobs
+    jobs = Jobs(Settings(data_dir=tmp_path), engine=None)
+    folder = tmp_path / "jobs" / "11111111-1111-4111-8111-111111111111"
+    folder.mkdir(parents=True)
+    for name in ("reference.png", "voice.sample", "source.mp4", "result.mp4"):
+        (folder / name).write_bytes(b"x")
+    old = (datetime.now(timezone.utc) - timedelta(days=8)).isoformat()
+    (folder / "job.json").write_text(_json.dumps({"id": folder.name, "status": "completed", "created_at": old, "owner": "u"}))
+    Jobs(Settings(data_dir=tmp_path), engine=None)  # a restart purges uploads and expires old results
+    assert not folder.exists()

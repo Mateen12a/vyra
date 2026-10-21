@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "VYRANI AI Virtual Camera & Mic",
   "version": "1.3.0",
-  "description": "Exposes VYRANI AI Studio's live video and voice as a Virtual Camera & Microphone in WhatsApp Web, Google Meet, Zoom Web, Discord Web, and Teams Web via local WebRTC loopback.",
+  "description": "Use your VYRANI live AI look as a camera and mic in Google Meet, WhatsApp Web, Zoom, Discord and Teams on the web.",
   "permissions": [
     "storage"
   ],
@@ -10,8 +10,8 @@
     "http://127.0.0.1/*",
     "http://localhost/*",
     "https://vyrani.com/*",
-        "https://www.vyrani.com/*",
-        "https://vyrani.blackhevents.com/*",
+    "https://www.vyrani.com/*",
+    "https://vyrani.blackhevents.com/*",
     "https://web.whatsapp.com/*",
     "https://meet.google.com/*",
     "https://*.zoom.us/*",
@@ -25,7 +25,12 @@
   },
   "action": {
     "default_title": "VYRANI AI Virtual Camera",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png"
+    }
   },
   "content_scripts": [
     {
@@ -72,5 +77,12 @@
       "all_frames": true,
       "world": "ISOLATED"
     }
-  ]
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "homepage_url": "https://vyrani.com"
 }

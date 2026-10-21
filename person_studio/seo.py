@@ -13,10 +13,12 @@ PAGES = {
     "/": ("Vyrani: Turn your webcam into anyone, live", DEFAULT_DESCRIPTION),
     "/signup": ("Create your Vyrani account", "Make a free Vyrani account and try a live AI look on your own webcam."),
     "/signin": ("Sign in to Vyrani", "Sign in to the Vyrani studio and go live as anyone."),
+    "/privacy": ("Privacy Policy · Vyrani", "What Vyrani collects, why, who handles it and how long it's kept."),
+    "/terms": ("Terms of Service · Vyrani", "The rules for using Vyrani, including consent for faces and voices, credits and refunds."),
 }
 PRIVATE_TITLE = "Vyrani"
 # Paths listed in the sitemap, in order of importance.
-SITEMAP = ("/", "/signup", "/signin")
+SITEMAP = ("/", "/signup", "/signin", "/privacy", "/terms")
 
 
 def _jsonld(origin):

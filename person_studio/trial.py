@@ -58,6 +58,8 @@ def decide(store, email, ip):
     if store.trial_grants.find_one({"mailbox": _digest(canonical_email(email))}):
         return "mailbox_used"
     since = utcnow() - timedelta(days=TRIAL_WINDOW_DAYS)
+    # The network hash is only needed for the window; forget it after that (the Privacy Policy says 30 days).
+    store.trial_grants.update_many({"at": {"$lt": since}, "ip": {"$exists": True}}, {"$unset": {"ip": ""}})
     if _public_ip(ip) and store.trial_grants.count_documents({"ip": _digest(ip), "at": {"$gte": since}}) >= TRIAL_PER_IP:
         return "address_limit"
     return None

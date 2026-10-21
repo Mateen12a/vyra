@@ -10,6 +10,11 @@ from pathlib import Path
 from .engine import Cancelled
 
 TERMINAL = {"completed", "failed", "cancelled"}
+# Privacy: uploads (face photo, source video, voice sample) are deleted as soon as a job ends; only the finished
+# video stays, and it is deleted RESULT_DAYS after the job was created. The Privacy Policy states these periods.
+INPUT_FILES = ("upload.video", "upload.image", "source.mp4", "reference.png", "voice.sample", "voice.mime",
+               "voice.audio", "generated.mp4", "voiced.mp4")
+RESULT_DAYS = 7
 
 
 class Jobs:
@@ -33,6 +38,43 @@ class Jobs:
                 self._save(record)
             except (ValueError, KeyError, OSError):
                 logging.warning("Could not recover job metadata in %s", file.parent.name)
+        for job_id, record in list(self.records.items()):
+            if record["status"] in TERMINAL:
+                self._purge_inputs(job_id)
+        self.sweep()
+
+    def _purge_inputs(self, job_id):
+        folder = self.folder(job_id)
+        for name in INPUT_FILES:
+            try:
+                (folder / name).unlink(missing_ok=True)
+            except OSError:
+                logging.warning("Could not delete %s for job %s", name, job_id)
+
+    def sweep(self, now=None):
+        """Delete finished jobs older than RESULT_DAYS, results included."""
+        now = now or datetime.now(timezone.utc)
+        for job_id, record in list(self.records.items()):
+            try:
+                created = datetime.fromisoformat(record["created_at"])
+            except (KeyError, ValueError):
+                continue
+            if record["status"] in TERMINAL and (now - created).days >= RESULT_DAYS:
+                try:
+                    self.delete(job_id)
+                except (RuntimeError, ValueError, OSError):
+                    logging.warning("Could not delete expired job %s", job_id)
+
+    def delete_owner(self, owner):
+        """Delete every finished job of one user (account deletion). Returns how many were removed."""
+        removed = 0
+        for job_id, record in list(self.records.items()):
+            if record.get("owner") == owner:
+                try:
+                    self.delete(job_id); removed += 1
+                except (RuntimeError, ValueError, OSError):
+                    self.cancel(job_id)
+        return removed
 
     def folder(self, job_id):
         # Only canonical UUIDs are accepted, never client-supplied filesystem paths.
@@ -47,6 +89,7 @@ class Jobs:
         temporary.replace(folder / "job.json")
 
     def create(self):
+        self.sweep()
         if not self.slots.acquire(blocking=False):
             raise RuntimeError("The GPU queue is full. Wait for the current tests to finish.")
         job_id = str(uuid.uuid4())
@@ -120,6 +163,7 @@ class Jobs:
         finally:
             with self.lock:
                 self.cancels.pop(job_id, None)
+            self._purge_inputs(job_id)
             self.slots.release()
 
     def cancel(self, job_id):

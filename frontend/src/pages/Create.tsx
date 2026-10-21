@@ -133,7 +133,8 @@ export default function Create() {
               <a className="btn btn-primary btn-lg" href={`/api/jobs/${job.id}/result`} download="vyrani-video.mp4">Download</a>
               <button type="button" className="btn btn-ghost btn-lg" onClick={share}>Share</button>
             </div>
-            <p className="dim small-line">The file carries a tag saying it was made with AI. Share it only with the consent of anyone shown.</p>
+            <p className="dim small-line">Download it now: videos are deleted from our servers after 7 days, and your photo, clip and voice sample
+              were already deleted when this finished. The file carries a tag saying it was made with AI. Share it only with the consent of anyone shown.</p>
           </>
         )}
         {(done || failed) && <button type="button" className="btn btn-ghost" onClick={() => setJob(null)}>Make another</button>}

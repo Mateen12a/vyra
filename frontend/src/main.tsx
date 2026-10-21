@@ -16,6 +16,8 @@ import { Settings } from "./pages/Settings";
 const Studio = lazy(() => import("./studio/Studio"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Create = lazy(() => import("./pages/Create"));
+const Privacy = lazy(() => import("./pages/Legal").then((m) => ({ default: m.Privacy })));
+const Terms = lazy(() => import("./pages/Legal").then((m) => ({ default: m.Terms })));
 
 function Loading() {
   return <div className="page-loading"><Spinner /></div>;
@@ -74,6 +76,8 @@ createRoot(document.getElementById("root")!).render(
           <Suspense fallback={<Loading />}>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route path="/signin" element={<GuestOnly><SignIn /></GuestOnly>} />
               <Route path="/signup" element={<GuestOnly><SignUp /></GuestOnly>} />
               <Route path="/forgot" element={<Forgot />} />

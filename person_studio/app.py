@@ -17,7 +17,7 @@ from typing import Optional
 from bson import ObjectId
 from bson.errors import InvalidId
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from PIL import Image, ImageOps, UnidentifiedImageError
 from starlette.concurrency import run_in_threadpool
@@ -196,6 +196,22 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
 
     guard = ProviderGuard(settings, notify=notify_operator if store is not None else None)
     app.state.provider_guard = guard
+
+    @app.post("/api/account/delete")
+    async def delete_account(request: Request, user=Depends(authorize)):
+        if store is None or not user:
+            raise HTTPException(404, "Accounts are not enabled on this server.")
+        try:
+            body = await request.json()
+        except ValueError:
+            body = {}
+        if not isinstance(body, dict) or str(body.get("confirm", "")).strip().lower() != user["email"].lower():
+            raise HTTPException(422, "Type your email address exactly to confirm.")
+        await run_in_threadpool(jobs.delete_owner, str(user["_id"]))
+        await run_in_threadpool(accounts.delete_account, user)
+        response = JSONResponse({"deleted": True})
+        response.delete_cookie(SESSION_COOKIE, path="/", httponly=True, secure=settings.public_url.startswith("https://"), samesite="lax")
+        return response
 
     @app.get("/api/admin/provider")
     def provider_status(admin=Depends(require_admin)):
@@ -752,7 +768,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
     def sitemap():
         return Response(seo.sitemap(settings.public_url), media_type="application/xml")
 
-    for path in ("/", "/signin", "/signup", "/forgot", "/reset", "/verify", "/app", "/app/{rest:path}", "/admin"):
+    for path in ("/", "/privacy", "/terms", "/signin", "/signup", "/forgot", "/reset", "/verify", "/app", "/app/{rest:path}", "/admin"):
         app.add_api_route(path, spa_page, methods=["GET"], include_in_schema=False)
 
     # The classic studio: voice, scene rules, streaming and overlays live here until they move to the new studio.

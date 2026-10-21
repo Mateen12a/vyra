@@ -142,6 +142,17 @@ class Accounts:
         user = self.store.users.find_one({"_id": session["user_id"]})
         return None if not user or user.get("disabled") else user
 
+    def delete_account(self, user):
+        """Erase a person's identity: email, password, Google link, sessions and one-time tokens go. The anonymous
+        credit ledger stays (payment records must be kept), and the trial record keeps only a one-way hash."""
+        uid = user["_id"]
+        self.store.sessions.delete_many({"user_id": uid})
+        self.store.tokens.delete_many({"user_id": uid})
+        self.store.users.update_one({"_id": uid}, {"$set": {
+            "email": f"deleted-{uid}@deleted.invalid", "password": None, "google_sub": None, "disabled": True,
+            "deleted_at": utcnow(), "role": "user"}, "$unset": {"trial": ""}})
+        self.store.audit(uid, "account_deleted")
+
     def logout(self, token):
         if token:
             self.store.sessions.delete_one({"_id": _digest(token)})

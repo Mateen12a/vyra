@@ -49,16 +49,16 @@ function Split() {
   return (
     <section className="split" aria-labelledby="split-title">
       <div className="split-head" data-reveal>
-        <h2 id="split-title">Same person, same second</h2>
-        <p>Left is the camera. Right is the same moment changed by the model behind VYRANI. Drag the line to compare.</p>
-        <div className="split-picks" role="group" aria-label="Choose a look">
+        <h2 id="split-title">A new face, the same second</h2>
+        <p>One reference photo becomes a whole different person who talks, smiles and gestures exactly as you do. Drag the line to compare.</p>
+        <div className="split-picks" role="group" aria-label="Choose a demo">
           {DEMO_LOOKS.map((s, i) => (
-            <button key={s.id} className={`split-pick${i === pick ? " is-on" : ""}`} aria-pressed={i === pick} onClick={() => setPick(i)}>{s.name}</button>
+            <button key={s.id} className={`split-pick${i === pick ? " is-on" : ""}`} aria-pressed={i === pick} onClick={() => setPick(i)}>{s.from} → {s.name}</button>
           ))}
         </div>
       </div>
       <div data-reveal><StudioDemo variant="split" look={pick} /></div>
-      <p className="split-note">The camera clip is an AI-generated stand-in for a webcam; the change on the right was made by the Lucy video model, not edited by hand.</p>
+      <p className="split-note">Everyone shown is AI-generated and fictional. Each change was made from one reference photo by VYRANI's video models, not edited by hand. Use real faces only with consent.</p>
     </section>
   );
 }
@@ -88,7 +88,7 @@ const FAQ: [string, string][] = [
 ];
 
 const FEATURES = [
-  { title: "Talk and move", line: "Your mouth, eyes and turns drive the look as you speak.", size: "t-6x4", kind: "image", id: "split-astro", clip: "split-astro.mp4" },
+  { title: "Talk and move", line: "Your mouth, eyes and turns drive the look as you speak.", size: "t-6x4", kind: "image", id: "swap-b", clip: "swap-b.mp4" },
   { title: "Go live in one press", line: "One button. The studio handles the rest.", size: "t-3x2", kind: "golive" },
   { title: "Record", line: "Download the file the moment you stop.", size: "t-3x2", kind: "rec" },
   { title: "Present as anyone", line: "Read the news, pitch, teach.", size: "t-3x4", kind: "image", id: "anchor", clip: "clip-anchor.mp4" },
@@ -101,7 +101,7 @@ const FEATURES = [
 ] as { title: string; line: string; size: string; kind: string; id?: string; clip?: string }[];
 
 const ALT: Record<string, string> = {
-  jazz: "the same woman as a 1920s jazz singer", "split-astro": "the same woman as an astronaut, changed live", anchor: "the same woman as a news anchor", astronaut: "the same woman as an astronaut",
+  jazz: "the same woman as a 1920s jazz singer", "swap-b": "a man on a work call, replaced by a different woman from one photo", anchor: "the same woman as a news anchor", astronaut: "the same woman as an astronaut",
   professor: "the same woman at seventy", neon: "the same woman as a neon-lit night courier", warrior: "the same woman as a Norse warrior", painting: "the same woman as an oil portrait",
 };
 

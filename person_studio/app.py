@@ -675,12 +675,15 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
     spa = WEB / "dist" / "index.html"
     from fastapi.responses import HTMLResponse, PlainTextResponse
     from . import seo
-    shell = spa.read_text(encoding="utf-8") if spa.is_file() else None
+    shell_cache = {"mtime": None, "text": None}
 
     def spa_page(request: Request):
-        if shell is None:
+        if not spa.is_file():
             return FileResponse(WEB / "index.html")
-        return HTMLResponse(seo.render(shell, request.url.path.rstrip("/") or "/", settings.public_url))
+        mtime = spa.stat().st_mtime  # re-read after a rebuild so the page never points at old bundles
+        if shell_cache["mtime"] != mtime:
+            shell_cache.update(mtime=mtime, text=spa.read_text(encoding="utf-8"))
+        return HTMLResponse(seo.render(shell_cache["text"], request.url.path.rstrip("/") or "/", settings.public_url))
 
     @app.get("/robots.txt", include_in_schema=False)
     def robots():

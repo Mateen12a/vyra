@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/studio-demo.css";
 
-// A drawing of the VYRANI studio playing a real before/after pair: the camera clip and the same clip changed by the
-// Lucy video model, kept on the same frame. "pip" shows the result on stage with the camera in a corner, as the
+// A drawing of the VYRANI studio playing a real before/after pair: a camera clip and the same clip with the person
+// replaced from one reference photo, kept on the same frame. Everyone shown is AI-generated and fictional. "pip" shows the result on stage with the camera in a corner, as the
 // studio does while live; "split" puts a draggable divider between the two.
 const DIR = "/assets/site/looks/";
 export const DEMO_LOOKS = [
-  { id: "astro", name: "Astronaut", prompt: "White spacesuit, space station, Earth in the window" },
-  { id: "jazz", name: "Jazz singer", prompt: "Flapper dress, pearls, a jazz club stage" },
+  { id: "swap-a", cam: "swap-a-cam", ref: "ref-man.jpg", from: "Ada", name: "Tom", prompt: "Become Tom, from one photo" },
+  { id: "swap-b", cam: "swap-b-cam", ref: "ref-woman.jpg", from: "Mark", name: "Amara", prompt: "Become Amara, from one photo" },
 ];
 
 const reduce = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -71,32 +71,32 @@ export function StudioDemo({ variant, look, onLoop, className = "" }: { variant:
           onPointerDown: (e: React.PointerEvent) => drag(e.clientX),
           onPointerMove: (e: React.PointerEvent) => { if (e.buttons) drag(e.clientX); },
         } : {})}>
-        <video ref={out} key={`o-${item.id}`} className="sdemo-video" src={`${DIR}split-${item.id}.mp4`} poster={`${DIR}split-${item.id}.jpg`}
-          muted playsInline preload="auto" aria-label={`Live result: ${item.name}`} />
+        <video ref={out} key={`o-${item.id}`} className="sdemo-video" src={`${DIR}${item.id}.mp4`} poster={`${DIR}${item.id}.jpg`}
+          muted playsInline preload="auto" aria-label={`Live result: ${item.from} as ${item.name}`} />
         {variant === "split" ? (
           <>
             <div className="sdemo-left" style={{ clipPath: `inset(0 ${100 - at}% 0 0)` }}>
-              <video ref={cam} key={`c-${item.id}`} className="sdemo-video" src={`${DIR}split-cam.mp4`} poster={`${DIR}split-cam.jpg`} muted playsInline preload="auto" aria-label="Your camera" />
+              <video ref={cam} key={`c-${item.id}`} className="sdemo-video" src={`${DIR}${item.cam}.mp4`} poster={`${DIR}${item.cam}.jpg`} muted playsInline preload="auto" aria-label="Your camera" />
             </div>
             <span className="sdemo-line" style={{ left: `${at}%` }} aria-hidden="true"><span className="sdemo-knob" /></span>
-            <span className="sdemo-tag sdemo-tag-l">Your camera</span>
-            <span className="sdemo-tag sdemo-tag-r">{item.name}, live</span>
+            <span className="sdemo-tag sdemo-tag-l">{item.from} on camera</span>
+            <span className="sdemo-tag sdemo-tag-r">{item.from} as {item.name}, live</span>
             <input className="sdemo-range" type="range" min={0} max={100} value={Math.round(at)} onChange={(e) => setAt(Number(e.target.value))}
               aria-label="Move the divider between your camera and the live result" />
           </>
         ) : (
           <>
             <div className="sdemo-pip">
-              <video ref={cam} key={`c-${item.id}`} className="sdemo-video" src={`${DIR}split-cam.mp4`} poster={`${DIR}split-cam.jpg`} muted playsInline preload="auto" aria-label="Your camera" />
+              <video ref={cam} key={`c-${item.id}`} className="sdemo-video" src={`${DIR}${item.cam}.mp4`} poster={`${DIR}${item.cam}.jpg`} muted playsInline preload="auto" aria-label="Your camera" />
               <span className="sdemo-pip-tag">You</span>
             </div>
-            <span className="sdemo-tag sdemo-tag-l">{item.name}</span>
+            <span className="sdemo-tag sdemo-tag-l">{item.from} as {item.name}</span>
           </>
         )}
       </div>
 
       <div className="sdemo-composer">
-        <img className="sdemo-thumb" src={`${DIR}split-${item.id}.jpg`} alt="" />
+        <img className="sdemo-thumb" src={`${DIR}${item.ref}`} alt={`Reference photo of ${item.name}`} />
         <span className="sdemo-input"><span className="sdemo-typed">{typed}</span><span className="sdemo-caret" aria-hidden="true" /></span>
         <span className="sdemo-go"><span className="sdemo-dot" aria-hidden="true" />Live</span>
       </div>

@@ -76,7 +76,7 @@
 .split { margin: clamp(120px, 12vw, 200px) calc(var(--gap) * -1) 0; padding: clamp(64px, 7vw, 112px) 16px; background: var(--blue); }
 .split-head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); align-items: end; margin-bottom: 32px; }
 .split-head h2 { grid-column: 1 / 6; font-size: clamp(2.25rem, 4vw, 3.75rem); font-weight: 600; letter-spacing: -0.035em; line-height: 1; }
-.split-head p { grid-column: 6 / 10; font-size: 1.125rem; line-height: 1.5; }
+.split-head p { grid-column: 7 / 10; font-size: 1.125rem; line-height: 1.5; }
 .split-picks { grid-column: 10 / 13; display: flex; gap: var(--gap); justify-content: flex-end; flex-wrap: wrap; }
 .split-pick { min-height: 44px; padding: 0 18px; border: 0; border-radius: var(--r); background: var(--blue-2); font-weight: 600; cursor: pointer;
   transition: background-color 160ms var(--ease), transform 120ms var(--ease); }

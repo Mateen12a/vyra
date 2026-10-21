@@ -16,6 +16,7 @@ import { Settings } from "./pages/Settings";
 const Studio = lazy(() => import("./studio/Studio"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Create = lazy(() => import("./pages/Create"));
+const Landing2 = lazy(() => import("./pages/Landing2"));
 const Privacy = lazy(() => import("./pages/Legal").then((m) => ({ default: m.Privacy })));
 const Terms = lazy(() => import("./pages/Legal").then((m) => ({ default: m.Terms })));
 
@@ -87,6 +88,7 @@ createRoot(document.getElementById("root")!).render(
           <Suspense fallback={<Loading />}>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/preview" element={<Landing2 />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/signin" element={<GuestOnly><SignIn /></GuestOnly>} />

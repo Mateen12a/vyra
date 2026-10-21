@@ -133,7 +133,7 @@ tr:last-child td { border-bottom: 0; }
 
 /* ---------- auth ---------- */
 .auth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); min-height: 100dvh; }
-.auth-form-side { display: flex; flex-direction: column; padding: 28px clamp(20px, 5vw, 64px); }
+.auth-form-side { min-width: 0; display: flex; flex-direction: column; padding: 28px clamp(20px, 5vw, 64px); }
 .auth-top { margin-bottom: auto; }
 .auth-box { width: min(400px, 100%); margin: 48px auto; display: grid; gap: 14px; }
 .auth-title { font-size: clamp(1.875rem, 1.4rem + 1.4vw, 2.5rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
@@ -145,20 +145,19 @@ tr:last-child td { border-bottom: 0; }
 .auth-link-right { justify-self: end; margin-top: -8px; font-size: 0.8125rem; color: var(--text-2); }
 .auth-foot { margin-top: auto; font-size: 0.8125rem; }
 .google svg { flex: none; }
-.auth-art { position: relative; padding: 16px; }
-.auth-art-frame { position: relative; height: 100%; min-height: 520px; border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 18px;
-  padding: clamp(24px, 4vw, 48px); background:
-    radial-gradient(120% 80% at 70% 20%, rgba(255, 107, 43, 0.35), transparent 60%),
-    radial-gradient(80% 60% at 20% 80%, rgba(120, 90, 255, 0.18), transparent 60%), #0f0f12; border: 1px solid var(--line); }
-.auth-art-badge { position: absolute; top: 24px; left: 24px; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 999px;
-  background: rgba(0, 0, 0, 0.5); font-size: 0.8125rem; font-weight: 600; }
-.auth-art-quote { font-size: clamp(1.75rem, 1rem + 2.2vw, 3rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; max-width: 14ch; }
-.auth-art-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--text-2); font-size: 0.875rem; }
-.auth-art-steps span:not(.auth-art-arrow) { padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.07); }
-.auth-art-arrow { color: var(--text-3); }
+.auth-art { position: relative; min-width: 0; padding: 8px; }
+.auth-art-frame { position: relative; height: 100%; min-height: 520px; border-radius: 6px; overflow: hidden; background: #000; }
+.auth-art-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+.auth-art-badge { position: absolute; top: 16px; left: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px;
+  background: rgba(9, 9, 11, 0.72); font-size: 0.9375rem; font-weight: 600; }
+.auth-art-card { position: absolute; left: 8px; bottom: 8px; max-width: min(460px, calc(100% - 16px)); padding: 24px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); }
+.auth-art-quote { font-size: clamp(1.75rem, 1rem + 1.8vw, 2.5rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; }
+.auth-art-steps { margin-top: 10px; font-size: 1rem; line-height: 1.45; }
 @media (max-width: 900px) {
-  .auth { grid-template-columns: 1fr; }
-  .auth-art { display: none; }
+  .auth { grid-template-columns: minmax(0, 1fr); }
+  .auth-art { order: -1; padding: 8px 8px 0; }
+  .auth-art-frame { min-height: 0; aspect-ratio: 16 / 9; }
+  .auth-art-card { display: none; }
   .auth-box { margin: 32px auto; }
 }
 

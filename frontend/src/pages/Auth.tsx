@@ -4,7 +4,34 @@ import { Field, Spinner, Wordmark } from "../components/ui";
 import { api, EMAIL_RE, MIN_PASSWORD } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
-// Split layout: the form on the left, a quiet statement about the product on the right.
+// Demo loops shown beside the form. AI-generated illustrations of a fictional person, not product recordings.
+const ART = [
+  { clip: "clip-jazz.mp4", poster: "jazz.jpg", look: "1920s jazz singer" },
+  { clip: "clip-anchor.mp4", poster: "anchor.jpg", look: "News anchor" },
+];
+
+function AuthArt() {
+  const [i, setI] = useState(0);
+  const still = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const item = ART[i];
+  return (
+    <div className="auth-art">
+      <div className="auth-art-frame">
+        {still
+          ? <img className="auth-art-media" src={`/assets/site/looks/${item.poster}`} alt="" />
+          : <video key={item.clip} className="auth-art-media" src={`/assets/site/looks/${item.clip}`} poster={`/assets/site/looks/${item.poster}`}
+              autoPlay muted playsInline onEnded={() => setI((n) => (n + 1) % ART.length)} aria-hidden="true" />}
+        <p className="auth-art-badge"><span className="live-dot" aria-hidden="true" />{item.look}</p>
+        <div className="auth-art-card">
+          <p className="auth-art-quote">Your camera, any character.</p>
+          <p className="auth-art-steps">Type a look or add a photo, press Go live, then talk and move.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Split layout: the form on the left, the product moving on the right.
 function AuthLayout({ title, lead, children }: { title: string; lead: ReactNode; children: ReactNode }) {
   return (
     <div className="auth">
@@ -17,15 +44,7 @@ function AuthLayout({ title, lead, children }: { title: string; lead: ReactNode;
         </div>
         <p className="auth-foot dim">Use VYRANI only with the consent of anyone shown.</p>
       </div>
-      <div className="auth-art" aria-hidden="true">
-        <div className="auth-art-frame">
-          <div className="auth-art-badge"><span className="live-dot" /> Live</div>
-          <p className="auth-art-quote">Your camera, any character. Changed as you move.</p>
-          <div className="auth-art-steps">
-            <span>Photo or idea</span><span className="auth-art-arrow">→</span><span>Go live</span><span className="auth-art-arrow">→</span><span>Record or stream</span>
-          </div>
-        </div>
-      </div>
+      <AuthArt />
     </div>
   );
 }

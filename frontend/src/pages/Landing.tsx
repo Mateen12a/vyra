@@ -141,6 +141,61 @@ function useReveal() {
   }, []);
 }
 
+// The real person and the changed video, playing in step, with a divider the visitor can drag.
+const SPLITS = [
+  { id: "astro", name: "Astronaut", prompt: "White spacesuit, space station, Earth in the window" },
+  { id: "jazz", name: "Jazz singer", prompt: "Flapper dress, pearls, finger waves, jazz club stage" },
+];
+
+function Split() {
+  const [pick, setPick] = useState(0);
+  const [at, setAt] = useState(50);
+  const before = useRef<HTMLVideoElement>(null), after = useRef<HTMLVideoElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const a = before.current, b = after.current;
+    if (!a || !b) return;
+    if (reduceMotion()) { a.pause(); b.pause(); return; }
+    // Keep the two clips on the same frame: the changed one leads, the original follows it.
+    const sync = () => { if (Math.abs(a.currentTime - b.currentTime) > 0.08) a.currentTime = b.currentTime; };
+    const restart = () => { a.currentTime = 0; b.currentTime = 0; a.play().catch(() => {}); b.play().catch(() => {}); };
+    b.addEventListener("timeupdate", sync); b.addEventListener("ended", restart);
+    restart();
+    return () => { b.removeEventListener("timeupdate", sync); b.removeEventListener("ended", restart); };
+  }, [pick]);
+  function drag(clientX: number) {
+    const r = boxRef.current!.getBoundingClientRect();
+    setAt(Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100)));
+  }
+  const look = SPLITS[pick];
+  return (
+    <section className="split" aria-labelledby="split-title">
+      <div className="split-head" data-reveal>
+        <h2 id="split-title">Same person, same second</h2>
+        <p>Left is the camera. Right is the same clip changed by the model behind VYRANI. Drag the line to compare.</p>
+        <div className="split-picks" role="group" aria-label="Choose a look">
+          {SPLITS.map((s, i) => (
+            <button key={s.id} className={`split-pick${i === pick ? " is-on" : ""}`} aria-pressed={i === pick} onClick={() => setPick(i)}>{s.name}</button>
+          ))}
+        </div>
+      </div>
+      <div ref={boxRef} className="split-box" data-ui data-reveal
+        onPointerDown={(e) => { (e.target as HTMLElement).setPointerCapture?.(e.pointerId); drag(e.clientX); }}
+        onPointerMove={(e) => { if (e.buttons) drag(e.clientX); }}>
+        <video ref={after} key={`a-${look.id}`} className="split-video" src={`${LOOKS_DIR}split-${look.id}.mp4`} poster={`${LOOKS_DIR}split-${look.id}.jpg`} muted playsInline preload="auto" aria-label={`Changed: ${look.name}`} />
+        <div className="split-left" style={{ clipPath: `inset(0 ${100 - at}% 0 0)` }}>
+          <video ref={before} key={`b-${look.id}`} className="split-video" src={`${LOOKS_DIR}split-cam.mp4`} poster={`${LOOKS_DIR}split-cam.jpg`} muted playsInline preload="auto" aria-label="Original camera" />
+        </div>
+        <span className="split-line" style={{ left: `${at}%` }} aria-hidden="true"><span className="split-knob" /></span>
+        <span className="split-tag split-tag-l">Camera</span>
+        <span className="split-tag split-tag-r">“{look.prompt}”</span>
+        <input className="split-range" type="range" min={0} max={100} value={Math.round(at)} onChange={(e) => setAt(Number(e.target.value))} aria-label="Move the divider between the camera and the changed video" />
+      </div>
+      <p className="split-note">The camera clip is an AI-generated stand-in for a webcam; the change on the right was made by the Lucy video model, not edited by hand.</p>
+    </section>
+  );
+}
+
 function useClip(file: string) {
   const [ok, setOk] = useState(false);
   useEffect(() => {
@@ -166,7 +221,7 @@ const FAQ: [string, string][] = [
 ];
 
 const FEATURES = [
-  { title: "Sing, talk, move", line: "Your mouth and face drive the look as you speak.", size: "t-6x4", kind: "image", id: "jazz", clip: "clip-jazz.mp4" },
+  { title: "Talk and move", line: "Your mouth, eyes and turns drive the look as you speak.", size: "t-6x4", kind: "image", id: "jazz", clip: "clip-jazz.mp4" },
   { title: "Go live in one press", line: "One button. The studio handles the rest.", size: "t-3x2", kind: "golive" },
   { title: "Record", line: "Download the file the moment you stop.", size: "t-3x2", kind: "rec" },
   { title: "Present as anyone", line: "Read the news, pitch, teach.", size: "t-3x4", kind: "image", id: "anchor", clip: "clip-anchor.mp4" },
@@ -190,9 +245,26 @@ function TileMedia({ id, clip }: { id: string; clip?: string }) {
   return <video src={LOOKS_DIR + clip} poster={src(id)} autoPlay muted loop playsInline preload="none" aria-label={`${alt} (AI-generated clip)`} />;
 }
 
+// A recording timer that really counts, as it does in the studio.
+function RecTimer() {
+  const [s, setS] = useState(42);
+  useEffect(() => {
+    if (reduceMotion()) return;
+    const t = setInterval(() => setS((n) => (n >= 599 ? 0 : n + 1)), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const mm = String(Math.floor(s / 60)).padStart(2, "0"), ss = String(s % 60).padStart(2, "0");
+  return (
+    <div className="fx fx-rec" data-ui aria-hidden="true">
+      <span className="fx-rec-row"><span className="fx-rec-dot" />REC<span className="fx-rec-time">{mm}:{ss}</span></span>
+      <span className="fx-rec-bar"><span style={{ width: `${(s % 60) / 0.6}%` }} /></span>
+    </div>
+  );
+}
+
 function FeatureUi({ kind }: { kind: string }) {
-  if (kind === "golive") return <div className="fx fx-golive" data-ui aria-hidden="true"><span className="fx-dot" />Go live</div>;
-  if (kind === "rec") return <div className="fx fx-rec" data-ui aria-hidden="true"><span className="fx-dot" />00:42</div>;
+  if (kind === "golive") return <div className="fx fx-golive" data-ui aria-hidden="true"><span className="fx-golive-btn"><span className="fx-dot" />Go live</span></div>;
+  if (kind === "rec") return <RecTimer />;
   if (kind === "label") return <div className="fx fx-label" data-ui aria-hidden="true">VYRANI · AI</div>;
   if (kind === "voice") return (
     <div className="fx fx-voice" data-ui aria-hidden="true">
@@ -277,6 +349,8 @@ export function Landing() {
           </div>
         </section>
 
+        <Split />
+
         <div className="marquee" aria-hidden="true">
           <div className="marquee-track">
             {Array.from({ length: 4 }, (_, i) => <span key={i}>Be anyone, live <i className="px" /> Who will you be today <i className="px" /></span>)}
@@ -302,7 +376,10 @@ export function Landing() {
         {/* Features: close-ups of the studio on a board. */}
         <section className="features" aria-labelledby="features-title">
           <div className="fboard">
-            <div className="tile ftile t-6x2 f-head" data-reveal><h2 id="features-title">Made for calls and streams</h2></div>
+            <div className="tile ftile t-6x2 f-head" data-reveal>
+              <h2 id="features-title">Made for calls and streams</h2>
+              <p>Everything you need to go live as someone else, in one browser tab.</p>
+            </div>
             {FEATURES.map((f) => (
               <div key={f.title} className={`tile ftile ${f.size} f-${f.kind}`} data-reveal>
                 {f.kind === "image" && f.id ? <TileMedia id={f.id} clip={f.clip} /> : <FeatureUi kind={f.kind} />}

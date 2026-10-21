@@ -65,7 +65,8 @@ export function Privacy() {
         30 days. Neither can be turned back into the original, and the email code stays even if you delete your account, so the trial
         can't be claimed again. Our servers keep short technical logs for security and fixing faults.</p>
       <h3>Cookies and storage</h3>
-      <p>We use one essential cookie to keep you signed in (it lasts 14 days), and a short-lived one during Google sign-in. Your studio
+      <p>We use one essential cookie to keep you signed in (it lasts 14 days), a short-lived one during Google sign-in, and a random
+        device code (kept for 2 years) used only to give the free trial once per device. It contains nothing about you. Your studio
         preferences, such as camera quality, are saved in your own browser and never sent to us.</p>
 
       <h2>Faces and voices</h2>

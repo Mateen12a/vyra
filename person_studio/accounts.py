@@ -70,6 +70,7 @@ class Accounts:
         return {"id": str(user["_id"]), "email": user["email"], "role": user["role"],
                 "verified": user.get("verified", False), "google": bool(user.get("google_sub")),
                 "has_password": bool(user.get("password")), "trial": user.get("trial"),
+                "consented": bool(user.get("consent_at")),
                 "can_remove_watermark": self.can_remove_watermark(user)}
 
     def signup(self, email, password):
@@ -141,6 +142,12 @@ class Accounts:
             return None
         user = self.store.users.find_one({"_id": session["user_id"]})
         return None if not user or user.get("disabled") else user
+
+    def record_consent(self, user):
+        """The person confirmed they'll only use their own face and voice, or ones they have permission to use."""
+        self.store.users.update_one({"_id": user["_id"]}, {"$set": {"consent_at": utcnow()}})
+        self.store.audit(user["_id"], "consent")
+        return self.store.users.find_one({"_id": user["_id"]})
 
     def delete_account(self, user):
         """Erase a person's identity: email, password, Google link, sessions and one-time tokens go. The anonymous

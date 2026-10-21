@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CameraIcon, ImageIcon, PixelLoader, RecordIcon, useToast } from "../components/ui";
 import { api, upload } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { useConsentGate } from "../components/Consent";
 
 // Make a short video on any device, phones first: film or pick a clip, choose who to become from one photo, pick a
 // voice (keep yours, a preset, or a sample you upload), then download or share. Runs on the clip tool, not live.
@@ -63,6 +64,7 @@ export default function Create() {
   const [quality, setQuality] = useState<"preview" | "detail">("detail");
   const [job, setJob] = useState<Job | null>(null);
   const [busy, setBusy] = useState(false);
+  const consentGate = useConsentGate();
   const videoUrl = useObjectUrl(video), photoUrl = useObjectUrl(photo), sampleUrl = useObjectUrl(sample);
 
   useEffect(() => { api<{ voices?: Voice[] }>("/api/live/status").then((s) => setVoices(s.voices || [])).catch(() => {}); }, []);
@@ -84,6 +86,7 @@ export default function Create() {
 
   async function create() {
     if (!ready || !video || !photo) return;
+    if (!(await consentGate.ensure())) return;
     setBusy(true);
     try {
       const form = new FormData();
@@ -144,6 +147,7 @@ export default function Create() {
 
   return (
     <div className="page create">
+      {consentGate.dialog}
       <header className="page-head"><div><p className="kicker">Create video</p><h1 className="page-title">Become anyone in a short video</h1></div></header>
       <p className="muted lead-line">Film up to {MAX_SECONDS} seconds, add one photo of who to become, and choose a voice. Works on your phone.</p>
 

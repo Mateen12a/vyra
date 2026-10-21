@@ -197,6 +197,15 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
     guard = ProviderGuard(settings, notify=notify_operator if store is not None else None)
     app.state.provider_guard = guard
 
+    CONSENT_NEEDED = "Confirm you'll only use your own face and voice, an AI-made person's, or someone's who agreed."
+
+    @app.post("/api/account/consent")
+    def give_consent(user=Depends(authorize)):
+        if store is None or not user:
+            return {"consented": True}
+        accounts.record_consent(user)
+        return {"consented": True}
+
     @app.post("/api/account/delete")
     async def delete_account(request: Request, user=Depends(authorize)):
         if store is None or not user:
@@ -583,6 +592,8 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
                 if metered["state"] != "live":
                     raise HTTPException(409, "This live session has ended. Start a new one.")
             else:
+                if not user.get("consent_at"):
+                    raise HTTPException(428, CONSENT_NEEDED)
                 if not await run_in_threadpool(guard.allows, "live"):
                     raise HTTPException(503, BUSY_MESSAGE)
                 try:
@@ -629,6 +640,8 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         try:
             if quality not in {"preview", "detail"}:
                 raise HTTPException(422, "Choose Preview or Detail quality.")
+            if store is not None and user and not user.get("consent_at"):
+                raise HTTPException(428, CONSENT_NEEDED)
             voice = voice.strip()
             if voice and voice != "sample" and voice not in {v["id"] for v in VOICES}:
                 raise HTTPException(422, "Choose one of the listed voices.")

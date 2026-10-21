@@ -43,6 +43,7 @@ class Store:
         self.live_sessions.create_index([("user_id", ASCENDING), ("state", ASCENDING)])
         self.audit_log.create_index("at")
         self.trial_grants.create_index("mailbox")
+        self.trial_grants.create_index("device", sparse=True)
         self.trial_grants.create_index([("ip", ASCENDING), ("at", ASCENDING)])
 
     def audit(self, actor, action, **details):

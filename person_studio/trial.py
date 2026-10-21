@@ -3,7 +3,8 @@
 The trial costs real provider money, so it is given once per person as far as we can tell cheaply:
 - throwaway email domains get none,
 - one grant per mailbox, after folding Gmail dots and "+tags" (a.b+1@gmail.com is ab@gmail.com),
-- at most TRIAL_PER_IP grants per network address in TRIAL_WINDOW_DAYS (households and offices share addresses).
+- one grant per device, ever (a random ID the browser keeps in the vyr_d cookie), whatever account or network,
+- at most TRIAL_PER_IP grants per network address in TRIAL_WINDOW_DAYS.
 The account itself always works; a refused trial just starts at zero credits.
 """
 import hashlib
@@ -12,7 +13,8 @@ from datetime import timedelta
 
 from .store import utcnow
 
-TRIAL_PER_IP = 2
+TRIAL_PER_IP = 1
+DEVICE_COOKIE = "vyr_d"
 TRIAL_WINDOW_DAYS = 30
 
 # The most common disposable-mail providers. Not exhaustive: the per-address limit catches the rest.
@@ -50,13 +52,15 @@ def _public_ip(ip):
         return False
 
 
-def decide(store, email, ip):
+def decide(store, email, ip, device=None):
     """Return None if the trial may be granted, or a short reason it may not."""
     domain = (email or "").rsplit("@", 1)[-1].lower()
     if domain in DISPOSABLE:
         return "disposable_email"
     if store.trial_grants.find_one({"mailbox": _digest(canonical_email(email))}):
         return "mailbox_used"
+    if device and store.trial_grants.find_one({"device": _digest(device)}):
+        return "device_used"
     since = utcnow() - timedelta(days=TRIAL_WINDOW_DAYS)
     # The network hash is only needed for the window; forget it after that (the Privacy Policy says 30 days).
     store.trial_grants.update_many({"at": {"$lt": since}, "ip": {"$exists": True}}, {"$unset": {"ip": ""}})
@@ -65,6 +69,7 @@ def decide(store, email, ip):
     return None
 
 
-def record(store, user_id, email, ip):
+def record(store, user_id, email, ip, device=None):
     store.trial_grants.insert_one({"user_id": user_id, "mailbox": _digest(canonical_email(email)),
-                                   "ip": _digest(ip or "unknown"), "at": utcnow()})
+                                   "ip": _digest(ip or "unknown"), "at": utcnow(),
+                                   **({"device": _digest(device)} if device else {})})

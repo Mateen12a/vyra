@@ -48,6 +48,8 @@ def build_router(settings, store, accounts, ledger, billing, current_user, requi
         except AccountError as exc:
             raise HTTPException(exc.status, str(exc))
         store.audit(user["_id"], "signup")
+        if body.get("consent") is True:  # the sign-up form's consent checkbox
+            user = accounts.record_consent(user)
         start_session(response, user)
         return me_payload(user)
 
@@ -66,13 +68,14 @@ def build_router(settings, store, accounts, ledger, billing, current_user, requi
         """Free trial credits on first verification, unless trial.py sees a repeat or a throwaway address."""
         user = store.users.find_one({"_id": user_id}) or {}
         ip = request.client.host if request.client else ""
-        reason = trial.decide(store, user.get("email"), ip)
+        device = (request.cookies.get(trial.DEVICE_COOKIE) or "")[:64] or None
+        reason = trial.decide(store, user.get("email"), ip, device)
         if reason:
             store.users.update_one({"_id": user_id}, {"$set": {"trial": reason}})
             store.audit(user_id, "trial_refused", reason=reason)
             return
         if ledger.apply(user_id, pricing.FREE_CREDITS_ON_VERIFY, "free", f"free:{user_id}") is not None:
-            trial.record(store, user_id, user.get("email"), ip)
+            trial.record(store, user_id, user.get("email"), ip, device)
             store.users.update_one({"_id": user_id}, {"$set": {"trial": "granted"}})
 
     @router.get("/auth/providers")

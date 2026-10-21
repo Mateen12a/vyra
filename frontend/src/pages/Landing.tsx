@@ -157,7 +157,7 @@ export function Landing() {
     <div className="landing">
       {/* Hero: the name band, link tiles, and three columns of tiles. */}
       <header className="board hero" aria-label="VYRANI">
-        <div className="tile name-band"><p className="name-text" aria-hidden="true">VYRANI</p><span className="sr-only">VYRANI</span></div>
+        <div className="tile name-band"><p className="name-text" aria-hidden="true"><img className="name-mark" src="/assets/brand/vyrani-mark-ink.svg" alt="" />VYRANI</p><span className="sr-only">VYRANI</span></div>
         <nav className="links" aria-label="Sections">
           <a className="tile link-tile" href="#looks">Looks</a>
           <a className="tile link-tile" href="#how">How it works</a>

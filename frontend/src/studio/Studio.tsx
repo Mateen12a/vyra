@@ -5,6 +5,7 @@ import {
 } from "../components/ui";
 import { api, minutes } from "../lib/api";
 import { SetupTour, isPhone } from "./SetupTour";
+import { useConsentGate } from "../components/Consent";
 import { every } from "../lib/ticker";
 import { useAuth } from "../lib/auth";
 import { VIDEO_QUALITY, measured, qualityHint, uplinkLimited, type QualityMode, type QualityMetrics, type QualityReport, type UploadQuality } from "./quality";
@@ -80,6 +81,7 @@ export default function Studio() {
   const perMinute = catalogue?.live_credits_per_minute || 60;
 
   const [tab, setTab] = useState<InspectorTab>("look");
+  const consentGate = useConsentGate();
   // After an unplanned stop, calls and streams show this card instead of the real camera until the user decides.
   const holdRef = useRef<HTMLCanvasElement | null>(null);
   const [holding, setHolding] = useState(false);
@@ -879,6 +881,7 @@ export default function Studio() {
     if (!look) return toast("Describe a look or add a photo first.", true);
     if (!status?.available) return toast(status?.message || "Live isn't available right now.", true);
     if (me && me.balance < LIVE_BLOCK) return toast(`Going live needs at least ${LIVE_BLOCK} credits (${LIVE_BLOCK} seconds). Add credits to continue.`, true);
+    if (!(await consentGate.ensure())) return;
     if (!darkWarnedRef.current && roomIsDark()) {
       darkWarnedRef.current = true;
       return toast("Your room looks dark, so the result will look soft. Face a window or a lamp, then press Go live. Press again to go live anyway.");
@@ -1132,6 +1135,7 @@ export default function Studio() {
 
   return (
     <div className="studio" data-vyra-studio="true">
+      {consentGate.dialog}
       <section className="studio-stage-col">
         {live && left && (() => {
           const remaining = Math.max(0, Math.round(left.seconds - (Date.now() - left.at) / 1000));

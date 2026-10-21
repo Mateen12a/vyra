@@ -80,7 +80,7 @@ def client(settings, store, mailer):
 
 def signup(client, mailer, verify=True):
     email = f"user{secrets.token_hex(4)}@example.com"
-    response = client.post("/api/auth/signup", json={"email": email, "password": "correct horse battery"})
+    response = client.post("/api/auth/signup", json={"email": email, "password": "correct horse battery", "consent": True})
     assert response.status_code == 200, response.text
     if verify:
         assert client.post("/api/auth/verify", json={"token": mailer.last("verify")}).status_code == 200
@@ -489,3 +489,21 @@ def test_jobs_keep_no_uploads_and_expire(tmp_path):
     (folder / "job.json").write_text(_json.dumps({"id": folder.name, "status": "completed", "created_at": old, "owner": "u"}))
     Jobs(Settings(data_dir=tmp_path), engine=None)  # a restart purges uploads and expires old results
     assert not folder.exists()
+
+
+def test_live_and_videos_need_consent_once(client, mailer, store):
+    email = f"c{secrets.token_hex(4)}@example.com"
+    client.post("/api/auth/signup", json={"email": email, "password": "correct horse battery"})  # no checkbox (like Google)
+    client.post("/api/auth/verify", json={"token": mailer.last("verify")})
+    assert client.get("/api/auth/me").json()["user"]["consented"] is False
+    assert client.post("/api/live/token").status_code == 428
+    assert client.post("/api/account/consent").status_code == 200
+    assert client.get("/api/auth/me").json()["user"]["consented"] is True
+    assert client.post("/api/live/token").status_code != 428
+
+
+def test_one_trial_per_device_across_accounts_and_networks(store):
+    from person_studio import trial
+    trial.record(store, "u1", "first@example.com", "8.8.8.8", device="device-abc-123456")
+    assert trial.decide(store, "second@example.com", "1.1.1.1", device="device-abc-123456") == "device_used"
+    assert trial.decide(store, "second@example.com", "9.9.9.9", device="another-device-0001") is None

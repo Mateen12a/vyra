@@ -126,7 +126,7 @@ export function SignUp() {
     if (errors.email || errors.password || errors.agree) return;
     setBusy(true); setError("");
     try {
-      await api("/api/auth/signup", { email: email.trim(), password });
+      await api("/api/auth/signup", { email: email.trim(), password, consent: agree });
       await refresh();
       navigate("/app?welcome=1", { replace: true });
     } catch (err) { setError((err as Error).message); }

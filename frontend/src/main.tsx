@@ -61,6 +61,17 @@ function GuestOnly({ children }: { children: ReactNode }) {
   return me ? <Navigate to="/app" replace /> : <>{children}</>;
 }
 
+// A random, anonymous device ID so the free trial is given once per device (see person_studio/trial.py). Kept as a
+// cookie the server reads, with a backup copy in local storage that restores the cookie if only cookies are cleared.
+(() => {
+  try {
+    const fromCookie = /(?:^|; )vyr_d=([A-Za-z0-9-]{16,64})/.exec(document.cookie)?.[1];
+    const id = fromCookie || localStorage.getItem("vyr.device") || crypto.randomUUID();
+    localStorage.setItem("vyr.device", id);
+    if (!fromCookie) document.cookie = `vyr_d=${id}; Max-Age=${60 * 60 * 24 * 730}; Path=/; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+  } catch { /* storage blocked: the email and network checks still apply */ }
+})();
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {});

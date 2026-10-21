@@ -22,18 +22,16 @@ Use your VYRANI live AI look as a camera and mic in Google Meet, WhatsApp Web, Z
 
 **Language:** English
 
-**Description:**
+**Description** (each paragraph is one line, so it pastes without broken lines):
 
+```
 Turn your webcam into anyone in your video calls.
 
-VYRANI changes your camera video live with AI. Type a look ("in a charcoal blazer", "a brighter room") or add one
-photo to become a different person, and your face, expressions and movement drive the new look in real time. This
-extension brings that live result into your calls as a camera and microphone you can pick.
+VYRANI changes your camera video live with AI. Type a look ("in a charcoal blazer", "a brighter room") or add one photo to become a different person, and your face, expressions and movement drive the new look in real time. This extension brings that live result into your calls as a camera and microphone you can pick.
 
 How it works
 1. Open the VYRANI studio at vyrani.com and go live with a look.
-2. In your call, open camera settings and choose "VYRANI AI Virtual Camera" (and "VYRANI AI Virtual Microphone" if you
-   use a VYRANI voice).
+2. In your call, open camera settings and choose "VYRANI AI Virtual Camera" (and "VYRANI AI Virtual Microphone" if you use a VYRANI voice).
 3. Keep the studio tab open. Switch looks any time; the call follows.
 
 Works in Chrome on Mac and Windows with:
@@ -44,15 +42,13 @@ Works in Chrome on Mac and Windows with:
 • Microsoft Teams (web)
 
 Made with consent, marked as AI
-Use your own face and voice, an AI-made person, or someone who has agreed. VYRANI marks its video as AI-made and can
-show a visible VYRANI label. If your credits or the connection run out mid-call, your call shows a "Be right back"
-card instead of switching to your real camera.
+Use your own face and voice, an AI-made person, or someone who has agreed. VYRANI marks its video as AI-made and can show a visible VYRANI label. If your credits or the connection run out mid-call, your call shows a "Be right back" card instead of switching to your real camera.
 
 Private by design
-The extension passes video between your own browser tabs only. It sends no data to VYRANI or anyone else and doesn't
-read the pages you visit.
+The extension passes video between your own browser tabs only. It sends no data to VYRANI or anyone else and doesn't read the pages you visit.
 
 A VYRANI account is needed for live AI looks. Live time uses VYRANI credits; new accounts can try it free.
+```
 
 **Graphics (in this folder):**
 - Store icon 128×128: `icon-128.png`

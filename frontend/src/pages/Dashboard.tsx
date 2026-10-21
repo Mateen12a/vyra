@@ -43,7 +43,7 @@ export function Dashboard() {
       {me.user.trial && me.user.trial !== "granted" && me.balance === 0 && (
         <div className="banner">
           <div><strong>{me.user.trial === "disposable_email" ? "Free trials aren't available for temporary email addresses."
-            : "A free trial has already been used from this email or network."}</strong> <span className="muted">Add credits to go live.</span></div>
+            : "A free trial has already been used on this device, email or network."}</strong> <span className="muted">Add credits to go live.</span></div>
           <Link className="btn btn-sm btn-primary" to="/app/credits">Add credits</Link>
         </div>
       )}

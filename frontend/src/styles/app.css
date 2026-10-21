@@ -356,3 +356,8 @@ tr:last-child td { border-bottom: 0; }
 .field-label { font-size: 0.875rem; color: var(--text-2); }
 .auth-agree { font-size: 0.8125rem; line-height: 1.5; }
 .auth-agree a, .auth-foot a { color: var(--text-2); }
+
+/* ---------- consent confirmation ---------- */
+.consent { display: grid; gap: 14px; }
+.consent-promise { padding: 14px 16px; border-radius: var(--radius-sm); background: var(--accent-soft); font-weight: 500; line-height: 1.5; }
+.consent-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }

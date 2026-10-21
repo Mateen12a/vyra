@@ -19,7 +19,9 @@
   gap: var(--gap); height: 100svh; min-height: 720px; max-height: 1100px; padding: var(--gap) 0; }
 .name-band { grid-column: 1 / -1; position: relative; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
 /* The name once, whole and centred: never cropped, so it can't read as a different word. */
-.name-text { white-space: nowrap; font-size: clamp(96px, 13vw, 200px); font-weight: 600; letter-spacing: -0.04em; line-height: 0.8; }
+.name-text { display: flex; align-items: center; gap: 0.12em; white-space: nowrap; font-size: clamp(96px, 13vw, 200px); font-weight: 600;
+  letter-spacing: -0.04em; line-height: 0.8; }
+.name-mark { height: 0.62em; width: auto; margin-bottom: 0.04em; }
 
 .links { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); }
 .link-tile { padding: 20px; font-weight: 500; color: var(--text); transition: background-color 160ms var(--ease); }
@@ -209,7 +211,7 @@
   .landing { --gap: 6px; }
   .hero { grid-template-columns: 1fr 1fr; grid-template-rows: none; height: auto; min-height: 0; max-height: none; }
   .name-band { grid-column: 1 / -1; height: 110px; }
-  .name-text { font-size: 21vw; }
+  .name-text { font-size: 16.5vw; }
   .links { grid-template-columns: 1fr 1fr; }
   .link-tile { padding: 16px; }
   .hero-stage { grid-column: 1 / -1; }

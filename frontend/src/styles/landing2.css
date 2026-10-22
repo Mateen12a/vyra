@@ -97,7 +97,12 @@
 .l2-card { margin: 0; border-radius: var(--r); overflow: hidden; background: var(--night-2); }
 .l2-card figcaption { display: grid; gap: 4px; padding: 18px 20px 22px; color: var(--text-2); font-size: 1rem; line-height: 1.45; }
 .l2-card figcaption strong { color: var(--text); font-size: 1.125rem; font-weight: 600; }
-.l2-card-phone img { display: block; width: 100%; aspect-ratio: 390 / 600; object-fit: cover; object-position: top; }
+/* App screenshots sit in a phone-shaped frame of fixed height, so they read as pictures, not as live controls. */
+.l2-card-phone { padding-top: 18px; }
+.l2-shot { position: relative; height: clamp(340px, 30vw, 440px); width: min(240px, 72%); margin: 0 auto; border-radius: 30px; overflow: hidden;
+  background: #000; box-shadow: 0 0 0 7px #26262b, 0 0 0 8px rgba(255, 255, 255, 0.08); pointer-events: none; }
+.l2-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.l2-card-phone figcaption { padding-top: 24px; }
 .l2-card-wide .sdemo { border-radius: 0; }
 .l2-note { margin-top: 18px; color: var(--text-3); font-size: 0.9375rem; }
 
@@ -176,7 +181,12 @@
   .l2-scroll { display: none; }
   .l2-end { white-space: normal; width: calc(100% - 32px); font-size: 1.625rem; }
   .l2-stats { grid-template-columns: 1fr; }
-  .l2-rail { grid-template-columns: 1fr; }
+  .l2-rail { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .l2-card-wide { grid-column: 1 / -1; }
+  .l2-card-phone { padding-top: 14px; }
+  .l2-shot { height: 250px; width: 76%; border-radius: 20px; box-shadow: 0 0 0 5px #26262b, 0 0 0 6px rgba(255, 255, 255, 0.08); }
+  .l2-card-phone figcaption { padding: 18px 14px 18px; font-size: 0.875rem; }
+  .l2-card-phone figcaption strong { font-size: 1rem; }
   .l2-looks-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 42vw; }
   .l2-close-panel { border-radius: 20px; }
 }

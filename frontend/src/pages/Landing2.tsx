@@ -161,8 +161,8 @@ export default function Landing2() {
           </div>
           <div className="l2-rail" data-reveal>
             <figure className="l2-card l2-card-wide"><StudioDemo variant="split" look={1} /><figcaption><strong>Live studio</strong>Mark on camera, Gwen on screen, from one photo.</figcaption></figure>
-            <figure className="l2-card l2-card-phone"><img src={`${SCREENS}create-phone.jpg`} alt="Create video on a phone: a clip, a photo of who to become and a voice" style={{ objectPosition: "50% 38%" }} /><figcaption><strong>Create on your phone</strong>Film, pick who to become, add a voice. Share anywhere.</figcaption></figure>
-            <figure className="l2-card l2-card-phone"><img src={`${SCREENS}consent-phone.jpg`} alt="The consent promise shown before the first video" style={{ objectPosition: "50% 52%" }} /><figcaption><strong>Consent, built in</strong>A one-time promise before anyone goes live.</figcaption></figure>
+            <figure className="l2-card l2-card-phone"><div className="l2-shot"><img src={`${SCREENS}create-phone.jpg`} alt="Screenshot: Create video on a phone, with a clip, a photo of who to become and a voice" style={{ objectPosition: "50% 36%" }} /></div><figcaption><strong>Create on your phone</strong>Film, pick who to become, add a voice. Share anywhere.</figcaption></figure>
+            <figure className="l2-card l2-card-phone"><div className="l2-shot"><img src={`${SCREENS}consent-phone.jpg`} alt="Screenshot: the consent promise shown before the first video" style={{ objectPosition: "50% 50%" }} /></div><figcaption><strong>Consent, built in</strong>A one-time promise before anyone goes live.</figcaption></figure>
           </div>
           <p className="l2-note">Actual product screens. The people shown are AI-generated and fictional.</p>
         </section>

@@ -1,7 +1,7 @@
 "use strict";
 // VYRANI AI Service Worker – caches shell assets for fast standalone PWA launch while keeping
 // all /api/* and WebSocket traffic strictly network-only.
-const CACHE_NAME = "vyrani-pwa-v4";
+const CACHE_NAME = "vyrani-pwa-v5";
 const PRECACHE = ["/", "/manifest.webmanifest", "/assets/mark.svg"];
 
 self.addEventListener("install", (event) => {

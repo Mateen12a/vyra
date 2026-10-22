@@ -87,7 +87,8 @@ createRoot(document.getElementById("root")!).render(
         <ToastProvider>
           <Suspense fallback={<Loading />}>
             <Routes>
-              <Route path="/" element={<Landing />} />
+              <Route path="/" element={<Landing2 />} />
+              <Route path="/classic" element={<Landing />} />
               <Route path="/preview" element={<Landing2 />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { PairPlayer } from "./pair";
 
 // The landing hero: Mary's real camera clip and the same clip as Tom play in step on one canvas. On arrival an orange
 // pixel mesh scans her face and a few pixels already turn (alive before any scroll); scrolling then spreads Tom outward
-// from the face, block by block, with a glowing edge. Both clips are real model output of fictional AI people.
-const DIR = "/assets/site/looks/";
+// from the face, block by block, with a glowing edge. Both views come from one paired video (camera | result), so they
+// never drift; until it plays, the paired still is used and the effect still works. The people are AI-generated.
 const BAYER = [0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38, 60, 28, 52, 20, 62, 30, 54, 22,
   3, 35, 11, 43, 1, 33, 9, 41, 51, 19, 59, 27, 49, 17, 57, 25, 15, 47, 7, 39, 13, 45, 5, 37, 63, 31, 55, 23, 61, 29, 53, 21];
 const FACE = { x: 0.5, y: 0.4 }; // face centre in the source frame (0-1)
@@ -16,7 +17,7 @@ const smooth = (a: number, b: number, v: number) => { const t = clamp((v - a) / 
 export function TransformHero({ children, onProgress }: { children: (p: number) => ReactNode; onProgress?: (p: number) => void }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const camRef = useRef<HTMLVideoElement>(null), outRef = useRef<HTMLVideoElement>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
   const [scrollP, setScrollP] = useState(reduce() ? 1 : 0);
   const scrollRef = useRef(scrollP);
 
@@ -39,16 +40,14 @@ export function TransformHero({ children, onProgress }: { children: (p: number) 
   }, [onProgress]);
 
   useEffect(() => {
-    const canvas = canvasRef.current!, cam = camRef.current!, out = outRef.current!;
+    const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
     let raf = 0, start = 0, alive = true;
     const still = reduce();
-
-    // Keep the two clips on the same frame.
-    const sync = () => { if (Math.abs(cam.currentTime - out.currentTime) > 0.06) cam.currentTime = out.currentTime; };
-    out.addEventListener("timeupdate", sync);
-    const play = () => { cam.play().catch(() => {}); out.play().catch(() => {}); };
-    if (!still) play(); else { cam.pause(); out.pause(); }
+    const player = new PairPlayer(hostRef.current!, "pair-a", !still);
+    const wake = () => { if (!still) player.resume(); };
+    addEventListener("touchstart", wake, { once: true, passive: true });
+    addEventListener("click", wake, { once: true });
 
     const size = () => {
       const dpr = Math.min(1.5, devicePixelRatio || 1);
@@ -61,10 +60,11 @@ export function TransformHero({ children, onProgress }: { children: (p: number) 
     const draw = (now: number) => {
       if (!alive) return;
       raf = requestAnimationFrame(draw);
-      if (!out.videoWidth || out.readyState < 2) return;
+      const f = player.frame();
+      if (!f) return;
       if (!start) start = now;
       const t = (now - start) / 1000;
-      const W = canvas.width, H = canvas.height, vw = out.videoWidth, vh = out.videoHeight;
+      const W = canvas.width, H = canvas.height, vw = f.half, vh = f.height;
       // "cover" crop that keeps the face in view on tall phone screens
       const scale = Math.max(W / vw, H / vh);
       const dw = vw * scale, dh = vh * scale;
@@ -75,7 +75,7 @@ export function TransformHero({ children, onProgress }: { children: (p: number) 
       const teaser = still ? 1 : smooth(0.6, 2.4, t) * (0.16 + 0.04 * Math.sin(t * 1.3));
       const p = still ? 1 : Math.max(scrollRef.current * 1.12, teaser);
 
-      ctx.drawImage(cam, dx, dy, dw, dh);
+      ctx.drawImage(f.src, 0, 0, vw, vh, dx, dy, dw, dh); // left half: the camera
       const cell = Math.max(12, Math.round(Math.min(W, H) / 26));
       const cols = Math.ceil(W / cell), rows = Math.ceil(H / cell);
       const reach = Math.hypot(Math.max(fx, W - fx), Math.max(fy, H - fy));
@@ -91,7 +91,7 @@ export function TransformHero({ children, onProgress }: { children: (p: number) 
           else if (d < 0.2 && p < 0.95) mesh.push([x, y, d]);
         }
       }
-      ctx.save(); ctx.clip(revealed); ctx.drawImage(out, dx, dy, dw, dh); ctx.restore();
+      ctx.save(); ctx.clip(revealed); ctx.drawImage(f.src, vw, 0, vw, vh, dx, dy, dw, dh); ctx.restore(); // right half: Tom
 
       // The glowing edge where pixels are changing right now.
       for (const [x, y, a] of edges) {
@@ -114,14 +114,20 @@ export function TransformHero({ children, onProgress }: { children: (p: number) 
       }
     };
     raf = requestAnimationFrame(draw);
-    return () => { alive = false; cancelAnimationFrame(raf); out.removeEventListener("timeupdate", sync); removeEventListener("resize", size); };
+    // Pause the video once the hero is scrolled past; resume when it's back.
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) wake(); else player.video.pause(); });
+    io.observe(canvas);
+    return () => {
+      io.disconnect();
+      alive = false; cancelAnimationFrame(raf); removeEventListener("resize", size); player.destroy();
+      removeEventListener("touchstart", wake); removeEventListener("click", wake);
+    };
   }, []);
 
   return (
     <div ref={trackRef} className="th-track">
       <div className="th-stage" style={{ ["--scrim" as string]: String(1 - Math.min(1, Math.max(0, (scrollP - 0.35) / 0.3)) * 0.85) }}>
-        <video ref={camRef} className="th-src" src={`${DIR}swap-a-cam.mp4`} muted loop playsInline preload="auto" aria-hidden="true" />
-        <video ref={outRef} className="th-src" src={`${DIR}swap-a.mp4`} muted loop playsInline preload="auto" aria-hidden="true" />
+        <div ref={hostRef} className="pair-host" aria-hidden="true" />
         <canvas ref={canvasRef} className="th-canvas" role="img"
           aria-label="Mary talks to her webcam and, pixel by pixel, becomes Tom, a different person, made from one photo" />
         {children(scrollP)}

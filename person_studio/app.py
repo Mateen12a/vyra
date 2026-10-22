@@ -781,7 +781,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
     def sitemap():
         return Response(seo.sitemap(settings.public_url), media_type="application/xml")
 
-    for path in ("/", "/preview", "/privacy", "/terms", "/signin", "/signup", "/forgot", "/reset", "/verify", "/app", "/app/{rest:path}", "/admin"):
+    for path in ("/", "/preview", "/classic", "/privacy", "/terms", "/signin", "/signup", "/forgot", "/reset", "/verify", "/app", "/app/{rest:path}", "/admin"):
         app.add_api_route(path, spa_page, methods=["GET"], include_in_schema=False)
 
     # The classic studio: voice, scene rules, streaming and overlays live here until they move to the new studio.

@@ -9,8 +9,10 @@
 .sdemo-credits { color: #b4b4bc; font-weight: 500; font-variant-numeric: tabular-nums; }
 
 .sdemo-stage { position: relative; min-height: 0; aspect-ratio: 16 / 9; background: #000; overflow: hidden; }
-.sdemo-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.sdemo-left { position: absolute; inset: 0; }
+.sdemo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* The paired source video stays in the layout (iOS won't decode an off-screen 1px video) but is never seen. */
+.pair-host { position: absolute; inset: 0; overflow: hidden; opacity: 0; pointer-events: none; }
+.pair-src { width: 100%; height: 100%; }
 .sdemo--split .sdemo-stage { cursor: ew-resize; touch-action: pan-y; }
 .sdemo-line { position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: var(--accent); pointer-events: none; }
 .sdemo-knob { position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 8px; background: var(--accent); }
@@ -20,7 +22,7 @@
 .sdemo-stage:has(.sdemo-range:focus-visible) { outline: 3px solid #fff; outline-offset: -3px; }
 .sdemo-tag { position: absolute; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(9, 9, 11, 0.72); font-size: 0.875rem; font-weight: 600; pointer-events: none; }
 .sdemo-tag-l { left: 12px; } .sdemo-tag-r { right: 12px; }
-.sdemo-pip { position: absolute; top: 12px; right: 12px; width: 26%; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; outline: 2px solid rgba(255, 255, 255, 0.85); }
+.sdemo-pip { position: absolute; top: 1.8%; right: 1.8%; width: 26%; aspect-ratio: 16 / 9; border-radius: 6px; outline: 2px solid rgba(255, 255, 255, 0.85); outline-offset: -1px; }
 .sdemo-pip-tag { position: absolute; left: 6px; bottom: 6px; padding: 2px 6px; border-radius: 4px; background: rgba(9, 9, 11, 0.72); font-size: 0.75rem; font-weight: 600; }
 
 .sdemo-composer { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #18181c; }

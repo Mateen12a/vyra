@@ -1,5 +1,8 @@
 // Thin fetch wrapper for the VYRANI API. Same-origin, so the session cookie rides along; errors carry the server's message.
 
+/** The VYRANI extension on the Chrome Web Store (works in Chrome and Edge). */
+export const EXTENSION_URL = "https://chromewebstore.google.com/detail/vyrani-ai-virtual-camera/ileihfokobejhclefnnnmopkllelojpj";
+
 export class ApiError extends Error {
   constructor(message: string, public status: number) {
     super(message);

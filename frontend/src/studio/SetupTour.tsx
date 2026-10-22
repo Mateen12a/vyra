@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BroadcastIcon, CameraIcon, Dialog, ImageIcon, Spinner } from "../components/ui";
-import { api } from "../lib/api";
+import { api, EXTENSION_URL } from "../lib/api";
 import "./setup-tour.css";
 
 type SetupStep = { id: string; title: string; status: "done" | "missing" | "optional" | "guide"; detail?: string; fix?: string | null };
@@ -132,12 +132,12 @@ export function SetupTour({ extensionReady, onClose }: { extensionReady: boolean
             const detected = step.id === "extension" ? extensionReady : step.status === "done";
             return <div className="tour-check" key={step.id}>
               <div><strong>{step.title}</strong><span className={detected ? "tour-ready" : "muted"}>{detected ? (step.id === "extension" ? "Detected in this browser" : "Configured") : step.detail}</span></div>
-              {step.id === "extension" && !extensionReady && <a className="btn btn-ghost" href="/api/virtual-cam/extension.zip" download="vyrani-virtual-camera-extension.zip">Download extension</a>}
+              {step.id === "extension" && !extensionReady && <a className="btn btn-ghost" href={EXTENSION_URL} target="_blank" rel="noreferrer">Add to Chrome</a>}
               {step.id === "camera_apps" && !detected && <a className="btn btn-ghost" href="https://obsproject.com/download" target="_blank" rel="noreferrer">Get OBS</a>}
               {step.fix === "download-ffmpeg" && !detected && <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => void installFFmpeg()}>{busy ? "Installing…" : "Install FFmpeg"}</button>}
             </div>;
           })}
-          {destination === "browser" && !extensionReady && <p className="tour-note">Until the store release: extract the download, open chrome://extensions, enable Developer mode, and choose Load unpacked. Select the extracted folder, then refresh Studio and your calling tab.</p>}
+          {destination === "browser" && !extensionReady && <p className="tour-note">Click Add to Chrome on the store page, then refresh the studio and your calling tab. It's free.</p>}
           <button type="button" className="tour-refresh" disabled={loading || busy} onClick={() => void refresh()}>Check setup again</button>
         </section>}
         <footer className="tour-footer">

@@ -197,3 +197,6 @@
   .th-track { height: auto; }
   .th-stage { position: relative; }
 }
+.l2-store { display: inline-flex; gap: 8px; margin-top: 14px; color: var(--accent); font-weight: 600; }
+.l2-store span { transition: transform 200ms var(--ease); }
+.l2-store:hover span { transform: translateX(4px); }

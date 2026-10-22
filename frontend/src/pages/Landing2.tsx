@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../lib/auth";
+import { EXTENSION_URL } from "../lib/api";
 import { TransformHero } from "../components/TransformHero";
 import { StudioDemo } from "../components/StudioDemo";
 import "../styles/landing2.css";
@@ -189,7 +190,8 @@ export default function Landing2() {
         <section id="where" className="l2-light l2-where" aria-labelledby="where-title">
           <h2 id="where-title" data-reveal>Where it works</h2>
           <div className="l2-where-grid">
-            <div data-reveal><h3>In video calls</h3><p>Google Meet, WhatsApp Web, Zoom, Microsoft Teams and Discord, with the free Chrome extension.</p></div>
+            <div data-reveal><h3>In video calls</h3><p>Google Meet, WhatsApp Web, Zoom, Microsoft Teams and Discord, with the free Chrome extension.</p>
+              <a className="l2-store" href={EXTENSION_URL} target="_blank" rel="noreferrer">Get it on the Chrome Web Store <span aria-hidden="true">→</span></a></div>
             <div data-reveal><h3>In live streams</h3><p>YouTube, Twitch, Facebook Live, Kick and more with your stream key, straight from the studio.</p></div>
             <div data-reveal><h3>On your phone</h3><p>Make the video on VYRANI, then post it anywhere: WhatsApp, Instagram, TikTok, Snapchat.</p></div>
           </div>

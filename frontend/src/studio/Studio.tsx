@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import {
   BroadcastIcon, CameraIcon, CloseIcon, Dialog, ExpandIcon, Field, ImageIcon, MirrorIcon, RecordIcon, Spinner, StudioIcon, useToast,
 } from "../components/ui";
-import { api, minutes } from "../lib/api";
+import { api, EXTENSION_URL, minutes } from "../lib/api";
 import { SetupTour, isPhone } from "./SetupTour";
 import { useConsentGate } from "../components/Consent";
 import { every } from "../lib/ticker";
@@ -1638,23 +1638,22 @@ export default function Studio() {
               </div>
               {(extensionStatus === "outdated" || extensionStatus === "error") && (
                 <p className="alert alert-info" role="status">
-                  {extensionStatus === "outdated" ? "Your VYRANI extension needs an update." : "The VYRANI extension couldn't start."} Your studio still works. Download the latest extension below, remove older VYRANI copies at chrome://extensions, load the new folder, then reload this page.
+                  {extensionStatus === "outdated" ? "Your VYRANI extension needs an update." : "The VYRANI extension couldn't start."} Your studio still works. Install the latest version from the Chrome Web Store below, remove any older manually loaded VYRANI copy at chrome://extensions, then reload this page.
                 </p>
               )}
               <p className="muted small-line">
                 Adds <strong>VYRANI AI Virtual Camera</strong> and <strong>VYRANI AI Virtual Microphone</strong> directly into WhatsApp Web, Google Meet, Zoom Web, Discord Web, and Teams Web.
               </p>
               <div className="vcam-actions">
-                <a className="btn btn-primary btn-sm" href="/api/virtual-cam/extension.zip" download="vyrani-virtual-camera-extension.zip">
-                  Download Browser Extension (.zip)
+                <a className="btn btn-primary btn-sm" href={EXTENSION_URL} target="_blank" rel="noreferrer">
+                  {extInstalled ? "Extension installed" : "Add to Chrome, free"}
                 </a>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={openCleanPopOut}>
                   Pop-out Clean Window
                 </button>
               </div>
               <ol className="vcam-steps muted small-line">
-                <li>Unzip and open <code>chrome://extensions</code> or <code>edge://extensions</code> (enable Developer Mode → <strong>Load unpacked</strong>).</li>
-                <li>If updating, remove older VYRANI copies first. Reload Studio and your calling tab after loading the extension.</li>
+                <li>Click <strong>Add to Chrome</strong> on the store page (works in Chrome and Edge). Then reload this studio and your calling tab.</li>
                 <li>Use the same browser profile for both tabs. Turn on your camera, choose a look, and press <strong>Go live</strong>.</li>
                 <li>Pick <strong>VYRANI AI Virtual Camera</strong> in your calling website. Ask another participant to confirm they receive your moving video.</li>
               </ol>

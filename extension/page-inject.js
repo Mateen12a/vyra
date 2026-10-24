@@ -9,8 +9,12 @@
 // 3. Uses native WebRTC `RTCPeerConnection` loopback (`addTrack` -> `ontrack`) instead of JPEG polling.
 //    A stable canvas output switches from standby to received video without changing the caller's track.
 (() => {
-  if (window.__VYRA_VIRTUAL_CAM_INSTALLED__) return;
+  // If an older copy of the extension is also installed, the newest copy takes over the page. Messages use a
+  // versioned channel ("v2") so two copies never read each other's signalling.
+  const SHIM_VERSION = 2;
+  if (window.__VYRA_VIRTUAL_CAM_INSTALLED__ && (window.__VYRA_VIRTUAL_CAM_VERSION__ || 1) >= SHIM_VERSION) return;
   window.__VYRA_VIRTUAL_CAM_INSTALLED__ = true;
+  window.__VYRA_VIRTUAL_CAM_VERSION__ = SHIM_VERSION;
 
   const VYRA_CAM_ID = "vyra-virtual-cam";
   const VYRA_MIC_ID = "vyra-virtual-mic";
@@ -28,6 +32,7 @@
     remoteAudioTrack: null,
     pc: null,
     requesting: false,
+    requestedAt: 0,
     canvas: null,
     ctx: null,
     drawingStandby: false,
@@ -37,25 +42,38 @@
 
   // Studio-side producer state (used only when running inside VYRANI Studio itself)
   const producerPeers = new Map(); // consumerId -> RTCPeerConnection
+  const pendingConsumers = new Set(); // calls that asked for video before the studio had any
   let studioStream = null;
 
   function sendToExtensionConsumer(payload) {
-    window.postMessage({ source: "vyra-consumer-page", payload }, window.location.origin);
+    window.postMessage({ source: "vyra-consumer-page-v2", payload }, window.location.origin);
   }
 
   function sendToExtensionProducer(payload) {
-    window.postMessage({ source: "vyra-studio-page", payload }, window.location.origin);
+    window.postMessage({ source: "vyra-studio-page-v2", payload }, window.location.origin);
   }
 
   // ---------- Consumer WebRTC PeerConnection ----------
   function requestWebRtcStream() {
-    if (!state.active || state.requesting) return;
+    if (!state.active) return;
     if (state.pc && (state.pc.connectionState === "connected" || state.pc.connectionState === "connecting")) {
       return;
     }
+    // A request can go unanswered (e.g. the studio was reloading and had no video yet): allow another after 2 s.
+    if (state.requesting && Date.now() - state.requestedAt < 2000) return;
     state.requesting = true;
+    state.requestedAt = Date.now();
     sendToExtensionConsumer({ type: "vyra-cam:rtc-request" });
   }
+
+  // Watchdog: while the studio is active but no video is arriving, keep asking. Recovers from a studio reload,
+  // a dropped connection, or a studio that started sending after the call opened the camera.
+  setInterval(() => {
+    if (!state.active) return;
+    const pcOk = state.pc && ["connected", "connecting", "new"].includes(state.pc.connectionState);
+    const trackOk = state.remoteVideoTrack && state.remoteVideoTrack.readyState === "live";
+    if (!pcOk || !trackOk) requestWebRtcStream();
+  }, 2000);
 
   async function handleConsumerOffer(msg) {
     try {
@@ -122,7 +140,8 @@
       producerPeers.delete(consumerId);
     }
     const stream = studioStream || window.__VYRA_LIVE_OUTPUT_STREAM__;
-    if (!(stream instanceof MediaStream)) return;
+    if (!(stream instanceof MediaStream)) { pendingConsumers.add(consumerId); return; } // answered when video starts
+    pendingConsumers.delete(consumerId);
 
     const pc = new RTCPeerConnection({ iceServers: [] });
     producerPeers.set(consumerId, pc);
@@ -176,7 +195,7 @@
   window.addEventListener("message", (event) => {
     if (event.source !== window || event.origin !== window.location.origin || !event.data) return;
     const { source, payload } = event.data;
-    if (source === "vyra-ext-bridge" && payload) {
+    if (source === "vyra-ext-bridge-v2" && payload) {
       if (payload.type === "vyra-cam:state") {
         const becameActive = !state.active && Boolean(payload.active);
         state.active = Boolean(payload.active);
@@ -192,13 +211,14 @@
         if (payload.width) state.width = payload.width;
         if (payload.height) state.height = payload.height;
         if (payload.lookLabel !== undefined) state.lookLabel = payload.lookLabel;
-        if (becameActive) requestWebRtcStream();
+        if (becameActive) { state.requesting = false; requestWebRtcStream(); }
+        else if (state.active) requestWebRtcStream();
       } else if (payload.type === "vyra-cam:rtc-offer") {
         handleConsumerOffer(payload);
       } else if (payload.type === "vyra-cam:rtc-ice") {
         handleConsumerIce(payload);
       }
-    } else if (source === "vyra-ext-studio-in" && payload) {
+    } else if (source === "vyra-ext-studio-in-v2" && payload) {
       if (payload.type === "vyra-cam:rtc-request") {
         handleProducerRequest(payload.consumerId);
       } else if (payload.type === "vyra-cam:rtc-answer") {
@@ -489,6 +509,7 @@
         height,
         lookLabel,
       });
+      for (const id of [...pendingConsumers]) handleProducerRequest(id);
       // Update any existing WebRTC consumer peer connections with the latest tracks
       for (const pc of producerPeers.values()) {
         const senders = pc.getSenders();

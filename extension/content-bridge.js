@@ -14,7 +14,7 @@
     try {
       consumerPort = chrome.runtime.connect({ name: "vyra-cam-consumer" });
       consumerPort.onMessage.addListener((msg) => {
-        window.postMessage({ source: "vyra-ext-bridge", payload: msg }, window.location.origin);
+        window.postMessage({ source: "vyra-ext-bridge-v2", payload: msg }, window.location.origin);
       });
       consumerPort.onDisconnect.addListener(() => {
         consumerPort = null;
@@ -31,7 +31,7 @@
     try {
       producerPort = chrome.runtime.connect({ name: "vyra-studio-producer" });
       producerPort.onMessage.addListener((msg) => {
-        window.postMessage({ source: "vyra-ext-studio-in", payload: msg }, window.location.origin);
+        window.postMessage({ source: "vyra-ext-studio-in-v2", payload: msg }, window.location.origin);
       });
       producerPort.onDisconnect.addListener(() => {
         producerPort = null;
@@ -50,7 +50,7 @@
       return;
     }
     const { source, payload } = event.data;
-    if (source === "vyra-studio-page") {
+    if (source === "vyra-studio-page-v2") {
       if (!isStudioRoute) return;
       const port = ensureProducerPort();
       try {
@@ -58,7 +58,7 @@
       } catch {
         producerPort = null;
       }
-    } else if (source === "vyra-consumer-page") {
+    } else if (source === "vyra-consumer-page-v2") {
       const port = ensureConsumerPort();
       try {
         port?.postMessage(payload);

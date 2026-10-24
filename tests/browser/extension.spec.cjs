@@ -127,6 +127,24 @@ test('studio loads with the unpacked extension and relays video to another tab',
     }, { timeout: 15000 }).toMatchObject({ orange: true });
     expect(await receiver.evaluate(() => document.querySelector('video').srcObject.getVideoTracks()[0].id))
       .toBe(await receiver.evaluate(() => window.__selectedTrackId));
+
+    // Reported in a real call: the studio tab is reloaded and announces itself before it has video again. The
+    // call must not stay on the standby card; it keeps asking and recovers once the studio's video starts.
+    await studio.reload();
+    await expect.poll(() => studio.evaluate(() => typeof window.VyraVirtualCam?.publishStream)).toBe('function');
+    await studio.evaluate(() => window.postMessage({ source: 'vyra-studio-page-v2', payload: { type: 'vyra-cam:announce' } }, location.origin));
+    await expect.poll(() => receiver.evaluate(() => window.VyraVirtualCam.getState().active)).toBe(true);
+    await studio.waitForTimeout(3000);
+    await studio.evaluate(async () => {
+      window.__extensionTestStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      window.VyraVirtualCam.publishStream(window.__extensionTestStream);
+    });
+    await expect.poll(async () => {
+      const pixel = await receivedColor();
+      return { orange: pixel[0] > 200 && pixel[1] > 60 && pixel[1] < 150, pixel };
+    }, { timeout: 15000 }).toMatchObject({ orange: true });
+    expect(await receiver.evaluate(() => document.querySelector('video').srcObject.getVideoTracks()[0].id))
+      .toBe(await receiver.evaluate(() => window.__selectedTrackId));
     expect(errors).toEqual([]);
   } catch (error) {
     for (const page of context.pages()) {

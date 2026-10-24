@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await page.route(/decart\.ai|fal\.(run|ai)/, route => route.abort());
   await page.routeWebSocket(/fal|decart|fake\.invalid/, socket => socket.close());
   await page.route('**/api/auth/me', route => route.fulfill({ json: {
-    user: { id: 'quality-check', email: 'quality@example.test', role: 'user', verified: true }, balance: 600,
+    user: { id: 'quality-check', email: 'quality@example.test', role: 'user', verified: true, consented: true }, balance: 600,
   } }));
   await page.route('**/api/live/status', route => route.fulfill({ json: {
     available: true, provider: 'fal', model: 'test-model', ai_label: true, max_session_seconds: 300,
@@ -52,7 +52,7 @@ async function start(page) {
   await page.goto('/app/studio');
   await page.getByRole('button', { name: 'Turn on camera', exact: true }).click();
   await expect.poll(() => page.locator('video.stage-cam').evaluate(video => video.videoWidth), { timeout: 15000 }).toBeGreaterThan(0);
-  await page.getByRole('button', { name: 'Astronaut', exact: true }).click();
+  await page.getByRole('button', { name: 'Interview ready', exact: true }).click();
   await page.getByRole('button', { name: 'Use this look', exact: true }).click();
   await page.getByRole('button', { name: 'Go live', exact: true }).click();
   await expect(page.getByRole('button', { name: 'End', exact: true })).toBeVisible({ timeout: 15000 });

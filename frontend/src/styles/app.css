@@ -200,7 +200,7 @@ tr:last-child td { border-bottom: 0; }
 .icon-btn.recording { color: #fff; background: var(--rec); border-color: var(--rec); }
 .session-strip { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 16px; border-radius: 12px; background: var(--surface);
   border: 1px solid var(--line); font-size: 0.875rem; color: var(--text-2); }
-.quality-control { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--text-2); font-size: 0.8125rem; }
+.quality-control { display: flex; max-width: 100%; min-width: 0; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--text-2); font-size: 0.8125rem; }
 .quality-options { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
 .quality-options button { min-height: 44px; min-width: 64px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--text-2); font: inherit; cursor: pointer; }
 .quality-options button[aria-pressed="true"] { background: var(--raised-2); color: var(--text); }
@@ -370,3 +370,6 @@ tr:last-child td { border-bottom: 0; }
   font: inherit; padding: 0 0 2px; outline: none; }
 .pack-amount input:focus { border-bottom-color: var(--accent); }
 .pack-buy { margin-top: 10px; }
+.stage-vcam-switch { margin-left: 8px; padding: 2px 8px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.14); color: inherit;
+  font: inherit; font-size: 0.75rem; cursor: pointer; pointer-events: auto; }
+.stage-vcam-switch:hover { background: rgba(255, 255, 255, 0.24); }

@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
     navigator.mediaDevices.getUserMedia = async () => { window.__cameraRequests++; throw new Error('Tour should not request camera'); };
   });
   await page.route('**/api/auth/me', route => route.fulfill({ json: {
-    user: { id: 'tour-test', email: 'tour@example.test', role: 'user', verified: true }, balance: 600,
+    user: { id: 'tour-test', email: 'tour@example.test', role: 'user', verified: true, consented: true }, balance: 600,
   } }));
   await page.route('**/api/live/status', route => route.fulfill({ json: { available: false, provider: 'fal', ai_label: true } }));
   await page.route('**/api/setup', route => route.fulfill({ json: setup }));
@@ -37,7 +37,7 @@ test('four animated chapters explain the workflow without opening a camera or sp
   await expect(tour.getByText('Live transformations use credits.', { exact: false })).toBeVisible();
   await tour.getByRole('button', { name: 'Next: use it in a call' }).click();
   await expect(tour.getByRole('button', { name: 'Open studio', exact: true })).toBeEnabled();
-  await expect(tour.getByText(/Until the store release/)).toBeVisible();
+  await expect(tour.getByText(/Click Add to Chrome on the store page/)).toBeVisible();
   expect(await page.evaluate(() => window.__cameraRequests)).toBe(0);
   expect(tokens).toBe(0);
   await tour.getByRole('button', { name: 'Open studio', exact: true }).click();
@@ -81,10 +81,10 @@ test('extension detected after opening the tour updates the readiness display', 
   await page.goto('/app/studio');
   const tour = page.getByTestId('studio-tour');
   await tour.getByRole('button', { name: /04.*Calls/ }).click();
-  await expect(tour.getByRole('link', { name: 'Download extension' })).toBeVisible();
+  await expect(tour.getByRole('link', { name: 'Add to Chrome' })).toBeVisible();
   await page.evaluate(() => { window.VyraVirtualCam = { publishStream() {}, stop() {} }; });
   await expect(tour.getByText('Detected in this browser')).toBeVisible({ timeout: 10000 });
-  await expect(tour.getByRole('link', { name: 'Download extension' })).toHaveCount(0);
+  await expect(tour.getByRole('link', { name: 'Add to Chrome' })).toHaveCount(0);
 });
 
 test('desktop path explains the OBS dependency and hosted limitation', async ({ page }) => {
@@ -93,7 +93,7 @@ test('desktop path explains the OBS dependency and hosted limitation', async ({ 
   await tour.getByRole('button', { name: /04.*Calls/ }).click();
   await tour.getByRole('button', { name: 'Desktop apps', exact: true }).click();
   await expect(tour.getByText(/A hosted VYRANI website cannot launch OBS/)).toBeVisible();
-  await expect(tour.getByRole('link', { name: 'Download extension' })).toHaveCount(0);
+  await expect(tour.getByRole('link', { name: 'Add to Chrome' })).toHaveCount(0);
 });
 
 test('mobile tour fits, respects reduced motion, and keeps keyboard focus in the dialog', async ({ page }, testInfo) => {

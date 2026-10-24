@@ -3,7 +3,7 @@ const { test, expect } = require('@playwright/test');
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('vyra.setupDone', '1'));
   await page.route('**/api/auth/me', route => route.fulfill({ json: {
-    user: { id: 'camera-check', email: 'check@example.test', role: 'user', verified: true }, balance: 600,
+    user: { id: 'camera-check', email: 'check@example.test', role: 'user', verified: true, consented: true }, balance: 600,
   } }));
   await page.route('**/api/live/status', route => route.fulfill({ json: { available: false, ai_label: true } }));
   await page.route('**/api/live/token', route => route.abort());
@@ -72,7 +72,7 @@ test('starting live and updating the credit balance keeps the camera and session
   await page.goto('/app/studio');
   await page.getByRole('button', { name: 'Turn on camera', exact: true }).click();
   await expect.poll(() => page.locator('video.stage-cam').evaluate(video => video.videoWidth)).toBeGreaterThan(0);
-  await page.getByRole('button', { name: 'Astronaut', exact: true }).click();
+  await page.getByRole('button', { name: 'Interview ready', exact: true }).click();
   await page.getByRole('button', { name: 'Use this look', exact: true }).click();
   await page.getByRole('button', { name: 'Go live', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__liveConnected)).toBe(true);

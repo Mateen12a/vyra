@@ -236,7 +236,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         @app.get("/api/auth/me")
         def local_mode_me():
             return {"user": {"id": "local", "email": "you@localhost", "role": "user", "verified": True,
-                             "google": False, "has_password": False, "can_remove_watermark": True},
+                             "google": False, "has_password": False, "can_remove_watermark": True, "consented": True},
                     "balance": 0}
 
         # No credits are metered on a single-user install; the app shows an owned, not purchasable, balance.

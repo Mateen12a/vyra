@@ -83,7 +83,10 @@ export default function Studio() {
   const [tab, setTab] = useState<InspectorTab>("look");
   const consentGate = useConsentGate();
   // After an unplanned stop, calls and streams show this card instead of the real camera until the user decides.
-  const holdRef = useRef<HTMLCanvasElement | null>(null);
+  // Before going live, calls see a "Starting soon" card instead of the real camera, so the other person never sees
+  // the user's real face unless they choose to show it.
+  const holdRef = useRef<HTMLCanvasElement | null>(holdCard(null, "Starting soon", "VYRANI"));
+  const [realBeforeLive, setRealBeforeLive] = useState(false);
   const [holding, setHolding] = useState(false);
   // Credits left in this session, in seconds, as of `at` (from the last heartbeat).
   const [left, setLeft] = useState<{ seconds: number; at: number } | null>(null);
@@ -1154,7 +1157,7 @@ export default function Studio() {
             <span>Calls and streams are showing a <strong>Be right back</strong> card, not your camera.</span>
             <span className="credit-warn-actions">
               <button type="button" className="btn btn-sm btn-primary" onClick={goLive}>Go live again</button>
-              <button type="button" className="btn btn-sm btn-ghost" onClick={() => { holdRef.current = null; setHolding(false); stopStream(); }}>Show my real camera</button>
+              <button type="button" className="btn btn-sm btn-ghost" onClick={() => { holdRef.current = null; setHolding(false); setRealBeforeLive(true); stopStream(); }}>Show my real camera</button>
             </span>
           </div>
         )}
@@ -1176,8 +1179,16 @@ export default function Studio() {
             </div>
           )}
           {vcamActive && extInstalled && (live || phase === "camera") && (
-            <div className="stage-vcam-pill" title="VYRANI Virtual Camera output is active">
-              <span className="live-dot" /> Virtual Cam Ready
+            <div className="stage-vcam-pill" title="What people in your call see right now">
+              <span className="live-dot" />
+              {live ? "Call sees: your AI look" : realBeforeLive ? "Call sees: your real camera" : "Call sees: “Starting soon”"}
+              {!live && (
+                <button type="button" className="stage-vcam-switch" onClick={() => {
+                  const showReal = !realBeforeLive;
+                  setRealBeforeLive(showReal);
+                  holdRef.current = showReal ? null : holdCard(null, "Starting soon", "VYRANI");
+                }}>{realBeforeLive ? "Hide camera" : "Show real camera"}</button>
+              )}
             </div>
           )}
           {overlayVisible && (overlayTitle || overlaySub) && (

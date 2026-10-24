@@ -723,7 +723,7 @@ export default function Studio() {
       const image = photo ? await renderCroppedPhoto(photo.file, aspect) : null;
       const next: Look = {
         label: photo
-          ? (words.split(/[,.]/)[0] || "Character from photo").slice(0, 40)
+          ? "Your character photo"
           : ideaLabel || (words.length > 48 ? `${words.slice(0, 46)}…` : words),
         prompt: photo ? characterPrompt(words) : words,
         image,
@@ -867,11 +867,12 @@ export default function Studio() {
     if (!video || !video.videoWidth) return false;
     const c = Object.assign(document.createElement("canvas"), { width: 64, height: 36 });
     const ctx = c.getContext("2d", { willReadFrequently: true })!;
-    ctx.drawImage(video, 0, 0, 64, 36);
+    // The middle of the frame, where the face is; a dark wall behind a lit face is fine.
+    ctx.drawImage(video, video.videoWidth * 0.25, video.videoHeight * 0.1, video.videoWidth * 0.5, video.videoHeight * 0.7, 0, 0, 64, 36);
     const px = ctx.getImageData(0, 0, 64, 36).data;
     let sum = 0;
     for (let i = 0; i < px.length; i += 4) sum += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
-    return sum / (px.length / 4) < 60;
+    return sum / (px.length / 4) < 45;
   }
   async function goLive() {
     if (startingRef.current) return;
@@ -882,9 +883,10 @@ export default function Studio() {
     if (!status?.available) return toast(status?.message || "Live isn't available right now.", true);
     if (me && me.balance < LIVE_BLOCK) return toast(`Going live needs at least ${LIVE_BLOCK} credits (${LIVE_BLOCK} seconds). Add credits to continue.`, true);
     if (!(await consentGate.ensure())) return;
+    // A tip only: going live never waits on it.
     if (!darkWarnedRef.current && roomIsDark()) {
       darkWarnedRef.current = true;
-      return toast("Your room looks dark, so the result will look soft. Face a window or a lamp, then press Go live. Press again to go live anyway.");
+      toast("Tip: your face looks dimly lit, so the result may look soft. Facing a window or a lamp helps.");
     }
     startingRef.current = true;
     pressedAtRef.current = performance.now();
@@ -1345,7 +1347,7 @@ export default function Studio() {
               <form className="assist-bar" onSubmit={handleGenerateLook}>
                 <input
                   className="input input-sm"
-                  placeholder="Magic prompt: e.g. cyber samurai, 1920s detective…"
+                  placeholder="Describe a look: e.g. navy blazer, brighter room…"
                   value={ideaInput}
                   onChange={(e) => setIdeaInput(e.target.value)}
                   maxLength={200}
@@ -1365,7 +1367,7 @@ export default function Studio() {
                 maxLength={1000}
                 value={text}
                 onChange={(e) => { setText(e.target.value); setIdeaLabel(null); }}
-                placeholder={photo ? "Skin tone, hair, clothing…" : "A 1920s jazz singer in a sequinned dress"}
+                placeholder={photo ? "Skin tone, hair, clothing…" : "A charcoal blazer and a tidy home office"}
               />
             </div>
             {photo && (

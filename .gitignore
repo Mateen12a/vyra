@@ -12,7 +12,9 @@ __pycache__/
 *.tsbuildinfo
 *.pem
 *.key
-vendor/
+vendor/*
+!person_studio/web/vendor/
+person_studio/web/vendor/mediapipe/
 models/
 node_modules/
 test-results/

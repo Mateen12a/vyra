@@ -526,3 +526,33 @@ def test_custom_amount_payment_credits_at_base_rate(client, mailer, store):
     assert stripe_post(client, custom_event(1200)).status_code == 200      # $12 -> 120 credits, metadata ignored
     assert stripe_post(client, custom_event(250)).status_code == 200       # $2.50 is below the minimum: no credits
     assert client.get("/api/auth/me").json()["balance"] == pricing.FREE_CREDITS_ON_VERIFY + 120
+
+
+def test_warmup_is_free_and_sessions_without_video_are_refunded(store):
+    ledger, meter = Ledger(store), LiveMeter(store, Ledger(store))
+    from bson import ObjectId
+    uid = store.users.insert_one({"email": f"w{secrets.token_hex(4)}@example.com"}).inserted_id
+    ledger.apply(uid, 200, "test", f"seed:{uid}")
+    # A session that never showed video, ended after 20 s: everything back.
+    sid = ObjectId(meter.start(uid, "fal")["session_id"])
+    store.live_sessions.update_one({"_id": sid}, {"$set": {"started_at": utcnow() - timedelta(seconds=20)}})
+    meter.end(sid, uid)
+    assert ledger.balance(uid) == 200
+    # Video arrived after 15 s of connecting, ended 25 s later: only the 25 s of video is charged.
+    sid = ObjectId(meter.start(uid, "fal")["session_id"])
+    started = utcnow() - timedelta(seconds=40)
+    store.live_sessions.update_one({"_id": sid}, {"$set": {"started_at": started, "video_at": started + timedelta(seconds=15)}})
+    meter.end(sid, uid)
+    assert ledger.balance(uid) in (174, 175)  # 25 s of video (a second may tick by while the test runs)
+
+
+def test_no_video_refunds_are_capped_per_day(store):
+    ledger, meter = Ledger(store), LiveMeter(store, Ledger(store))
+    from bson import ObjectId
+    uid = store.users.insert_one({"email": f"n{secrets.token_hex(4)}@example.com"}).inserted_id
+    ledger.apply(uid, 300, "test", f"seed:{uid}")
+    for _ in range(LiveMeter.NO_VIDEO_PER_DAY + 1):
+        sid = ObjectId(meter.start(uid, "fal")["session_id"])
+        store.live_sessions.update_one({"_id": sid}, {"$set": {"started_at": utcnow() - timedelta(seconds=10)}})
+        meter.end(sid, uid)
+    assert ledger.balance(uid) in (289, 290)  # only the fourth one is charged (about 10 s)

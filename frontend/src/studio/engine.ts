@@ -104,6 +104,8 @@ export async function prepare(_provider = "fal") {
 }
 
 export const getStatus = () => api<LiveStatus>("/api/live/status");
+/** Tells the meter the first AI frame is showing, so connecting time isn't charged. */
+export const videoStarted = (id: string) => api<Meter>(`/api/live/meter/${id}/video`, {}).catch(() => null);
 export type Meter = { session_id: string; state: string; elapsed: number; paid_seconds: number; balance: number; stop?: boolean; low_balance?: boolean };
 type Token = { token?: string; url?: string; api_key?: string; meter?: Meter };
 

@@ -623,6 +623,11 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
         meter_status(session_id, user)
         return meter.extend(ObjectId(session_id), user["_id"])
 
+    @app.post("/api/live/meter/{session_id}/video")
+    def live_video_started(session_id: str, user=Depends(authorize)):
+        meter_status(session_id, user)
+        return meter.video_started(ObjectId(session_id), user["_id"])
+
     @app.post("/api/live/meter/{session_id}/end")
     def live_end(session_id: str, user=Depends(authorize)):
         meter_status(session_id, user)

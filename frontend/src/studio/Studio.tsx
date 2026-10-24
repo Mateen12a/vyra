@@ -10,7 +10,7 @@ import { every } from "../lib/ticker";
 import { useAuth } from "../lib/auth";
 import { VIDEO_QUALITY, measured, qualityHint, uplinkLimited, type QualityMode, type QualityMetrics, type QualityReport, type UploadQuality } from "./quality";
 import {
-  characterPrompt, compositor, holdCard, connect, createLookPrompt, describePhoto, endMeter, endMeterOnUnload, fitToCamera, getStatus, heartbeat,
+  characterPrompt, compositor, holdCard, videoStarted, connect, createLookPrompt, describePhoto, endMeter, endMeterOnUnload, fitToCamera, getStatus, heartbeat,
   loadScript, PLATFORMS, recorderType, startStream, withAiVoice, withProvenance,
   type AccentVoice, type LiveStatus, type OverlayConfig, type SceneRule, type Session, type StreamHandle, type VoiceRigHandle,
 } from "./engine";
@@ -986,6 +986,7 @@ export default function Studio() {
     clearTimeout(timersRef.current.stall);
     clearTimeout(timersRef.current.streamGrace);
     holdRef.current = null; setHolding(false);
+    if (billingRef.current.id) videoStarted(billingRef.current.id);
     setPhase("live"); setWarmup("");
     timersRef.current.startedAt = performance.now();
     timersRef.current.tick = window.setInterval(() => {
@@ -1181,8 +1182,8 @@ export default function Studio() {
           {vcamActive && extInstalled && (live || phase === "camera") && (
             <div className="stage-vcam-pill" title="What people in your call see right now">
               <span className="live-dot" />
-              {live ? "Call sees: your AI look" : realBeforeLive ? "Call sees: your real camera" : "Call sees: “Starting soon”"}
-              {!live && (
+              {live ? "Call sees: your AI look" : holding ? "Call sees: “Be right back”" : realBeforeLive ? "Call sees: your real camera" : "Call sees: “Starting soon”"}
+              {!live && !holding && (
                 <button type="button" className="stage-vcam-switch" onClick={() => {
                   const showReal = !realBeforeLive;
                   setRealBeforeLive(showReal);

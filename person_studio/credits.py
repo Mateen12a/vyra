@@ -70,9 +70,27 @@ class LiveMeter:
     seconds of the last block. Sessions that never call end() keep their paid blocks (sweep()).
     """
 
+    FREE_WARMUP = 20        # seconds of connecting before the first AI frame that aren't charged
+    NO_VIDEO_WINDOW = 35    # a session ended this soon without any AI frame is refunded in full...
+    NO_VIDEO_PER_DAY = 3    # ...at most this many times a day per person
+
     def __init__(self, store: Store, ledger: Ledger):
         self.store, self.ledger = store, ledger
         self.block = pricing.LIVE_BLOCK_SECONDS * pricing.LIVE_CREDITS_PER_SECOND
+
+    def _billable(self, record, now):
+        """Seconds to charge so far: from the session start, minus free warm-up once the first frame arrived."""
+        elapsed = (now - record["started_at"]).total_seconds()
+        video_at = record.get("video_at")
+        if video_at:
+            elapsed -= min(self.FREE_WARMUP, (video_at - record["started_at"]).total_seconds())
+        return max(0.0, elapsed)
+
+    def video_started(self, session_id, user_id):
+        """The browser shows the first AI frame: charging for warm-up stops here (up to FREE_WARMUP)."""
+        self.store.live_sessions.update_one({"_id": session_id, "user_id": user_id, "state": "live", "video_at": None},
+                                            {"$set": {"video_at": utcnow()}})
+        return self.status(session_id, user_id)
 
     def start(self, user_id, provider):
         self.sweep(user_id)
@@ -81,7 +99,7 @@ class LiveMeter:
         now = utcnow()
         session_id = self.store.live_sessions.insert_one({
             "user_id": user_id, "provider": provider, "state": "live", "started_at": now,
-            "last_heartbeat_at": now, "paid_seconds": 0, "blocks": 0}).inserted_id
+            "last_heartbeat_at": now, "paid_seconds": 0, "blocks": 0, "video_at": None}).inserted_id
         try:
             self._buy_block(session_id, user_id, 0)
         except InsufficientCredits:
@@ -102,7 +120,7 @@ class LiveMeter:
 
     def status(self, session_id, user_id):
         record = self._get(session_id, user_id)
-        elapsed = (utcnow() - record["started_at"]).total_seconds()
+        elapsed = self._billable(record, utcnow())
         return {"session_id": str(session_id), "state": record["state"], "elapsed": int(elapsed),
                 "paid_seconds": record["paid_seconds"], "balance": self.ledger.balance(user_id)}
 
@@ -112,7 +130,7 @@ class LiveMeter:
             return {**self.status(session_id, user_id), "stop": True}
         now = utcnow()
         self.store.live_sessions.update_one({"_id": session_id}, {"$set": {"last_heartbeat_at": now}})
-        elapsed = (now - record["started_at"]).total_seconds()
+        elapsed = self._billable(record, now)
         if elapsed > record["paid_seconds"] - 20:  # buy ahead so the stream never pauses on a block edge
             try:
                 self._buy_block(session_id, user_id, record["blocks"])
@@ -128,7 +146,13 @@ class LiveMeter:
             {"_id": session_id, "user_id": user_id, "state": "live"},
             {"$set": {"state": "ended", "ended_at": utcnow()}}, return_document=ReturnDocument.AFTER)
         if record:
-            used = math.ceil((record["ended_at"] - record["started_at"]).total_seconds())
+            used = math.ceil(self._billable(record, record["ended_at"]))
+            if not record.get("video_at") and used <= self.NO_VIDEO_WINDOW:
+                since = record["ended_at"] - timedelta(days=1)
+                if self.store.live_sessions.count_documents({"user_id": user_id, "no_video_refund": True,
+                                                              "ended_at": {"$gte": since}}) < self.NO_VIDEO_PER_DAY:
+                    used = 0  # nothing was ever shown: give it all back
+                    self.store.live_sessions.update_one({"_id": session_id}, {"$set": {"no_video_refund": True}})
             unused = max(0, record["paid_seconds"] - used) * pricing.LIVE_CREDITS_PER_SECOND
             if unused:
                 self.ledger.apply(user_id, unused, "live_refund", f"live:{session_id}:refund",
@@ -153,7 +177,7 @@ class LiveMeter:
         """
         query = {"state": "live", **({"user_id": user_id} if user_id else {})}
         for record in self.store.live_sessions.find(query):
-            deadline = record["started_at"] + timedelta(seconds=record["paid_seconds"] + 30)
+            deadline = record["started_at"] + timedelta(seconds=record["paid_seconds"] + 30 + (self.FREE_WARMUP if record.get("video_at") else 0))
             if utcnow() > deadline:
                 last_seen = record.get("last_heartbeat_at")
                 if last_seen and last_seen > record["started_at"]:

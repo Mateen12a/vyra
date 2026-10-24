@@ -19,3 +19,4 @@ models/
 node_modules/
 test-results/
 
+store/*.zip

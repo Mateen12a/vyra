@@ -50,7 +50,8 @@ export type User = {
 };
 export type Me = { user: User; balance: number };
 export type Pack = { id: string; name: string; credits: number; amount_cents: number };
-export type Catalogue = { credit_usd: number; live_credits_per_minute: number; packs: Pack[]; tools: Record<string, number> };
+export type Catalogue = { credit_usd: number; live_credits_per_minute: number; packs: Pack[]; tools: Record<string, number>;
+  custom?: { min_usd: number; max_usd: number } };
 export type LedgerRow = { delta: number; kind: string; at: string; reason?: string; pack?: string };
 export type Credits = Catalogue & { balance: number; history: LedgerRow[]; payments: boolean };
 

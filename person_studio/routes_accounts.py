@@ -175,7 +175,8 @@ def build_router(settings, store, accounts, ledger, billing, current_user, requi
         if not user.get("verified"):
             raise HTTPException(403, "Verify your email before buying credits.")
         try:
-            return billing.checkout(user, (await body_of(request)).get("pack"), settings.public_url.rstrip("/"))
+            body = await body_of(request)
+            return billing.checkout(user, body.get("pack"), settings.public_url.rstrip("/"), body.get("amount_usd"))
         except BillingError as exc:
             raise HTTPException(exc.status, str(exc))
 

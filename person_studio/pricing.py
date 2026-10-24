@@ -26,6 +26,19 @@ PACKS = {
     "studio": {"name": "Studio", "credits": 12000, "amount_cents": 96000},     # 200 min, +25%
 }
 
+# "Other amount": any whole-dollar amount in this range, at the base rate (no bonus, so packs stay the better deal).
+# Below $5 Stripe's fixed fee eats too much of the payment.
+CUSTOM_MIN_USD = 5
+CUSTOM_MAX_USD = 5000
+
+
+def custom_pack(dollars):
+    """The pack for a custom amount, or None if the amount isn't allowed."""
+    if not isinstance(dollars, int) or isinstance(dollars, bool) or not CUSTOM_MIN_USD <= dollars <= CUSTOM_MAX_USD:
+        return None
+    return {"name": "Custom", "credits": round(dollars / CREDIT_USD), "amount_cents": dollars * 100}
+
+
 # Fixed credit cost per generation tool (provider cost x ~2.5, rounded up). Keep in step with the fal dashboard.
 TOOLS = {
     "clip": 60,          # Wan 2.2 Animate Replace, ~$0.23 for a 3 s clip at 480p
@@ -36,4 +49,5 @@ TOOLS = {
 
 def public_catalogue():
     return {"credit_usd": CREDIT_USD, "live_credits_per_minute": LIVE_CREDITS_PER_SECOND * 60,
-            "packs": [{"id": key, **pack} for key, pack in PACKS.items()], "tools": TOOLS}
+            "packs": [{"id": key, **pack} for key, pack in PACKS.items()], "tools": TOOLS,
+            "custom": {"min_usd": CUSTOM_MIN_USD, "max_usd": CUSTOM_MAX_USD}}

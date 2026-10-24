@@ -20,10 +20,15 @@ class Billing:
     def available(self):
         return bool(self.client and self.settings.stripe_webhook_secret)
 
-    def checkout(self, user, pack_id, base_url):
+    def checkout(self, user, pack_id, base_url, amount_usd=None):
         if not self.available():
             raise BillingError("Payments are not configured on this server yet.", 503)
-        pack = pricing.PACKS.get(pack_id)
+        if pack_id == "custom":
+            pack = pricing.custom_pack(amount_usd)
+            if not pack:
+                raise BillingError(f"Enter a whole amount from ${pricing.CUSTOM_MIN_USD} to ${pricing.CUSTOM_MAX_USD:,}.", 422)
+        else:
+            pack = pricing.PACKS.get(pack_id)
         if not pack:
             raise BillingError("Choose one of the listed credit packs.", 422)
         session = self.client.checkout.sessions.create(params={
@@ -86,7 +91,11 @@ class Billing:
     def _grant(self, session):
         from bson import ObjectId
         metadata = session.get("metadata") or {}
-        pack = pricing.PACKS.get(metadata.get("pack"))
+        if metadata.get("pack") == "custom":  # trust what Stripe charged, and our own rate, not the metadata
+            total = session.get("amount_total")
+            pack = pricing.custom_pack(total // 100) if isinstance(total, int) and total % 100 == 0 else None
+        else:
+            pack = pricing.PACKS.get(metadata.get("pack"))
         # Trust our own pack table and the amount Stripe actually charged, not just metadata.
         if not pack or session.get("amount_total") != pack["amount_cents"] or session.get("currency") != "usd":
             self.store.audit("stripe", "checkout_mismatch", session_id=session.get("id"))

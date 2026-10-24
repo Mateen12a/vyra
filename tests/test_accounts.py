@@ -507,3 +507,22 @@ def test_one_trial_per_device_across_accounts_and_networks(store):
     trial.record(store, "u1", "first@example.com", "8.8.8.8", device="device-abc-123456")
     assert trial.decide(store, "second@example.com", "1.1.1.1", device="device-abc-123456") == "device_used"
     assert trial.decide(store, "second@example.com", "9.9.9.9", device="another-device-0001") is None
+
+
+def test_custom_amount_limits():
+    assert pricing.custom_pack(5)["credits"] == 50 and pricing.custom_pack(5000)["amount_cents"] == 500000
+    for bad in (4, 5001, 7.5, "10", True, None):
+        assert pricing.custom_pack(bad) is None
+
+
+def test_custom_amount_payment_credits_at_base_rate(client, mailer, store):
+    email = signup(client, mailer)
+    uid = user_id(store, email)
+    def custom_event(amount_cents):
+        return {"id": "evt_" + secrets.token_hex(6), "object": "event", "type": "checkout.session.completed",
+                "data": {"object": {"id": "cs_test_" + secrets.token_hex(6), "object": "checkout.session", "payment_status": "paid",
+                                    "currency": "usd", "amount_total": amount_cents, "payment_intent": "pi_" + secrets.token_hex(6),
+                                    "metadata": {"user_id": str(uid), "pack": "custom", "credits": "999999"}}}}
+    assert stripe_post(client, custom_event(1200)).status_code == 200      # $12 -> 120 credits, metadata ignored
+    assert stripe_post(client, custom_event(250)).status_code == 200       # $2.50 is below the minimum: no credits
+    assert client.get("/api/auth/me").json()["balance"] == pricing.FREE_CREDITS_ON_VERIFY + 120

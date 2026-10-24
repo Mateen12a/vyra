@@ -11,6 +11,7 @@ export function CreditsPage() {
   const [data, setData] = useState<Credits | null>(null);
   const [buying, setBuying] = useState<string | null>(null);
   const [crediting, setCrediting] = useState(false);
+  const [custom, setCustom] = useState("20");
 
   const load = () => api<Credits>("/api/credits").then((d) => { setData(d); setBalance(d.balance); }).catch((e) => toast(e.message, true));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -42,9 +43,9 @@ export function CreditsPage() {
     return () => clearInterval(timer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function buy(pack: string) {
+  async function buy(pack: string, amountUsd?: number) {
     setBuying(pack);
-    try { const { url } = await api<{ url: string }>("/api/billing/checkout", { pack }); location.assign(url); }
+    try { const { url } = await api<{ url: string }>("/api/billing/checkout", { pack, ...(amountUsd ? { amount_usd: amountUsd } : {}) }); location.assign(url); }
     catch (err) { toast((err as Error).message, true); setBuying(null); }
   }
 
@@ -57,6 +58,10 @@ export function CreditsPage() {
     </div>
   );
   const perMinute = data.live_credits_per_minute;
+  const limits = data.custom || { min_usd: 5, max_usd: 5000 };
+  const customUsd = Number(custom);
+  const customOk = Number.isInteger(customUsd) && customUsd >= limits.min_usd && customUsd <= limits.max_usd;
+  const customCredits = customOk ? Math.round(customUsd / data.credit_usd) : 0;
   const base = data.packs[0] ? data.packs[0].amount_cents / data.packs[0].credits : 0;
 
   return (
@@ -76,7 +81,7 @@ export function CreditsPage() {
           <div className="checkout-card">
             <PixelLoader label="Opening checkout" />
             <p className="checkout-title">Opening secure checkout</p>
-            <p className="muted">{data.packs.find((p) => p.id === buying)?.name} · {money(data.packs.find((p) => p.id === buying)?.amount_cents || 0)}. You'll pay on Stripe and come straight back here.</p>
+            <p className="muted">{buying === "custom" ? `Other amount · $${customUsd}` : `${data.packs.find((p) => p.id === buying)?.name} · ${money(data.packs.find((p) => p.id === buying)?.amount_cents || 0)}`}. You'll pay on Stripe and come straight back here.</p>
           </div>
         </div>
       )}
@@ -94,6 +99,17 @@ export function CreditsPage() {
             </button>
           );
         })}
+        <form className="pack pack-custom" onSubmit={(e) => { e.preventDefault(); if (customOk) buy("custom", customUsd); }}>
+          <span className="pack-top"><span className="pack-name">Other amount</span></span>
+          <label className="pack-amount">
+            <span aria-hidden="true">$</span>
+            <input inputMode="numeric" pattern="[0-9]*" value={custom} aria-label={`Amount in US dollars, ${limits.min_usd} to ${limits.max_usd}`}
+              onChange={(e) => setCustom(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} />
+          </label>
+          <span className="pack-credits num">{customOk ? `${customCredits.toLocaleString("en-US")} credits · ${minutes(customCredits, perMinute)} of live`
+            : `Whole dollars, $${limits.min_usd} to $${limits.max_usd.toLocaleString("en-US")}`}</span>
+          <button type="submit" className="btn btn-primary btn-sm pack-buy" disabled={!customOk || !!buying || !me.user.verified || !data.payments}>Buy</button>
+        </form>
       </section>
       <p className="dim small-line">Secure checkout by Stripe. One-off payments, no subscription.</p>
 

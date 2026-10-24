@@ -361,3 +361,12 @@ tr:last-child td { border-bottom: 0; }
 .consent { display: grid; gap: 14px; }
 .consent-promise { padding: 14px 16px; border-radius: var(--radius-sm); background: var(--accent-soft); font-weight: 500; line-height: 1.5; }
 .consent-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+
+/* ---------- credits: other amount ---------- */
+.pack-custom { cursor: default; }
+.pack-custom:hover { transform: none !important; }
+.pack-amount { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 1.625rem; font-weight: 600; letter-spacing: -0.02em; }
+.pack-amount input { width: 100%; min-width: 0; border: 0; border-bottom: 2px solid var(--line-strong); background: transparent; color: var(--text);
+  font: inherit; padding: 0 0 2px; outline: none; }
+.pack-amount input:focus { border-bottom-color: var(--accent); }
+.pack-buy { margin-top: 10px; }

@@ -104,6 +104,32 @@ export async function prepare(_provider = "fal") {
 }
 
 export const getStatus = () => api<LiveStatus>("/api/live/status");
+
+export type NetCheck = { uploadMbps: number; latencyMs: number };
+let lastNetCheck: { at: number; result: NetCheck } | null = null;
+/** Measures upload speed and round-trip time to this server (about 2 s, no credits). Cached for 2 minutes. */
+export async function checkConnection(): Promise<NetCheck | null> {
+  if (lastNetCheck && Date.now() - lastNetCheck.at < 120000) return lastNetCheck.result;
+  try {
+    const pings: number[] = [];
+    for (let i = 0; i < 3; i++) {
+      const t = performance.now();
+      await fetch(`/api/net/probe?t=${Date.now()}`, { cache: "no-store" });
+      pings.push(performance.now() - t);
+    }
+    const bytes = 500_000;
+    const body = new Uint8Array(bytes); crypto.getRandomValues(body.subarray(0, 65536)); // incompressible-ish
+    const t = performance.now();
+    const res = await fetch("/api/net/probe", { method: "POST", body, signal: AbortSignal.timeout(15000) });
+    if (!res.ok) return null;
+    const seconds = (performance.now() - t) / 1000;
+    const result = { uploadMbps: (bytes * 8) / seconds / 1_000_000, latencyMs: Math.min(...pings) };
+    lastNetCheck = { at: Date.now(), result };
+    return result;
+  } catch {
+    return null; // a failed check never blocks going live
+  }
+}
 /** Tells the meter the first AI frame is showing, so connecting time isn't charged. */
 export const videoStarted = (id: string) => api<Meter>(`/api/live/meter/${id}/video`, {}).catch(() => null);
 export type Meter = { session_id: string; state: string; elapsed: number; paid_seconds: number; balance: number; stop?: boolean; low_balance?: boolean };

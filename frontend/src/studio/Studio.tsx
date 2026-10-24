@@ -10,7 +10,7 @@ import { every } from "../lib/ticker";
 import { useAuth } from "../lib/auth";
 import { VIDEO_QUALITY, measured, qualityHint, uplinkLimited, type QualityMode, type QualityMetrics, type QualityReport, type UploadQuality } from "./quality";
 import {
-  characterPrompt, compositor, holdCard, videoStarted, connect, createLookPrompt, describePhoto, endMeter, endMeterOnUnload, fitToCamera, getStatus, heartbeat,
+  characterPrompt, checkConnection, compositor, holdCard, videoStarted, connect, createLookPrompt, describePhoto, endMeter, endMeterOnUnload, fitToCamera, getStatus, heartbeat,
   loadScript, PLATFORMS, recorderType, startStream, withAiVoice, withProvenance,
   type AccentVoice, type LiveStatus, type OverlayConfig, type SceneRule, type Session, type StreamHandle, type VoiceRigHandle,
 } from "./engine";
@@ -74,6 +74,37 @@ function hasContent(video: HTMLVideoElement) {
 const clock = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const metricNumber = (value: number | null | undefined) => measured(value) ? String(Math.round(value)) : "–";
 
+// The go-live progress shown on the stage: where we are, roughly how long is left, and that waiting is free.
+const WARM_STEPS = ["Checking connection", "Connecting to the AI", "Preparing your look"];
+function warmStep(label: string) {
+  if (/connection|camera/i.test(label)) return 0;
+  if (/warming|reconnect/i.test(label)) return 2;
+  return 1;
+}
+function WarmupProgress({ label, since }: { label: string; since: number }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(t); }, []);
+  const step = warmStep(label);
+  const elapsed = since ? (now - since) / 1000 : 0;
+  const expected = 20;
+  const pct = Math.min(95, Math.max(step * 30, (elapsed / expected) * 100));
+  const left = Math.max(0, Math.round(expected - elapsed));
+  return (
+    <div className="stage-warmup" role="status" aria-live="polite">
+      <div className="warm-card">
+        <ol className="warm-steps">
+          {WARM_STEPS.map((s, i) => (
+            <li key={s} className={i < step ? "is-done" : i === step ? "is-now" : ""}>{i < step ? "✓ " : ""}{s}</li>
+          ))}
+        </ol>
+        <div className="warm-bar"><span style={{ width: `${pct}%` }} /></div>
+        <p className="warm-note">{label}{elapsed > expected + 5 ? " · taking longer than usual" : left ? ` · about ${left} s` : ""}</p>
+        <p className="warm-free">You're not charged until your AI look appears.</p>
+      </div>
+    </div>
+  );
+}
+
 export default function Studio() {
   const { me, catalogue, setBalance } = useAuth();
   const toast = useToast();
@@ -81,6 +112,9 @@ export default function Studio() {
   const perMinute = catalogue?.live_credits_per_minute || 60;
 
   const [tab, setTab] = useState<InspectorTab>("look");
+  const [slowNet, setSlowNet] = useState<{ uploadMbps: number; latencyMs: number } | null>(null);
+  const slowOkRef = useRef(false);
+  const [warmStart, setWarmStart] = useState(0);
   const consentGate = useConsentGate();
   // After an unplanned stop, calls and streams show this card instead of the real camera until the user decides.
   // Before going live, calls see a "Starting soon" card instead of the real camera, so the other person never sees
@@ -99,6 +133,8 @@ export default function Studio() {
   const [phone] = useState(isPhone); // no browser extensions or OBS on phones
   const [status, setStatus] = useState<LiveStatus | null>(null);
   const [phase, setPhase] = useState<Phase>("off");
+  // Restart the warm-up clock each time a go-live attempt begins.
+  useEffect(() => { if (phase === "connecting") setWarmStart(Date.now()); }, [phase]);
   const [sourceStarting, setSourceStarting] = useState(false);
   const [sourceError, setSourceError] = useState("");
   const [qualityMode, setQualityMode] = useState<QualityMode>(() => {
@@ -886,6 +922,18 @@ export default function Studio() {
     if (!status?.available) return toast(status?.message || "Live isn't available right now.", true);
     if (me && me.balance < LIVE_BLOCK) return toast(`Going live needs at least ${LIVE_BLOCK} credits (${LIVE_BLOCK} seconds). Add credits to continue.`, true);
     if (!(await consentGate.ensure())) return;
+    // Check the connection before any credits are taken: below ~1 Mbps upload the result stutters.
+    if (!slowOkRef.current) {
+      setWarmup("Checking your connection");
+      setPhase("connecting");
+      const net = await checkConnection();
+      setPhase(streamRef.current ? "camera" : "off"); setWarmup("");
+      if (net && net.uploadMbps < 0.8) {
+        setSlowNet(net);
+        return;
+      }
+    }
+    slowOkRef.current = false;
     // A tip only: going live never waits on it.
     if (!darkWarnedRef.current && roomIsDark()) {
       darkWarnedRef.current = true;
@@ -1142,6 +1190,19 @@ export default function Studio() {
   return (
     <div className="studio" data-vyra-studio="true">
       {consentGate.dialog}
+      {slowNet && (
+        <Dialog title="Your connection is slow right now" onClose={() => setSlowNet(null)}>
+          <div className="consent">
+            <p>Live AI video needs about <strong>1 Mbps upload</strong>. Yours measured <strong>{slowNet.uploadMbps.toFixed(1)} Mbps</strong>
+              {slowNet.latencyMs > 400 ? ` with a ${Math.round(slowNet.latencyMs)} ms delay` : ""}, so the result would stutter and lag.</p>
+            <p className="muted">Try Wi-Fi closer to the router, a wired connection, or pick Smooth quality. Nothing has been charged.</p>
+            <div className="consent-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => { setSlowNet(null); slowOkRef.current = true; goLive(); }}>Go live anyway</button>
+              <button type="button" className="btn btn-primary" onClick={() => setSlowNet(null)}>OK, I'll fix it</button>
+            </div>
+          </div>
+        </Dialog>
+      )}
       <section className="studio-stage-col">
         {live && left && (() => {
           const remaining = Math.max(0, Math.round(left.seconds - (Date.now() - left.at) / 1000));
@@ -1172,7 +1233,7 @@ export default function Studio() {
               <button className="btn btn-light btn-lg" disabled={sourceStarting} onClick={() => openSource()}>{sourceStarting ? "Opening camera…" : "Turn on camera"}</button>
             </div>
           )}
-          {warmup && <div className="stage-warmup"><Spinner /> {warmup}</div>}
+          {warmup && <WarmupProgress label={warmup} since={warmStart} />}
           {live && <div className="stage-live"><span className="live-dot" /> Live <span className="num">{clock(seconds)}</span></div>}
           {(live || phase === "camera") && showWatermark && (
             <div className={`stage-label${compactWatermark ? " stage-label-compact" : ""}`} data-testid="stage-watermark" data-compact={compactWatermark ? "true" : "false"}>

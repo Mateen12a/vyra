@@ -373,3 +373,13 @@ tr:last-child td { border-bottom: 0; }
 .stage-vcam-switch { margin-left: 8px; padding: 2px 8px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.14); color: inherit;
   font: inherit; font-size: 0.75rem; cursor: pointer; pointer-events: auto; }
 .stage-vcam-switch:hover { background: rgba(255, 255, 255, 0.24); }
+
+/* ---------- go-live progress ---------- */
+.warm-card { display: grid; gap: 12px; width: min(360px, 86%); padding: 20px 22px; border-radius: var(--radius); background: rgba(9, 9, 11, 0.86); }
+.warm-steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 0.9375rem; color: var(--text-3); }
+.warm-steps .is-now { color: var(--text); font-weight: 600; }
+.warm-steps .is-done { color: var(--ok); }
+.warm-bar { height: 6px; border-radius: 3px; background: var(--raised-2); overflow: hidden; }
+.warm-bar span { display: block; height: 100%; background: var(--accent); transition: width 300ms linear; }
+.warm-note { font-size: 0.875rem; color: var(--text-2); }
+.warm-free { font-size: 0.8125rem; color: var(--text-3); }

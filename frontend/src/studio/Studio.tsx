@@ -9,6 +9,7 @@ import { useConsentGate } from "../components/Consent";
 import { every } from "../lib/ticker";
 import { useAuth } from "../lib/auth";
 import { TopUp, type TopUpReason } from "./TopUp";
+import { BACKGROUNDS, BackgroundRig, FACE_TIPS, checkFace, faceIssue, type Background, type FaceIssue } from "./vision";
 import { VIDEO_QUALITY, measured, qualityHint, uplinkLimited, type QualityMode, type QualityMetrics, type QualityReport, type UploadQuality } from "./quality";
 import {
   characterPrompt, checkConnection, compositor, holdCard, videoStarted, connect, createLookPrompt, describePhoto, endMeter, endMeterOnUnload, fitToCamera, getStatus, heartbeat,
@@ -114,6 +115,14 @@ export default function Studio() {
 
   const [tab, setTab] = useState<InspectorTab>("look");
   const [topUp, setTopUp] = useState<TopUpReason | null>(null);
+  // Background replacement (on this device) and the face check that warns about no face, several faces or poor light.
+  const [bgId, setBgId] = useState(() => { try { return localStorage.getItem("vyra.bg") || "none"; } catch { return "none"; } });
+  const [bgBusy, setBgBusy] = useState(false);
+  const [customBg, setCustomBg] = useState<Background | null>(null);
+  const rigRef = useRef<BackgroundRig | null>(null);
+  const bgPreviewRef = useRef<HTMLVideoElement>(null);
+  const bgInputRef = useRef<HTMLInputElement>(null);
+  const [faceTip, setFaceTip] = useState<FaceIssue>(null);
   const lowShownRef = useRef(false);
   const [slowNet, setSlowNet] = useState<{ uploadMbps: number; latencyMs: number } | null>(null);
   const slowOkRef = useRef(false);
@@ -644,7 +653,7 @@ export default function Studio() {
       // Showing an acquired stream must not depend on device enumeration succeeding.
       setPhase((p) => (p === "off" ? "camera" : p));
       setCameraId(target || "");
-      if (sessionRef.current?.replaceVideoTrack) {
+      if (sessionRef.current?.replaceVideoTrack && !rigRef.current) { // with a background on, the session keeps the background track
         await sessionRef.current.replaceVideoTrack(stream.getVideoTracks()[0]);
       }
       old?.getTracks().forEach((t) => t.stop());
@@ -915,6 +924,70 @@ export default function Studio() {
     for (let i = 0; i < px.length; i += 4) sum += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
     return sum / (px.length / 4) < 45;
   }
+  async function chooseBackground(bg: Background) {
+    if (bgBusy) return;
+    setBgBusy(true);
+    try {
+      if (bg.kind === "none") {
+        const rig = rigRef.current;
+        rigRef.current = null;
+        const raw = streamRef.current?.getVideoTracks()[0];
+        if (raw && sessionRef.current?.replaceVideoTrack) await sessionRef.current.replaceVideoTrack(raw);
+        rig?.stop();
+      } else {
+        if (!camRef.current) return;
+        const rig = rigRef.current || new BackgroundRig(camRef.current);
+        await rig.set(bg);
+        if (!rigRef.current) {
+          rigRef.current = rig;
+          if (sessionRef.current?.replaceVideoTrack) await sessionRef.current.replaceVideoTrack(rig.track);
+        }
+      }
+      if (bgPreviewRef.current) bgPreviewRef.current.srcObject = rigRef.current ? new MediaStream([rigRef.current.track]) : null;
+      setBgId(bg.id);
+      try { if (bg.id !== "custom") localStorage.setItem("vyra.bg", bg.id); } catch { /* preference only */ }
+    } catch {
+      toast("Couldn't load the background on this device. Your camera is unchanged.", true);
+    } finally {
+      setBgBusy(false);
+    }
+  }
+
+  function pickBackground(file?: File) {
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return toast("Use a JPG, PNG or WebP picture.", true);
+    if (customBg?.src) URL.revokeObjectURL(customBg.src);
+    const bg: Background = { id: "custom", name: "Your picture", kind: "image", src: URL.createObjectURL(file) };
+    setCustomBg(bg);
+    chooseBackground(bg);
+  }
+
+  // A saved background comes back when the camera turns on; the rig stops with the studio.
+  useEffect(() => {
+    if (phase !== "camera" || rigRef.current || bgId === "none") return;
+    const saved = BACKGROUNDS.find((b) => b.id === bgId);
+    if (saved) chooseBackground(saved);
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => rigRef.current?.stop(), []);
+
+  // The face check: a look every 1.5 s while the camera is on. A tip shows only after two looks agree, so a
+  // quick turn of the head doesn't flash a warning.
+  useEffect(() => {
+    if (phase !== "camera" && phase !== "live") { setFaceTip(null); return; }
+    let last: FaceIssue = null, alive = true, failures = 0;
+    const timer = window.setInterval(async () => {
+      if (!camRef.current || document.hidden) return;
+      try {
+        const issue = faceIssue(await checkFace(camRef.current));
+        if (alive && issue === last) setFaceTip(issue);
+        last = issue;
+      } catch {
+        if (++failures > 2) clearInterval(timer); // the detector can't run here: no tips rather than wrong ones
+      }
+    }, 1500);
+    return () => { alive = false; clearInterval(timer); };
+  }, [phase]);
+
   // Going live brings the picture back into view if the page was scrolled down to the settings.
   useEffect(() => {
     if (phase !== "live" && phase !== "connecting") return;
@@ -972,7 +1045,7 @@ export default function Studio() {
     setWarmup("Connecting");
     try {
       const session = await connect({
-        stream: streamRef.current, provider, model: status.model, signal: controller.signal,
+        stream: rigRef.current ? new MediaStream([rigRef.current.track]) : streamRef.current, provider, model: status.model, signal: controller.signal,
         state: { image: look.image, prompt: look.prompt, enhance: true },
         onRemote: (remote) => { if (aiRef.current) { aiRef.current.srcObject = remote; aiRef.current.play().catch(() => {}); } },
         onRetry: (n, of) => setWarmup(`Waiting for a free slot · ${n}/${of}`),
@@ -1244,6 +1317,8 @@ export default function Studio() {
         <div ref={stageRef} className={`stage stage-${phase}`}>
           <video ref={aiRef} className="stage-ai" playsInline autoPlay muted onPlaying={onFrame} />
           <video ref={camRef} className={`stage-cam${mirrored ? " mirrored" : ""}${live ? " pip" : ""}`} playsInline autoPlay muted />
+          <video ref={bgPreviewRef} className={`stage-bgview${mirrored ? " mirrored" : ""}`} hidden={!rigRef.current || bgId === "none" || live || phase === "off"} playsInline autoPlay muted />
+          {faceTip && !warmup && (phase === "camera" || live) && <p className="stage-tip" role="status" data-testid="face-tip">{FACE_TIPS[faceTip]}</p>}
           {phase === "off" && (
             <div className="stage-empty">
               <h2>Turn on your camera</h2>
@@ -1357,6 +1432,19 @@ export default function Studio() {
           </div>
           <span className="muted" data-testid="active-quality">Using {uploadQuality === "smooth" ? "Smooth" : "Sharp"}</span>
         </div>
+        {!phone && (
+          <div className="quality-control bg-control">
+            <span id="bg-label">Background</span>
+            <div className="quality-options bg-options" role="group" aria-labelledby="bg-label">
+              {[...BACKGROUNDS, ...(customBg ? [customBg] : [])].map((bg) => (
+                <button type="button" key={bg.id} aria-pressed={bgId === bg.id} disabled={bgBusy || phase === "off"} onClick={() => chooseBackground(bg)}>{bg.name}</button>
+              ))}
+              <button type="button" disabled={bgBusy || phase === "off"} onClick={() => bgInputRef.current?.click()}>Upload…</button>
+            </div>
+            <input ref={bgInputRef} type="file" accept="image/jpeg,image/png,image/webp" hidden data-testid="bg-upload"
+              onChange={(e) => { pickBackground(e.target.files?.[0]); e.target.value = ""; }} />
+          </div>
+        )}
         {sourceError && <p className="alert alert-error" role="alert" data-testid="source-error">{sourceError}</p>}
         <div className="session-strip num" aria-live="off">
           <span>{live ? `${clock(seconds)} live` : sourceStarting ? "Opening camera…" : phase === "off" ? "Turn on your camera to continue" : look ? "Ready to go live" : "Choose who to become →"}</span>

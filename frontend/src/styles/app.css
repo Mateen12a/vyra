@@ -404,3 +404,12 @@ tr:last-child td { border-bottom: 0; }
 .topup-price { margin-top: 6px; font-weight: 600; }
 .error-line { color: var(--danger, #f87171); font-size: 0.875rem; }
 @media (max-width: 520px) { .topup-packs { grid-template-columns: 1fr; } .topup-demo { aspect-ratio: 16 / 9; } }
+
+/* Background picker and face tips */
+.bg-options { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.bg-options button { min-width: 0; white-space: nowrap; }
+.bg-options button:disabled { opacity: 0.5; cursor: default; }
+.stage-bgview { z-index: 1; }
+.stage-bgview.mirrored { transform: scaleX(-1); }
+.stage-tip { position: absolute; left: 50%; bottom: 60px; z-index: 4; transform: translateX(-50%); max-width: min(90%, 520px); padding: 8px 14px; border-radius: 10px;
+  background: rgba(0, 0, 0, 0.72); color: #fff; font-size: 0.8125rem; text-align: center; }

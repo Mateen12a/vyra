@@ -149,7 +149,7 @@ export async function createLookPrompt(idea: string, base?: string): Promise<{ n
 // The prompt that turns the person on camera into the character in the reference photo.
 export function characterPrompt(description: string) {
   const start = "Replace the person with the person in the reference image";
-  const end = ". Match face shape, skin tone and hairstyle. Real unedited webcam footage of a real person: natural skin with pores, fine lines and slight imperfections, true-to-life colour and the room's own lighting and shadows, normal webcam sharpness and grain. Not a cartoon, CGI, painting or beauty filter; no airbrushing, smoothing or glossy skin. Follow the original movement, expressions, mouth and head pose exactly. Keep the background, room and framing as in the input; change only the person.";
+  const end = ". Match face shape, skin tone and hair. Real unedited webcam footage: natural skin texture with pores and slight imperfections, true colour, normal webcam grain; not a cartoon, CGI or beauty filter. Follow the movement, expressions and mouth exactly. Keep the background, room and lighting as in the input.";
   const details = description.replace(/\s+/g, " ").trim().replace(/\.+$/, "").slice(0, 399 - start.length - end.length - 2);
   return start + (details ? `: ${details}` : "") + end;
 }

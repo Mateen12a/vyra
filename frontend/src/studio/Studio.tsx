@@ -8,6 +8,7 @@ import { SetupTour, isPhone } from "./SetupTour";
 import { useConsentGate } from "../components/Consent";
 import { every } from "../lib/ticker";
 import { useAuth } from "../lib/auth";
+import { TopUp, type TopUpReason } from "./TopUp";
 import { VIDEO_QUALITY, measured, qualityHint, uplinkLimited, type QualityMode, type QualityMetrics, type QualityReport, type UploadQuality } from "./quality";
 import {
   characterPrompt, checkConnection, compositor, holdCard, videoStarted, connect, createLookPrompt, describePhoto, endMeter, endMeterOnUnload, fitToCamera, getStatus, heartbeat,
@@ -112,6 +113,8 @@ export default function Studio() {
   const perMinute = catalogue?.live_credits_per_minute || 60;
 
   const [tab, setTab] = useState<InspectorTab>("look");
+  const [topUp, setTopUp] = useState<TopUpReason | null>(null);
+  const lowShownRef = useRef(false);
   const [slowNet, setSlowNet] = useState<{ uploadMbps: number; latencyMs: number } | null>(null);
   const slowOkRef = useRef(false);
   const [warmStart, setWarmStart] = useState(0);
@@ -912,6 +915,13 @@ export default function Studio() {
     for (let i = 0; i < px.length; i += 4) sum += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
     return sum / (px.length / 4) < 45;
   }
+  // Going live brings the picture back into view if the page was scrolled down to the settings.
+  useEffect(() => {
+    if (phase !== "live" && phase !== "connecting") return;
+    const el = stageRef.current;
+    if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [phase]);
+
   async function goLive() {
     if (startingRef.current) return;
     // A double-click's second press lands on "Cancel"; only treat it as cancel after a real pause.
@@ -919,7 +929,7 @@ export default function Studio() {
     if (live || busy) return stop("Session ended.");
     if (!look) return toast("Describe a look or add a photo first.", true);
     if (!status?.available) return toast(status?.message || "Live isn't available right now.", true);
-    if (me && me.balance < LIVE_BLOCK) return toast(`Going live needs at least ${LIVE_BLOCK} credits (${LIVE_BLOCK} seconds). Add credits to continue.`, true);
+    if (me && me.balance < LIVE_BLOCK) return setTopUp("empty");
     if (!(await consentGate.ensure())) return;
     // Check the connection before any credits are taken: below ~1 Mbps upload the result stutters. The call app
     // (WhatsApp, Meet...) shares the same upload, so live needs headroom on top of what the call itself uses.
@@ -992,7 +1002,7 @@ export default function Studio() {
       });
       applyUploadQuality(desiredQualityRef.current, session).catch(() => toast("Couldn't apply upload quality to the live connection.", true));
       setWarmup("Warming up");
-      session.on("connectionChange", (s: string) => { if (s === "reconnecting") setWarmup("Reconnecting"); if (s === "disconnected" && sessionRef.current === session) stop("The live connection dropped. Calls and streams show a 'Be right back' card; go live again to continue.", true); });
+      session.on("connectionChange", (s: string) => { if (s === "reconnecting") setWarmup("Reconnecting"); if (s === "disconnected" && sessionRef.current === session) stop("The live connection dropped. Your call shows a dark screen; go live again to continue.", true); });
       session.on("sessionEnded", () => { if (sessionRef.current === session) stop("The live service paused the session. Unused time was returned. Go live again in a moment.", true); });
       session.on("error", (e: Error) => toast(e?.message || "Live error.", true));
       const t = timersRef.current;
@@ -1004,9 +1014,13 @@ export default function Studio() {
           const m = await heartbeat(id);
           setBalance(m.balance);
           setLeft({ seconds: Math.max(0, m.paid_seconds - m.elapsed) + Math.max(0, m.balance), at: Date.now() });
+          // One gentle nudge per session when under a minute is left, so the call never cuts off by surprise.
+          const remaining = Math.max(0, m.paid_seconds - m.elapsed) + Math.max(0, m.balance);
+          if (!m.stop && remaining < 60 && !lowShownRef.current) { lowShownRef.current = true; setTopUp("low"); }
           if (m.stop) {
             billingRef.current.id = null;
-            stop("You're out of credits. Calls and streams show a 'Be right back' card; add credits and go live again.", true);
+            stop("You're out of credits. Your call shows a dark screen until you go live again.", true);
+            setTopUp("ended");
           }
         } catch { /* next beat */ }
       });
@@ -1193,6 +1207,7 @@ export default function Studio() {
   return (
     <div className="studio" data-vyra-studio="true">
       {consentGate.dialog}
+      {topUp && <TopUp reason={topUp} onClose={() => setTopUp(null)} />}
       {slowNet && (
         <Dialog title="Your connection is slow right now" onClose={() => setSlowNet(null)}>
           <div className="consent">
@@ -1212,14 +1227,14 @@ export default function Studio() {
           if (remaining > 120) return null;
           return (
             <div className={`credit-warn${remaining <= 30 ? " is-urgent" : ""}`} role="status">
-              <span><strong>{clock(remaining)}</strong> of live left.{remaining <= 30 ? " Your call will show a 'Be right back' card when it runs out." : ""}</span>
+              <span><strong>{clock(remaining)}</strong> of live left.{remaining <= 30 ? " Your call will show a dark screen when it runs out." : ""}</span>
               <button type="button" className="btn btn-sm btn-primary" onClick={() => window.open("/app/credits", "_blank", "noopener")}>Add credits</button>
             </div>
           );
         })()}
         {holding && !live && (
           <div className="credit-warn" role="status">
-            <span>Calls and streams are showing a <strong>Be right back</strong> card, not your camera.</span>
+            <span>Your call is showing a <strong>dark screen</strong>, not your camera.</span>
             <span className="credit-warn-actions">
               <button type="button" className="btn btn-sm btn-primary" onClick={goLive}>Go live again</button>
               <button type="button" className="btn btn-sm btn-ghost" onClick={() => { holdRef.current = null; setHolding(false); setRealBeforeLive(true); stopStream(); }}>Show my real camera</button>
@@ -1246,7 +1261,7 @@ export default function Studio() {
           {vcamActive && extInstalled && (live || phase === "camera") && (
             <div className="stage-vcam-pill" title="What people in your call see right now">
               <span className="live-dot" />
-              {live ? "Call sees: your AI look" : holding ? "Call sees: “Be right back”" : realBeforeLive ? "Call sees: your real camera" : "Call sees: “Starting soon”"}
+              {live ? "Call sees: your AI look" : holding ? "Call sees: a dark screen" : realBeforeLive ? "Call sees: your real camera" : "Call sees: a dark screen"}
               {!live && !holding && (
                 <button type="button" className="stage-vcam-switch" onClick={() => {
                   const showReal = !realBeforeLive;

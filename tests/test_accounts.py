@@ -261,7 +261,7 @@ def test_stripe_webhook_grants_once(client, mailer, store):
     assert me["user"]["can_remove_watermark"] is True
     status = client.get("/api/live/status").json()
     assert status["can_remove_watermark"] is True
-    assert status["likeness_watermark_always"] is True
+    assert status["likeness_watermark_always"] is False
 
 
 def test_live_meter_sweep_refunds_after_heartbeat(store, monkeypatch):

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "VYRANI AI Virtual Camera & Mic",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Use your VYRANI live AI look as a camera and mic in Google Meet, WhatsApp Web, Zoom, Discord and Teams on the web.",
   "permissions": [
     "storage"

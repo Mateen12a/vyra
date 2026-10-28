@@ -36,7 +36,7 @@ def test_extension_bundle_uses_the_owned_testing_host_and_new_brand(tmp_path):
     with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
         manifest = json.loads(archive.read("manifest.json"))
         assert manifest["name"] == "VYRANI AI Virtual Camera & Mic"
-        assert manifest["version"] == "1.3.1"
+        assert manifest["version"] == "1.3.2"
         for matches in [manifest["host_permissions"], *[script["matches"] for script in manifest["content_scripts"]]]:
             assert "https://vyrani.com/*" in matches and "https://vyrani.blackhevents.com/*" in matches  # owned domains
             assert not any("vyra.ai" in match or "<all_urls>" in match for match in matches)

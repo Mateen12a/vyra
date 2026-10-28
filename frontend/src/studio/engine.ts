@@ -149,7 +149,7 @@ export async function createLookPrompt(idea: string, base?: string): Promise<{ n
 // The prompt that turns the person on camera into the character in the reference photo.
 export function characterPrompt(description: string) {
   const start = "Replace the person with the person in the reference image";
-  const end = ". Match face shape, skin tone and hairstyle. Photorealistic, natural skin texture with pores; no airbrushed or plastic skin. Follow the original movement, expressions and head pose. Keep the background, room, lighting and camera framing exactly as in the input video; change only the person.";
+  const end = ". Match face shape, skin tone and hairstyle. Real unedited webcam footage of a real person: natural skin with pores, fine lines and slight imperfections, true-to-life colour and the room's own lighting and shadows, normal webcam sharpness and grain. Not a cartoon, CGI, painting or beauty filter; no airbrushing, smoothing or glossy skin. Follow the original movement, expressions, mouth and head pose exactly. Keep the background, room and framing as in the input; change only the person.";
   const details = description.replace(/\s+/g, " ").trim().replace(/\.+$/, "").slice(0, 399 - start.length - end.length - 2);
   return start + (details ? `: ${details}` : "") + end;
 }
@@ -296,25 +296,13 @@ function drawBroadcastOverlay(ctx: CanvasRenderingContext2D, w: number, h: numbe
 
 /** Master Output Compositor: draws the AI video (or camera fallback), broadcast overlay, and VYRANI · AI watermark. */
 /** Freezes the last AI frame, dimmed, with a "Be right back" card: shown to calls and streams after an unplanned stop. */
-export function holdCard(video: HTMLVideoElement | null, title = "Be right back", sub = "VYRANI") {
+// What calls see while not live: a plain dark frame, like a camera that's off. No text or brand, so nothing looks odd
+// to the other person when a session pauses, ends or runs out of credits. (The title is kept for the studio's own label.)
+export function holdCard(_video?: HTMLVideoElement | null, _title?: string, _sub?: string) {
   const canvas = Object.assign(document.createElement("canvas"), { width: 1280, height: 720 });
   const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = "#09090b";
+  ctx.fillStyle = "#0b0b0c";
   ctx.fillRect(0, 0, 1280, 720);
-  if (video && video.videoWidth) {
-    ctx.filter = "blur(18px) brightness(0.45)";
-    ctx.drawImage(video, -40, -40, 1360, 800);
-    ctx.filter = "none";
-  }
-  ctx.fillStyle = "rgba(9, 9, 11, 0.55)";
-  ctx.fillRect(0, 0, 1280, 720);
-  ctx.textAlign = "center";
-  ctx.fillStyle = "#f4f4f5";
-  ctx.font = "600 64px Chillax, system-ui, sans-serif";
-  ctx.fillText(title, 640, 370);
-  ctx.fillStyle = "#ff6b2b";
-  ctx.font = "600 24px Chillax, system-ui, sans-serif";
-  ctx.fillText(sub, 640, 420);
   return canvas;
 }
 

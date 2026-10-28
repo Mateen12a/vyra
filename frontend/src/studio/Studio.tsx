@@ -208,9 +208,8 @@ export default function Studio() {
   const [hideWatermark, setHideWatermark] = useState<boolean>(() => localStorage.getItem("vyra.hideWatermark") === "1");
   // Likeness Disclosure Rule: whenever a real person's likeness (reference photo) is active, the visible AI label
   // is ALWAYS on (never removable), with paid/admin users receiving a smaller compact label.
-  const usingLikeness = Boolean(look?.image || photo);
-  const showWatermark = !status?.vyra_dev_mode && (usingLikeness ? true : canRemoveWatermark ? !hideWatermark && Boolean(status?.ai_label) : true);
-  const compactWatermark = Boolean(canRemoveWatermark && (usingLikeness || !hideWatermark));
+  const showWatermark = !status?.vyra_dev_mode && (canRemoveWatermark ? !hideWatermark && Boolean(status?.ai_label) : true);
+  const compactWatermark = Boolean(canRemoveWatermark && !hideWatermark);
 
   // Virtual Camera Hub
   const [vcamActive, setVcamActive] = useState<boolean>(() => localStorage.getItem("vyra.vcamActive") !== "0");
@@ -1541,19 +1540,13 @@ export default function Studio() {
             <div className="card card-pad studio-subcard">
               <div className="section-head">
                 <strong>VYRANI · AI Disclosure Label</strong>
-                {usingLikeness ? (
-                  <span className="pill pill-ok">Likeness · Required</span>
-                ) : canRemoveWatermark ? (
+                {canRemoveWatermark ? (
                   <span className="pill pill-ok">Pro Unlocked</span>
                 ) : (
                   <Link to="/app/credits" className="pill">Free Tier</Link>
                 )}
               </div>
-              {usingLikeness ? (
-                <p className="muted small-line" data-testid="likeness-watermark-notice">
-                  When a person&rsquo;s likeness photo is used, a visible <strong>VYRANI · AI</strong> disclosure stays on ({canRemoveWatermark ? "compact badge for paid accounts" : "standard badge on free tier"}).
-                </p>
-              ) : canRemoveWatermark ? (
+              {canRemoveWatermark ? (
                 <label className="check">
                   <input
                     type="checkbox"

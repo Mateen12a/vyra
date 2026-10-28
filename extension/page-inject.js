@@ -273,37 +273,11 @@
   }
 
   function drawStandbySlate(ctx, w, h) {
-    const grad = ctx.createRadialGradient(w * 0.5, h * 0.42, h * 0.05, w * 0.5, h * 0.5, w * 0.65);
-    grad.addColorStop(0, "#1f1410");
-    grad.addColorStop(1, "#09090b");
-    ctx.fillStyle = grad;
+    ctx.fillStyle = "#0b0b0c";
     ctx.fillRect(0, 0, w, h);
 
-    const pulse = (Math.sin(Date.now() / 400) + 1) * 0.5;
-    ctx.beginPath();
-    ctx.arc(w / 2, h * 0.4, 28 + pulse * 8, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 107, 43, ${0.14 + pulse * 0.12})`;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(w / 2, h * 0.4, 12, 0, Math.PI * 2);
-    ctx.fillStyle = "#ff6b2b";
-    ctx.fill();
-
-    ctx.fillStyle = "#f4f4f5";
-    ctx.textAlign = "center";
-    ctx.font = "600 32px system-ui, -apple-system, sans-serif";
-    ctx.fillText("VYRANI AI Virtual Camera", w / 2, h * 0.54);
-
-    ctx.fillStyle = "#b4b4bc";
-    ctx.font = "400 18px system-ui, -apple-system, sans-serif";
-    ctx.fillText(
-      state.active
-        ? `Connecting WebRTC video stream${state.lookLabel ? " · " + state.lookLabel : ""}…`
-        : "Open VYRANI Studio, turn on Virtual Camera, and press Go Live",
-      w / 2,
-      h * 0.61
-    );
+    // Nothing else is drawn: the other people on the call see a plain dark frame (like a camera that's off), never
+    // text or a brand, until the studio goes live.
   }
 
   function createVirtualDeviceInfo(deviceId, kind, label) {

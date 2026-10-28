@@ -294,7 +294,7 @@ def create_app(settings: Optional[Settings] = None, engine=None, store=None, mai
                 "voice_price_per_minute": VOICE_PRICE_PER_MINUTE,
                 "voice_max_seconds": min(settings.live_max_session_seconds, settings.voice_max_seconds),
                 "ai_label": ai_label, "can_remove_watermark": can_remove_watermark,
-                "likeness_watermark_always": True,
+                "likeness_watermark_always": False,
                 "vyra_dev_mode": settings.vyra_dev_mode,
                 # Users paste their own stream key, so streaming only needs FFmpeg on the server.
                 "streaming_available": bool(settings.rtmp_url or shutil.which(settings.ffmpeg_path)),

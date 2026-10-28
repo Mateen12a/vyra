@@ -922,17 +922,20 @@ export default function Studio() {
     if (!status?.available) return toast(status?.message || "Live isn't available right now.", true);
     if (me && me.balance < LIVE_BLOCK) return toast(`Going live needs at least ${LIVE_BLOCK} credits (${LIVE_BLOCK} seconds). Add credits to continue.`, true);
     if (!(await consentGate.ensure())) return;
-    // Check the connection before any credits are taken: below ~1 Mbps upload the result stutters.
+    // Check the connection before any credits are taken: below ~1 Mbps upload the result stutters. The call app
+    // (WhatsApp, Meet...) shares the same upload, so live needs headroom on top of what the call itself uses.
+    let net: Awaited<ReturnType<typeof checkConnection>> = null;
     if (!slowOkRef.current) {
       setWarmup("Checking your connection");
       setPhase("connecting");
-      const net = await checkConnection();
+      net = await checkConnection();
       setPhase(streamRef.current ? "camera" : "off"); setWarmup("");
-      if (net && net.uploadMbps < 0.8) {
+      if (net && net.uploadMbps < 1.2) {
         setSlowNet(net);
         return;
       }
     }
+    const tightNet = slowOkRef.current || (net !== null && net.uploadMbps < 2.5);
     slowOkRef.current = false;
     // A tip only: going live never waits on it.
     if (!darkWarnedRef.current && roomIsDark()) {
@@ -941,7 +944,8 @@ export default function Studio() {
     }
     startingRef.current = true;
     pressedAtRef.current = performance.now();
-    desiredQualityRef.current = qualityModeRef.current === "smooth" ? "smooth" : "sharp";
+    // Auto starts in Smooth on a tight connection instead of stuttering in Sharp first.
+    desiredQualityRef.current = qualityModeRef.current === "smooth" || (qualityModeRef.current === "auto" && tightNet) ? "smooth" : "sharp";
     lowQualityReportsRef.current = 0;
     qualityMetricsRef.current = null;
     setQualityMetrics(null);
@@ -1193,9 +1197,9 @@ export default function Studio() {
       {slowNet && (
         <Dialog title="Your connection is slow right now" onClose={() => setSlowNet(null)}>
           <div className="consent">
-            <p>Live AI video needs about <strong>1 Mbps upload</strong>. Yours measured <strong>{slowNet.uploadMbps.toFixed(1)} Mbps</strong>
-              {slowNet.latencyMs > 400 ? ` with a ${Math.round(slowNet.latencyMs)} ms delay` : ""}, so the result would stutter and lag.</p>
-            <p className="muted">Try Wi-Fi closer to the router, a wired connection, or pick Smooth quality. Nothing has been charged.</p>
+            <p>Live AI video plus your video call need about <strong>2 Mbps upload</strong> together. Yours measured <strong>{slowNet.uploadMbps.toFixed(1)} Mbps</strong>
+              {slowNet.latencyMs > 400 ? ` with a ${Math.round(slowNet.latencyMs)} ms delay` : ""}, so the AI look and the call would stutter and lag.</p>
+            <p className="muted">Try Wi-Fi closer to the router, a wired connection, or 5G, and pause uploads, cloud sync and screen recording. "Go live anyway" uses Smooth quality. Nothing has been charged.</p>
             <div className="consent-actions">
               <button type="button" className="btn btn-ghost" onClick={() => { setSlowNet(null); slowOkRef.current = true; goLive(); }}>Go live anyway</button>
               <button type="button" className="btn btn-primary" onClick={() => setSlowNet(null)}>OK, I'll fix it</button>

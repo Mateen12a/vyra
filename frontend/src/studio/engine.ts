@@ -107,7 +107,7 @@ export const getStatus = () => api<LiveStatus>("/api/live/status");
 
 export type NetCheck = { uploadMbps: number; latencyMs: number };
 let lastNetCheck: { at: number; result: NetCheck } | null = null;
-/** Measures upload speed and round-trip time to this server (about 2 s, no credits). Cached for 2 minutes. */
+/** Measures upload speed and round-trip time to this server (1-4 s, no credits). Cached for 2 minutes. */
 export async function checkConnection(): Promise<NetCheck | null> {
   if (lastNetCheck && Date.now() - lastNetCheck.at < 120000) return lastNetCheck.result;
   try {
@@ -117,12 +117,19 @@ export async function checkConnection(): Promise<NetCheck | null> {
       await fetch(`/api/net/probe?t=${Date.now()}`, { cache: "no-store" });
       pings.push(performance.now() - t);
     }
-    const bytes = 500_000;
+    // Small enough to finish in about a second on a working connection; a slow one is cut off at 4 s and counted as slow.
+    const bytes = 160_000, limit = 4000;
     const body = new Uint8Array(bytes); crypto.getRandomValues(body.subarray(0, 65536)); // incompressible-ish
     const t = performance.now();
-    const res = await fetch("/api/net/probe", { method: "POST", body, signal: AbortSignal.timeout(15000) });
-    if (!res.ok) return null;
-    const seconds = (performance.now() - t) / 1000;
+    let seconds: number;
+    try {
+      const res = await fetch("/api/net/probe", { method: "POST", body, signal: AbortSignal.timeout(limit) });
+      if (!res.ok) return null;
+      seconds = (performance.now() - t) / 1000;
+    } catch (error) {
+      if ((error as Error).name !== "TimeoutError") throw error;
+      seconds = limit / 1000 * 1.5; // didn't finish in time: report it as clearly too slow
+    }
     const result = { uploadMbps: (bytes * 8) / seconds / 1_000_000, latencyMs: Math.min(...pings) };
     lastNetCheck = { at: Date.now(), result };
     return result;
